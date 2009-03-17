@@ -18,3 +18,5 @@ node   = Node
 singleNode :: String -> Sexp -> Sexp
 singleNode str sexp = Node str [sexp]
 
+symbolNameEq name = (name==) . symbolName
+nodeNameEq name = (name==) . nodeName

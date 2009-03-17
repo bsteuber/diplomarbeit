@@ -1,0 +1,19 @@
+(compiler
+  (escapeLang
+    (module
+       BaseCompiler
+       Control.Monad
+       Util
+       Sexp      
+       Eater
+       Macro
+    ))
+
+  (escapeLang
+    (= escapeLang (eatNodeNamed (str escapeLang) eatAny)))
+
+  (escapeLang
+    (= ignore (eatWhen (nodeNameEq (str ignore)) (const (List)))))
+
+)
+

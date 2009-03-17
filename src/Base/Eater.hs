@@ -88,21 +88,16 @@ eatCompletely e = do
   return res
 
 eatAny :: Eater a a
-eatAny =
-    let f (x:xs) = Success (xs, x)
-        f []     = Error "Empty input for eatAny" 
-    in
-      Eater f
+eatAny = eatWhen (const True) id
+
+eatWhen :: (a -> Bool) -> (a -> b) -> Eater a b
+eatWhen p f = Eater eat
+    where eat (x:xs) | p x       = Success (xs, f x)
+                     | otherwise = Error "eatWhen: predicate not satisfied"
+          eat _ = Error "eatWhen: empty stream"
 
 token :: (Eq a) => a -> Eater a a
-token x =
-    let f (y:xs) =  
-            if x == y
-               then Success (xs, x)
-               else Error "Token not matched"
-        f [] = Error "Token got empty stream"
-    in
-      Eater f
+token x = eatWhen (== x) id
 
 stream :: (Eq a) => [a] -> Eater a [a]
 stream xs = sequence (map token xs)

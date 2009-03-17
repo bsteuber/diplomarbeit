@@ -10,12 +10,12 @@ import Eater
 type CharEater = Eater Char
 
 readSexp :: String -> Sexp
-readSexp input = case eater2trans parseSexp input of
+readSexp input = case eater2trans (allowSpaceAfter parseSexp) input of
                    Error err -> E.throw $ ReaderException err
                    Success sexp -> sexp
 
 readSexps :: String -> [Sexp]
-readSexps input = case eater2trans (eatMany parseSexp) input of
+readSexps input = case eater2trans (allowSpaceAfter (eatMany parseSexp)) input of
                    Error err -> E.throw $ ReaderException err
                    Success sexps -> sexps
 
@@ -62,3 +62,7 @@ parseNode = do maybeSpaces
 
 parseSexp :: CharEater Sexp
 parseSexp = eatOr (liftM Symbol parseSymbol) parseNode
+
+allowSpaceAfter p = do res <- p
+                       maybeSpaces
+                       return res

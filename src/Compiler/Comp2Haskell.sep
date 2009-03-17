@@ -8,6 +8,8 @@
       Macro
   )
 
+  (= escapeLang (eatNodeNamed (str escapeLang) eatAny))
+
   (= quote (eatNodeNamed (str ') eatInner)
      (where (= eatInner
                (eatOrs (List
@@ -32,5 +34,7 @@
 
      ))
 
-  (= comp2haskell (eater2singleTrans quote))
+  (= comp2haskell (eater2singleTrans
+                    (eatNodeNamed (str compiler)
+                      (liftM (Node (str haskell)) (eatMany (eatOrs (List quote escapeLang)))))))
 )
