@@ -1,0 +1,17 @@
+Abstract		
+Based
+Compiler		+
+Data
+Expand(er)/(ing)
+Functional
+General/Generator
+Graph			+
+Interface
+Language		+
+Meta			
+Model(ling)		++
+Parser
+S-Expression
+Transformer
+Tree
+Universal

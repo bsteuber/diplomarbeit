@@ -1,0 +1,217 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{ngerman}
+\usepackage{bibgerm}
+\usepackage{color}
+\usepackage{graphicx}
+
+\mode<presentation>  {
+  \usetheme{Warsaw}
+  \useoutertheme{miniframes}
+  \setbeamertemplate{navigation symbols}{}
+}
+
+\newcommand{\defaultscale}{0.5}
+\newcommand{\pfeil}{\item[$\Rightarrow$]}
+
+\title[MagicL]{MagicL: Ein S-Expression-basiertes Framework für
+  Compiler-Konstruktion nach dem Baukastenprinzip}
+\subtitle{Diplomarbeit}
+\author{Benjamin Teuber}
+\date{\today}
+\institute{Universität Hamburg\\ 
+  Fakultät für Mathematik, Informatik und Naturwissenschaften\\
+  Department Informatik\\
+  AOSE'08}
+
+\begin{document}
+\maketitle
+
+\section{Einführung}
+\subsection{}
+
+\begin{frame}{Themengebiet}
+  \begin{itemize}
+  \item Buzzwords:
+    \begin{itemize}
+    \item Model-driven architecture
+    \item Domain-specific languages
+    \item Metaprogramming
+    \end{itemize}
+  \item Problem: Compiler bauen ist aufwändig
+    \begin{itemize}
+    \item Parser für Quellsprache
+    \item Compiler in normalaler Programmiersprache
+    \item Generator für Zielsprache
+    \end{itemize}
+  \item Wie können wir das vereinfachen?
+  \pfeil Lightweight-Compiler
+  \end{itemize}
+\end{frame}
+
+\section{Lisp}
+\subsection{}
+
+\begin{frame}{Exkursion: Lisp}
+  \begin{itemize}
+  \item Eine der ältesten Programmiersprachfamilien (LISP: 1958)
+  \item Minimale, uniforme Syntax (S-Expressions $\simeq$ XML-Subset)
+  \item Sprache selbst kann durch Makros erweitert werden (``The
+    programmable programming language'')
+  \end{itemize}
+
+  \begin{block}{}
+    ``Any sufficiently complicated C or Fortran program contains an ad hoc
+    informally-specified bug-ridden slow implementation of half of
+    Common Lisp.''
+
+    - Philip Greenspun
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{S-Expressions}
+  \begin{itemize}
+  \item Ein S-Expression ist entweder:
+    \begin{itemize}
+    \item Ein Atom, z.B. eine Zahl, ein String, eine Variable
+    \item Eine Liste von S-Expressions in Notation \\ \texttt{($sexp_1$ $sexp_2$ .. $sexp_n$)}
+    \end{itemize}
+  \item S-Expressions werden nach dem Parsen \textit{strukturell} gespeichert.
+  \item Beipiel: Funktionsdefinition in Common Lisp
+  \end{itemize}
+\begin{verbatim}
+(defun my-add (a b)
+  (+ a b))
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Lisp-Makros}
+  \begin{itemize}
+  \item Makros sind Funktionen von Code nach Code
+  \item werden bereits beim Compilieren ausgewertet
+  \item Ermöglichen inkrementelle Erweiterung des Lisp-Compilers
+  \item Vergleich: Präprozessor in C
+    \begin{itemize}
+    \item Arbeiten auf S-Expressions einfacher \& mächtiger
+    \item Volle Lisp-Funktionalität steht zur Verfügung
+    \pfeil Probleme wie Namenskonflikte können elegant gelöst werden
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[t, fragile]{Lisp-Makros (2)}
+  \begin{itemize}
+  \item Beispiel: Eigenes \texttt{switch} durch \texttt{if} ausdrücken
+  \end{itemize}
+  \begin{block}{Macro-Eingabe}
+\begin{verbatim}
+(switch input
+  ("Hallo"      (print "Hallo auch"))
+  ("Tschüss"    (print "Bye Bye"))
+  ("Wie gehts?" (print "Gut soweit")))
+\end{verbatim}
+  \end{block}
+  \begin{block}{Erzeugter Code}
+\begin{verbatim}
+(if (== input "Hallo")
+  (print "Hallo auch")
+ elseif (== input ""Tschüss") 
+  (print "Bye Bye")
+ elseif (== input "Wie gehts?")
+  (print "Gut soweit"))
+\end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Warum Makros toll sind}
+  \begin{itemize}
+  \item Compiler nicht als monolithischer Block
+  \item Statt dessen Bauskastenprinzip
+  \item Interface für nachträgliche Erweiterungen durch den User
+  \item ``Embedded DSLs'' - in die ursprüngliche Sprache integriert
+  \item Alles S-Exp-basiert: Parser \& Generator fallen weg
+  \item Lisp bietet praktische DSL für Makro-Definitionen 
+  \end{itemize}
+\end{frame}
+
+\section{Diplomarbeit}
+\subsection{Diplomarbeit}
+
+\begin{frame}{Motivation der Diplomarbeit}
+  \begin{itemize}
+  \item Idee: Übernehmen des Lisp-Ansatzes für beliebige Computersprachen, z.B.
+    \begin{itemize}
+    \item Java
+    \item VHDL
+    \item HTML
+    \item Latex
+    \item POV-Ray
+    \end{itemize}
+  \pfeil Einheitliche Syntax, einheitliche IDE, einheitliche Erweiterungsmöglichkeiten
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ziel der Diplomarbeit}
+  \begin{itemize}
+  \item Entwurf eines S-Expression-basierten Compilerbau-Frameworks
+  \item Integrierte DSLs für:
+    \begin{itemize}
+    \item Generatoren: Compilieren S-Exp-Sprachen in Quellcode einer Backend-Sprache
+    \item Compiler: Übersetzen eine S-Exp-Sprache in eine andere
+    \item Parser: Lesen externen Quelltext ein und erzeugen S-Expressions
+    \end{itemize}
+  \item Default-Parser für S-Expression-Klammerschreibweise
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Erster Prototyp}
+  \begin{itemize}
+  \item Ca. ein Jahr alt - proof of concept
+  \item Nachbildung des Lisp-Makroprozessors
+  \item In Ruby geschrieben
+  \item Zwei Sexp-Sprachen:
+    \begin{itemize}
+    \item Ruby - kompiliert nach Ruby-Quellcode
+    \item Compiler - DSL für Sprachdefinitionen, kompiliert nach Ruby-Sexp
+    \end{itemize}
+  \item Seit dem erfolfreichen \textit{bootstrapping} nur noch
+    generierter Ruby-Code
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Neue Version}
+  \begin{itemize}
+  \item Derzeit im entstehen
+  \item In (generiertem) Haskell programmiert - der Sprache für ``theorienahe Anwendungen''
+  \item Eigener Ansatz zum Compilerbau statt Makro-Nachbau
+    \begin{itemize}
+    \item Mathematisch fundiert: Kategorientheorie
+    \item Operatoren wie in EBNF möglich
+    \end{itemize}  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Grober Zeitplan}
+  \begin{itemize}
+  \item Ende März:
+    \begin{itemize}
+    \item Abschluss der Literaturrecherchen
+    \item Compilieren nach Haskell
+    \end{itemize}
+  \item Mitte April:
+    \begin{itemize}
+    \item Festlegen der Compiler-Definitions-Sprache
+    \end{itemize}
+  \item Mitte Mai:
+    \begin{itemize}
+    \item Fertigstellung des Programms
+    \end{itemize}
+  \item Ende Juni:
+    \begin{itemize}
+    \item Abgabe
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\end{document}
