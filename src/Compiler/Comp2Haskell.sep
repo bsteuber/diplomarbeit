@@ -10,31 +10,64 @@
 
   (= escapeLang (eatNodeNamed (str escapeLang) eatAny))
 
-  (= quote (eatNodeNamed (str ') eatInner)
+  (= oldQuote (eatNodeNamed (str ') eatInner)
      (where (= eatInner
                (eatOrs (List
-                 (eatSymbolFun quoteSym)
+                 (eatSymbolFun quoteSymbol)
                  (eatNodeNamed (str ,) eatAny)
                  (eatNodeFun (fun name (do
                                          (<- inners eatInners)
                                          (return (quoteNode name (List inners)))))))))
             (= eatInners
-              (liftM (Node (str ++)) (eatMany (eatOr 
+              (liftM (Node (str ++)) (manySexp (eatOr 
                                        (eatNodeNamed (str ,@) eatAny)
                                        (liftM (Node (str List)) (liftM single eatInner))))))
-            (= (quoteSym str) 
-               (Node (str Symbol) 
-                     (List (Node (str str) (List (Symbol str))))))
-            (= (quoteNode str inner) 
-               (Node (str Node) 
-                     (List (Node (str str)
-                                 (List (Symbol str)))
-                           (Node (str List)
-                                 inner))))
-
      ))
+
+
+  (= quote (eatNodeNamed (str ') eatInner)
+     (where (type eatInner (SexpEater Sexp))
+            (= eatInner
+               (eatOrs (List
+                 (eatSymbolFun Symbol)
+                 (eatNodeNamed (str ,) eatAny)
+                 (eatNodeFun (fun name (do
+                                         (<- inners eatInners)
+                                         (return (Node name inners))))))))
+            (type eatInners (SexpEater Stream))
+            (= eatInners
+              (liftM concat (eatMany (eatOr 
+                                       (eatNodeNamed (str ,@) eatRest)
+                                       (liftM single eatInner)))))
+     ))
+
+  (= eatHeader (eatSymbolFun (fun sym 
+                               (Node (str module)
+                                          (map Symbol
+                                            (List
+                                              sym
+                                              (str Control.Monad)
+                                              (str Util)
+                                              (str Sexp)
+                                              (str Eater)
+                                              (str Macro)))))))
+                                              
+
+  (= eatMacro (eatNodeNamed (str macro)
+                 (do (<- macName eatAnySymbol)
+                     (<- macMatcher eatAnySymbol)
+                     (<- macBody eatAny)
+                     (return (Node (str =)
+                                   (List (Symbol macName)
+                                         (Node (str eatNodeNamed)
+                                               (List (Node (str str) (List (Symbol macMatcher)))
+                                                     macBody))))))))
+                                         
 
   (= comp2haskell (eater2singleTrans
                     (eatNodeNamed (str compiler)
-                      (liftM (Node (str haskell)) (eatMany (eatOrs (List quote escapeLang)))))))
+                      (liftM (Node (str haskell)) (do
+                        (<- header eatHeader)
+                        (<- macs (manySexp (eatMacro)))
+                        (return (: header macs)))))))
 )

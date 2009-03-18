@@ -48,9 +48,9 @@ list = brackets . commaSep
 
 eatImpArgs :: SexpEater ([Sexp], [Sexp])
 eatImpArgs = eatOrs [ (do eatEmpty; return ([], [])),
-                      (do mods <- eatNodeNamed "hiding" $ eatMany $ eatSymbolFun text
+                      (do mods <- eatNodeNamed "hiding" $ manySexp $ eatSymbolFun text
                           return ([], [text "hiding", tuple mods])),
-                      (do mods <- eatNodeNamed "only" $ eatMany $ eatSymbolFun text
+                      (do mods <- eatNodeNamed "only" $ manySexp $ eatSymbolFun text
                           return ([], [tuple mods])),
                       (do short <- eatSymbolFun text |> eatNodeNamed "qualified"
                           return ([text "qualified"], [text "as", short]))
@@ -70,7 +70,7 @@ eatModule =
     (eatNodeNamed
      "module"
      (do modDef <- eatSymbolFun (\s -> ["module", s, "where"] |> map text |> words)
-         imports <- eatImport |> eatMany
+         imports <- eatImport |> manySexp
          (modDef:imports) |> lines |> return))
 
 
@@ -78,60 +78,60 @@ eatModule =
 eatTyped :: SexpEater Sexp
 eatTyped = eatOrs [ eatSymbolNamed "Unit"  (text "()")
                   , eatNodeNamed   "List"  (liftM brackets eatTyped)
-                  , eatNodeNamed   "Tuple" (liftM (tuple) (eatMany eatTyped))
+                  , eatNodeNamed   "Tuple" (liftM (tuple) (manySexp eatTyped))
                   , eatSymbolFun text
-                  , eatNodeNamed "Fun"   (liftM (parenFoldOp "->")  (eatMany eatTyped))
+                  , eatNodeNamed "Fun"   (liftM (parenFoldOp "->")  (manySexp eatTyped))
                   , eatNodeFun $ \genType -> do
-                      args <- eatMany eatTyped
+                      args <- manySexp eatTyped
                       return $ parens $ words $ text genType : args
                  ]
 
 isOp :: String -> Bool
-isOp = all (`elem` "!$%&/=?*+-.<|>")
+isOp = all (`elem` "!$%&/=?*+-.:<|>")
 
 eatCallWithoutParens = 
     (eatOr 
      (eatSymbolFun text)
      (eatNodeFun $ \lbl -> do
         let prefixFun = if isOp lbl then "("++lbl++")" else lbl
-        tokens <- eatMany eatExpr
+        tokens <- manySexp eatExpr
         return $ words $ text prefixFun : tokens))
 
 eatCall :: SexpEater Sexp
 eatCall = (eatOr 
            (eatSymbolFun text)
            (eatNodeFun $ \lbl -> do
-              tokens <- eatMany eatExpr
+              tokens <- manySexp eatExpr
               return $ if isOp lbl then
                            (parenFoldOp lbl tokens)
                        else
                            (node lbl tokens)))
 
 eatLhs = eatOrs [ eatSymbolNamed "Unit"  $ text "()"
-                , eatNodeNamed   "List"  $ liftM list $ eatMany eatExpr
-                , eatNodeNamed   "Tuple" $ liftM tuple $ eatMany eatExpr
+                , eatNodeNamed   "List"  $ liftM list $ manySexp eatExpr
+                , eatNodeNamed   "Tuple" $ liftM tuple $ manySexp eatExpr
                 , eatCall
                 ]
 
 eatType :: SexpEater Sexp
-eatType = eatNodeNamed "type" (liftM2 (binParenOp "::") (eatLhs) (eatTyped))
+eatType = eatNodeNamed "type" (liftM2 (binOp "::") (eatLhs) (eatTyped))
 
 eatString =
-    eatNodeNamed "str" (do exps <- eatMany $ eatExpr
+    eatNodeNamed "str" (do exps <- manySexp $ eatSymbolFun text
                            return $ append $ strQ ++ exps ++ strQ)
         where strQ = [text "\""]
 
 
 eatLambda = eatNodeNamed "fun" (do 
                                  args <- (eatOr 
-                                         (eatNodeNamed "args" (eatMany eatLhs)))
+                                         (eatNodeNamed "args" (manySexp eatLhs)))
                                          (liftM single eatLhs)
                                  body <- eatExpr
                                  return $ node "\\" $ args ++ [text "->", body]
                                )                                                                           
 
 eatDo = eatNodeNamed "do" (do
-                            cmds <- eatMany (eatOr
+                            cmds <- manySexp (eatOr
                                             (eatNodeNamed "<-" (liftM2 (binOp "<-")
                                                                        eatLhs
                                                                        eatExpr))
@@ -144,13 +144,14 @@ eatExpr = eatOrs [ eatString
                  , eatLambda
                  , eatDo
                  , eatType
+                 , eatSymbolSatisfying isOp (parens . text)
                  , eatLhs
                  ]
 
 eatDef :: SexpEater Sexp
 eatDef = eatNodeNamed "=" (do
                             res <- (liftM2 (binOp "=") eatCallWithoutParens eatExpr)
-                            whereDefs <- liftM concat $ eatMaybe $ eatNodeNamed "where" $ eatMany eatDef
+                            whereDefs <- liftM concat $ eatMaybe $ eatNodeNamed "where" $ manySexp eatTopLevel
                             return $ if null whereDefs
                                      then
                                          res
@@ -164,5 +165,5 @@ haskell2code = eater2singleTrans $
                eatNodeNamed "haskell" (liftM2
                                        (\a b -> paragraphs (a ++ b)) 
                                        (eatMaybe eatModule)
-                                       (eatMany eatTopLevel))
+                                       (manySexp eatTopLevel))
           

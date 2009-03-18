@@ -27,6 +27,7 @@ eatSymbol trans =
                        Symbol s -> trans s)
 
 eatSymbolFun = eatSymbol . fun2trans
+eatAnySymbol = eatSymbolFun id
 
 eatNode :: SymbolTrans (SexpEater a) -> SexpEater a
 eatNode trans = 
@@ -58,6 +59,14 @@ eatNodeSatisfying p trans =
 
 eatSymbolNamed str res = eatSymbolSatisfying (== str) (const res)
 eatNodeNamed str eater = eatNodeSatisfying (== str) (const eater)
+
+sexpSplice :: Stream -> Stream
+sexpSplice = concat . map f
+    where f (Node "returnAll" stream) = stream
+          f x = [x]
+
+manySexp :: SexpEater Sexp -> SexpEater Stream
+manySexp = liftM sexpSplice . eatAll
 
 compileStr :: Macro -> String -> String
 compileStr macro = code2string . 

@@ -54,4 +54,5 @@ trans2fun exc f x = case f x of
 
 fun2trans f x = Success (f x)
 
-single x = [x]
+single :: a -> [a]
+single = return

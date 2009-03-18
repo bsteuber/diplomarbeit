@@ -20,3 +20,13 @@ singleNode str sexp = Node str [sexp]
 
 symbolNameEq name = (name==) . symbolName
 nodeNameEq name = (name==) . nodeName
+
+
+quoteSymbol :: String -> Sexp
+quoteSymbol symName = 
+    Node "Symbol" [Node "str" [Symbol symName]]
+
+quoteNode :: String -> Stream -> Sexp
+quoteNode nodName nodChildren =
+    Node "Node" [Node "str" [Symbol nodName],
+                 Node "List" nodChildren]

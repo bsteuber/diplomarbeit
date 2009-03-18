@@ -48,15 +48,15 @@ typedCases = [ ( "Int"
 
 typeMacro = eater2singleTrans eatType
 typeCases = [ ( "(type x Int)"
-              , "[(x :: Int)]" )
+              , "[x :: Int]" )
             , ( "(type myMap (Fun (Fun a b) (List a) (List b)))" 
-              , "[(myMap :: ((a -> b) -> [a] -> [b]))]" )
+              , "[myMap :: ((a -> b) -> [a] -> [b])]" )
             , ( "(type x Sexp)" 
-              , "[(x :: Sexp)]" )
+              , "[x :: Sexp]" )
             , ( "(type x (Failing Int))" 
-              , "[(x :: (Failing Int))]" )
+              , "[x :: (Failing Int)]" )
             , ( "(type (f x y) Unit)" 
-              , "[((f x y) :: ())]" )
+              , "[(f x y) :: ()]" )
             ]
 
 defMacro = eater2singleTrans eatDef
@@ -86,6 +86,8 @@ exprCases = [ ( "(str 42)"
                 , "\"abc\"" )
               , ( "(List a b (str c))"
                 , "[[a, b, \"c\"]]" )
+              , ( "(map + myList)"
+                , "(map (+) myList)" )
               ]
 
 lambdaMacro = eater2singleTrans eatLambda
@@ -102,7 +104,8 @@ doCases = [ ( "(do 42)"
             , "[(do\n  42)]" )
           , ( "(do (<- x 42) b)"
             , "[(do\n  x <- 42\n  b)]" )
-
+          , ( "(do (<- x 42) (<- y (+ a b)) (return x))"
+            , "[(do\n  x <- 42\n  y <- (a + b)\n  (return x))]" )
           ]
       
 main = do testMacro importMacro importCases

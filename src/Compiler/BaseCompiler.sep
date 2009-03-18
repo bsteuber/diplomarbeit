@@ -1,19 +1,10 @@
-(compiler
-  (escapeLang
-    (module
-       BaseCompiler
-       Control.Monad
-       Util
-       Sexp      
-       Eater
-       Macro
-    ))
+(compiler BaseCompiler
 
-  (escapeLang
-    (= escapeLang (eatNodeNamed (str escapeLang) eatAny)))
+  (macro escapeLang escapeLang eatAny)
 
-  (escapeLang
-    (= ignore (eatWhen (nodeNameEq (str ignore)) (const (List)))))
+  (macro ignore ignore
+     (eatDrop (Node (str returnAll)
+                    (List))))
 
 )
 

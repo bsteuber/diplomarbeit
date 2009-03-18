@@ -21,6 +21,12 @@ eatNothing = return ()
 eatFail :: Eater a b
 eatFail = Eater (const (Error "EatFail called"))
 
+eatDrop :: b -> Eater a b
+eatDrop res = Eater (const (Success ([], res)))
+
+eatRest :: Eater a [a]
+eatRest = Eater $ \ stream -> Success ([], stream)
+
 trans2eater :: (Trans a b) -> Eater a b
 trans2eater sc =  Eater app
     where app []     = Error "trans2eater: empty stream"
