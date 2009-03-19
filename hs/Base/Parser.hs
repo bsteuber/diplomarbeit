@@ -1,4 +1,5 @@
-module ParseFunctor where
+{-# OPTIONS_GHC -XGeneralizedNewtypeDeriving #-}
+module Parser where
 import Prelude hiding (id, (.), fail)
 import Data.List
 import Control.Category
@@ -8,12 +9,19 @@ import Util
 import FailFunctor
 import StateFunctor
 
-type ParseFunctor t ar a b = FailFunctor (StateFunctor [t] ar) a b
+newtype Program a b = Prog { runProgram :: Kleisli IO a b }
+    deriving (Category, Arrow, ArrowChoice)
 
--- eatEmpty :: StateFunctor a ()
--- eatEmpty = StateFunctor app
---     where app [] = Success ([], ())
---           app _  = Error "eatEmpty: non-empty stream"
+newtype Parser t a b = P {runP :: FailFunctor (StateFunctor [t] Program) a b }
+
+-- execParser :: Parser t () a -> [t] -> IO a
+-- execParser p inStream =
+
+
+empty :: Parser t a ()
+empty = P $ liftFail fetch >>> test (arr null) >>> ((arr (const ())) ||| fail "empty: non-empty stream")
+
+
 
 -- eatMaybe :: StateFunctor a b -> StateFunctor a [b] 
 -- eatMaybe c = StateFunctor (\cs -> case eat c cs of
@@ -39,13 +47,13 @@ type ParseFunctor t ar a b = FailFunctor (StateFunctor [t] ar) a b
 
 -- eatAll :: StateFunctor a b -> StateFunctor a [b]
 -- eatAll e = (eatOr
---             (liftM (const []) eatEmpty)
+--             (liftM (const []) empty)
 --             (liftM2 (:) e (eatAll e)))
 
 -- eatCompletely :: StateFunctor a b -> StateFunctor a b
 -- eatCompletely e = do
 --   res <- e
---   eatEmpty
+--   empty
 --   return res
 
 -- eatAny :: StateFunctor a a
