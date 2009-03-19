@@ -1,20 +1,27 @@
-module Macro where
-
-import Prelude hiding (catch)
-import Data.List
+module Sexp where
 import Control.Monad
 import qualified Control.Exception as E
 import Util
-import Sexp
 import Eater
-import Reader
 import Code2String
 
-type SexpEater a = Eater Sexp a
+symbol = Symbol
+node   = Node
 
-type SexpTrans a = Trans Sexp a
+singleNode :: String -> Sexp -> Sexp
+singleNode str sexp = Node str [sexp]
 
-type Macro = SexpTrans Sexp
+symbolNameEq name = (name==) . symbolName
+nodeNameEq name = (name==) . nodeName
+
+quoteSymbol :: String -> Sexp
+quoteSymbol symName = 
+    Node "Symbol" [Node "str" [Symbol symName]]
+
+quoteNode :: String -> Stream -> Sexp
+quoteNode nodName nodChildren =
+    Node "Node" [Node "str" [Symbol nodName],
+                 Node "List" nodChildren]
 
 eatError :: String -> SexpEater a
 eatError msg = Eater $ \ stream -> E.throw $ CompileException $ msg ++ ":\n" ++ show stream
@@ -67,25 +74,3 @@ sexpSplice = concat . map f
 
 manySexp :: SexpEater Sexp -> SexpEater Stream
 manySexp = liftM sexpSplice . eatAll
-
-compileStr :: Macro -> String -> String
-compileStr macro = code2string . 
-                   trans2fun CompileException macro . 
-                   readSexp
-
-testMacro :: Macro -> [(String, String)] -> IO ()
-testMacro _ [] = do putStrLn "Hooray! Tests passed."
-                    return ()
-testMacro macro ((src, tgt):cases) = 
-    (E.catch 
-     (let res = compileStr macro src
-          exp = (code2string $ readSexp tgt)
-      in 
-        if res == exp
-        then
-            testMacro macro cases
-        else
-            ("Test " ++ (show $ readSexp src) ++ ":\n  Expected:\n" ++ exp ++ "\n  Got:\n" ++ res) |> TestException |> E.throw)
-     catchFun)
-    where catchFun :: MagiclException -> IO ()
-          catchFun e = ("Error when compiling test case:\n" ++ show src ++ "\n" ++ show e) |> putStrLn

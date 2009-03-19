@@ -7,8 +7,6 @@ import Util
 import Sexp
 import Eater
 import Reader
---import Model
-import Macro
 import Code2String
 
 import qualified Control.Exception as E

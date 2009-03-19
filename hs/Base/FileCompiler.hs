@@ -1,7 +1,7 @@
 module FileCompiler (fileCompiler) where
 import System.Environment (getArgs)
 import System.Directory
-import Macro
+import Sexp
 
 fileCompiler :: Macro -> IO ()
 fileCompiler macro = do

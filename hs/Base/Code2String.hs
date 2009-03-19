@@ -1,44 +1,7 @@
-module Code2String (code2string) where
+module Code2String where
 import Prelude hiding (catch, lines, words)
 import Control.Exception
 import Util
-import Sexp
-import Reader
-
-defaultLineWidth = 60
-
-code2string :: Sexp -> String
-code2string = layoutSexp defaultLineWidth
-
-instance Show Sexp where
-    show sexp = "\n" ++ layoutSexp 25 sexp ++ "\n"
-
-layoutSexp :: Int -> Sexp -> String
-layoutSexp lineWidth = pprint lineWidth . sexp2code
-
-sexp2code :: Sexp -> Code
-sexp2code sexp =
-    case sexp of
-      Symbol "space"                       -> space
-      Symbol "newline"                     -> newline
-      Node "text" [Symbol s]               -> text s
-      Node "indent" [Symbol i, c]          -> indent (read i) (sexp2code c)
-      Node "append" cs                     -> foldl1 append $ map sexp2code cs
-      Node "group" [c]                     -> group (sexp2code c)
-      Node "lines" cs                      -> lines (map sexp2code cs)
-      Node "paragraphs" cs                 -> paragraphs (map sexp2code cs)
-      Node "words" cs                      -> words (map sexp2code cs)
-      Node "commaSep" cs                   -> commaSep (map sexp2code cs)
-      Node "parens" [c]                    -> parens (sexp2code c)
-      Node "brackets" [c]                  -> brackets (sexp2code c)
-      Node "curlyBraces" [c]               -> curlyBraces (sexp2code c)
-      Node "foldOp" (Symbol op : cs)       -> joinBy (Text (" " ++ op ++ " ")) (map sexp2code cs)
-      Node "noFlat" [Node str stream]      -> nfPr (Text str : map sexp2code stream)
-      Node str stream                      -> prin (Text str : map sexp2code stream)
-      Symbol str                           -> Text str
-  where prin = parens . group . (indent 2) . lines
-        nfPr = parens . (indent 2) . lines
-
 
 --- Data Types ---
 
@@ -74,12 +37,12 @@ flatten code =
       Append x y   -> Append (flatten x) (flatten y)
       Or x _       -> flatten x
 
-layout :: SimpleCode -> String
-layout x = 
+layoutSimple :: SimpleCode -> String
+layoutSimple x = 
     case x of
       Noc     -> ""
-      Txt s x -> s ++ layout x
-      Ind i x -> "\n" ++ copy i ' ' ++ layout x
+      Txt s x -> s ++ layoutSimple x
+      Ind i x -> "\n" ++ copy i ' ' ++ layoutSimple x
 
 fits w x | w < 0 = False
 fits w (Txt s x) = fits (w - length s) x 
@@ -100,8 +63,8 @@ simp w k ts =
             Or x y           -> 
                 better w k (simp w k ((i,x):z)) (simp w k ((i,y):z))
 
-pprint :: Int -> Code -> String
-pprint lineWidth code = layout (simp lineWidth 0 [(0,code)])
+layout :: Int -> Code -> String
+layout lineWidth code = layoutSimple (simp lineWidth 0 [(0,code)])
 
 conc :: [Code] -> Code
 conc = foldr append noCode
