@@ -4,19 +4,25 @@ import Prelude hiding (id, (.), fail)
 import Data.List
 import Control.Category
 import Control.Arrow
-import Control.Monad hiding (fail)
+import qualified Control.Monad as M
 import Util
 import FailFunctor
 import StateFunctor
 
-newtype Program a b = Prog { runProgram :: Kleisli IO a b }
-    deriving (Category, Arrow, ArrowChoice)
+newtype Program a b = Prog { runProg :: Kleisli IO a b }
+    deriving (Category, Arrow, ArrowChoice, ArrowApply)
+
+instance ArrowFail Program where
+    fail = Prog . Kleisli . const . M.fail
+
+execProg :: Program a b -> a -> IO b
+execProg = runKleisli . runProg
 
 newtype Parser t a b = P {runP :: FailFunctor (StateFunctor [t] Program) a b }
+    deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus)
 
--- execParser :: Parser t () a -> [t] -> IO a
--- execParser p inStream =
-
+execParser :: Parser t () a -> [t] -> IO a
+execParser = execProg . execState . execFail . runP    
 
 empty :: Parser t a ()
 empty = P $ liftFail fetch >>> test (arr null) >>> ((arr (const ())) ||| fail "empty: non-empty stream")
