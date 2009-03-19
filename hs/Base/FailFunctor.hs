@@ -1,4 +1,4 @@
-module Failable where
+module FailFunctor where
 import Prelude hiding (id, (.), fail)
 import Control.Category
 import Control.Arrow
@@ -18,33 +18,33 @@ flipEither (Left (Left x))  = Left x
 flipEither (Left (Right y)) = Right (Left y)
 flipEither (Right z)        = Right (Right z)
 
-newtype (ArrowChoice ar) => Failable ar a b = F {runF :: ar a (Either String b)}
+newtype (ArrowChoice ar) => FailFunctor ar a b = F {runF :: ar a (Either String b)}
 
 class ArrowFail ar where
-    fail :: String -> ar () a
+    fail :: String -> ar a b
 
--- force :: (ArrowChoice ar, ArrowApply ar, ArrowFail ar) => Failable ar a b -> ar a b
+-- force :: (ArrowChoice ar, ArrowApply ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
 -- force (F f) = f >>> ((arr fail) >>^ (\ g -> (g, ())) >>> app ) ||| id)
 
-instance (ArrowChoice ar) => ArrowFail (Failable ar) where
+instance (ArrowChoice ar) => ArrowFail (FailFunctor ar) where
     fail msg = F $ arr $ const $ Left msg
 
-instance (ArrowChoice ar) => Arrow (Failable ar) where
+instance (ArrowChoice ar) => Arrow (FailFunctor ar) where
     arr fun = F $ arr (Right . fun)
     first (F f) = 
         F $ first f >>^ tuple2either
 
-instance (ArrowChoice ar) => Category (Failable ar) where
+instance (ArrowChoice ar) => Category (FailFunctor ar) where
   F g . F f =
       F $ f >>> (arr Left ||| g)
   id = arr id
 
-instance (ArrowChoice ar) => ArrowChoice (Failable ar) where
+instance (ArrowChoice ar) => ArrowChoice (FailFunctor ar) where
     left (F f) = 
         F $ left f >>^ flipEither
 
-instance (ArrowChoice ar) => ArrowZero (Failable ar) where
-    zeroArrow = F $ arr $ const $ Left "Failure"
+instance (ArrowChoice ar) => ArrowZero (FailFunctor ar) where
+    zeroArrow = fail "Failure"
 
-instance (ArrowChoice ar) => ArrowPlus (Failable ar) where
+instance (ArrowChoice ar) => ArrowPlus (FailFunctor ar) where
     F f <+> F g = F $ (f &&& g) >>^ tupleOr
