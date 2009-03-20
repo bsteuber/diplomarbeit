@@ -10,7 +10,7 @@ class Functor f where
     lift :: (Arrow ar) => ar a b -> f ar a b
 
 class (Arrow ar) => ArrowFail ar where
-    fail :: String -> ar a b
+    fail :: ar String a
 
 class (Arrow ar) => ArrowState s ar | ar -> s where
     get :: ar a s

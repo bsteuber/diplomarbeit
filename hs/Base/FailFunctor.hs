@@ -8,9 +8,8 @@ import Arrows
 
 newtype FailFunctor ar a b = FailF {runFailF :: ar a (Either String b)}
 
-execFail :: (ArrowChoice ar, ArrowApply ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
-execFail (FailF f) = f >>> (handleFailure ||| id)
-    where handleFailure = arr (fail &&& const ()) >>> app
+execFail :: (ArrowChoice ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
+execFail (FailF f) = f >>> (fail ||| id)
 
 instance Functor FailFunctor where
     lift f = FailF $ f >>^ Right
@@ -35,7 +34,7 @@ instance (ArrowChoice ar) => ArrowChoice (FailFunctor ar) where
                   flipEither (Right z)        = Right (Right z)
 
 instance (ArrowChoice ar) => ArrowZero (FailFunctor ar) where
-    zeroArrow = fail "Failure"
+    zeroArrow = constArrow "Failure" >>> fail
 
 instance (ArrowChoice ar) => ArrowPlus (FailFunctor ar) where
     FailF f <+> FailF g = FailF $ (f &&& g) >>^ tupleOr
@@ -47,7 +46,7 @@ instance (ArrowChoice ar, ArrowApply ar) => ArrowApply (FailFunctor ar) where
     app = FailF $ first (arr runFailF) >>> app
 
 instance (ArrowChoice ar) => ArrowFail (FailFunctor ar) where
-    fail msg = FailF $ arr $ const $ Left msg
+    fail = FailF (arr Left)
 
 instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) where
     get = lift get

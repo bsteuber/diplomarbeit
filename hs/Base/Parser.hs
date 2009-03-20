@@ -14,7 +14,7 @@ newtype Program a b = Prog { runProg :: Kleisli IO a b }
     deriving (Category, Arrow, ArrowChoice, ArrowApply)
 
 instance ArrowFail Program where
-    fail = Prog . Kleisli . const . M.fail
+    fail = Prog $ Kleisli $ M.fail
 
 execProg :: Program a b -> a -> IO b
 execProg = runKleisli . runProg
@@ -34,17 +34,17 @@ getList = get >>^ f
     where f xs@[] = Left xs
           f xs    = Right xs
 
-takeFirst :: Parser t a b -> Parser t (t, [t], a) b -> Parser t a b
+takeFirst :: Parser t a b -> Parser t (a, [t]) b -> Parser t a b
 takeFirst handleEmpty handleElt =
-    (getList &&& id) >>> arr prepare >>> (handleEmpty ||| ((handleElt *** put) >>^ fst))
-    where prepare (Left _, x)               = Left x
-          prepare (Right (token : rest), x) = Right ((token, rest, x), rest)
+    (getList &&& id) >>> arr prepare >>> (handleEmpty ||| ((handleElt &&& (snd ^>> tail ^>> put)) >>^ fst))
+    where prepare (Left _, x)       = Left x
+          prepare (Right stream, x) = Right (x, stream)
 
 empty :: (Show t) => Parser t a a
-empty = takeFirst id (fail "Empty stream expected")
+empty = takeFirst id (arr (("Empty stream expected: "++) . show . snd) >>> fail)
 
 token :: Parser t a t
-token = takeFirst (fail "Nonempty stream expected") (arr $ \ (x, _, _) -> x )
+token = takeFirst (constArrow "Nonempty stream expected" >>> fail) (arr (head . snd))
 
  -- testEmpty >>> arr prepareChoice >>> FailF (arr Right ||| arr (errorMsg >>> Left))
  --    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id

@@ -38,7 +38,7 @@ instance (ArrowChoice ar) => ArrowChoice (StateFunctor s ar) where
                       ((f >>> first (arr Left)) ||| first (arr Right)))
 
 instance (Arrow ar, ArrowFail ar) => ArrowFail (StateFunctor s ar) where
-  fail = lift . fail
+  fail = lift fail
 
 instance (ArrowApply ar) => ArrowApply (StateFunctor s ar) where
     app = StateF $ arr (\ ((StateF f, x), s) -> (f, (x, s))) >>> app
