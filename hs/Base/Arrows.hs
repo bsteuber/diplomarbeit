@@ -1,9 +1,20 @@
+{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
 module Arrows where
-import Prelude hiding (id, (.), fail)
+import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category
 import Control.Arrow
 import Util
+
+class Functor f where
+    lift :: (Arrow ar) => ar a b -> f ar a b
+
+class (Arrow ar) => ArrowFail ar where
+    fail :: String -> ar a b
+
+class (Arrow ar) => ArrowState s ar | ar -> s where
+    get :: ar a s
+    put :: ar s () 
 
 constArrow :: (Arrow ar) => b -> ar a b
 constArrow = arr . const

@@ -1,28 +1,28 @@
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 module StateFunctor where 
-import Prelude hiding (id, (.), fail)
+import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category
 import Control.Arrow
-import Control.Monad hiding (fail)
 import Util
-import FailFunctor
+import Arrows
 
 newtype StateFunctor s ar a b =
     StateF { runStateF :: ar (a, s) (b, s) }
 
-liftState :: (Arrow ar) => ar a b -> StateFunctor s ar a b
-liftState f = StateF $ first f
-
 execState :: (Arrow ar) => StateFunctor s ar () a -> ar s a
 execState (StateF f) = arr (\ s -> ((), s)) >>> f >>> arr fst
 
+instance Functor (StateFunctor s) where
+    lift = StateF . first
+
 instance (Arrow ar) => Arrow (StateFunctor s ar) where
-    arr f = liftState (arr f)
+    arr f = lift (arr f)
     first (StateF f) = StateF $ tupleSwap ^>> first f >>^ tupleSwap
         where tupleSwap ((x, y), z) = ((x, z), y)
 
 instance (Arrow ar) => Category (StateFunctor s ar) where
-    id = liftState id
+    id = lift id
     StateF g . StateF f = StateF $ f >>> g      
 
 instance (ArrowZero ar) => ArrowZero (StateFunctor s ar) where
@@ -38,23 +38,15 @@ instance (ArrowChoice ar) => ArrowChoice (StateFunctor s ar) where
                       ((f >>> first (arr Left)) ||| first (arr Right)))
 
 instance (Arrow ar, ArrowFail ar) => ArrowFail (StateFunctor s ar) where
-  fail = liftState . fail
+  fail = lift . fail
 
 instance (ArrowApply ar) => ArrowApply (StateFunctor s ar) where
     app = StateF $ arr (\ ((StateF f, x), s) -> (f, (x, s))) >>> app
 
-fetch :: (Arrow ar) => StateFunctor s ar a s
-fetch = StateF $ arr $ \ (_, s) -> (s, s)
-
-store :: (Arrow ar) => StateFunctor s ar s ()
-store = StateF $ arr $ \ (x, _) -> ((), x)
-
-fetchCons :: (ArrowChoice ar) => StateFunctor [t] ar () b -> StateFunctor [t] ar t b -> StateFunctor [t] ar a b
-fetchCons handleEmpty handleElt =
-    fetch >>> (test (arr null) &&& id) >>> arr prepareChoice >>> (handleEmpty ||| ((handleElt *** store) >>^ fst))
-    where prepareChoice (Left _, _)      = Left ()
-          prepareChoice (Right (token : rest), _) = Right (token, rest)
-
+instance (Arrow ar) => ArrowState s (StateFunctor s ar)
+    where
+      get = StateF $ arr $ \ (_, state) -> (state, state)
+      put = StateF $ arr $ \ (state, _) -> ((), state)
 
 -- trans2eater :: (Trans a b) -> StateFunctor a b
 -- trans2eater sc =  StateFunctor app

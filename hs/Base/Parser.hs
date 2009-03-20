@@ -1,6 +1,6 @@
-{-# OPTIONS_GHC -XGeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 module Parser where
-import Prelude hiding (id, (.), fail)
+import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category
 import Control.Arrow
@@ -20,25 +20,43 @@ execProg :: Program a b -> a -> IO b
 execProg = runKleisli . runProg
 
 newtype Parser t a b = P {runP :: FailFunctor (StateFunctor [t] Program) a b }
-    deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus)
+    deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
+
+instance ArrowState [t] (Parser t) where
+    get = P get
+    put = P put                                 
 
 execParser :: Parser t () a -> [t] -> IO a
 execParser = execProg . execState . execFail . runP    
 
-empty :: (Show t) => Parser t a a
-empty = P $ FailF $ fetchCons (constArrow $ Right)
+getList :: Parser t a (Either [t] [t])
+getList = get >>^ f
+    where f xs@[] = Left xs
+          f xs    = Right xs
 
- testEmpty >>> arr prepareChoice >>> FailF (arr Right ||| arr (errorMsg >>> Left))
-    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
-          errorMsg stream = "Empty stream expected: " ++ show stream
-          prepareChoice (Left _, x)  = Left x
-          prepareChoice (Right s, _) = Right s
+takeFirst :: Parser t a b -> Parser t (t, [t], a) b -> Parser t a b
+takeFirst handleEmpty handleElt =
+    (getList &&& id) >>> arr prepare >>> (handleEmpty ||| ((handleElt *** put) >>^ fst))
+    where prepare (Left _, x)               = Left x
+          prepare (Right (token : rest), x) = Right ((token, rest, x), rest)
+
+empty :: (Show t) => Parser t a a
+empty = takeFirst id (fail "Empty stream expected")
 
 token :: Parser t a t
-token = P $ testEmpty >>> arr prepareChoice >>> FailF (constArrow (Left "Unexpected empty stream") ||| arr Right)
-    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
-          prepareChoice (Left _, _)      = Left ()
-          prepareChoice (Right (t:_), _) = Right t
+token = takeFirst (fail "Nonempty stream expected") (arr $ \ (x, _, _) -> x )
+
+ -- testEmpty >>> arr prepareChoice >>> FailF (arr Right ||| arr (errorMsg >>> Left))
+ --    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
+ --          errorMsg stream = "Empty stream expected: " ++ show stream
+ --          prepareChoice (Left _, x)  = Left x
+ --          prepareChoice (Right s, _) = Right s
+
+-- token :: Parser t a t
+-- token = P $ testEmpty >>> arr prepareChoice >>> FailF (constArrow (Left "Unexpected empty stream") ||| arr Right)
+--     where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
+--           prepareChoice (Left _, _)      = Left ()
+--           prepareChoice (Right (t:_), _) = Right t
 
 
 -- eatAll e = (eatOr
