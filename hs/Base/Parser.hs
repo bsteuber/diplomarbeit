@@ -29,6 +29,14 @@ instance ArrowState [t] (Parser t) where
 execParser :: Parser t () a -> [t] -> IO a
 execParser = execProg . execFail . execState . runP    
 
+runParser :: Parser s a b -> Parser t (a, s) b
+runParser p = 
+
+macro :: String -> SexpParser a b -> SexpParser a b
+macro name parseInner =
+    (sexpNamed name &&& id) >>> (id &&& get
+
+
 empty :: (Show t) => Parser t a ()
 empty = (get &&& id) >>> (ifArrow 
                           (arr $ null . fst)

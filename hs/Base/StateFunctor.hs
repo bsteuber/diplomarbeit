@@ -10,8 +10,8 @@ import Arrows
 newtype StateFunctor s ar a b =
     StateF { runStateF :: ar (a, s) (b, s) }
 
-execState :: (Arrow ar) => StateFunctor s ar () a -> ar s a
-execState (StateF f) = arr (\ s -> ((), s)) >>> f >>> arr fst
+execState :: (Arrow ar) => StateFunctor s ar a b -> ar (a, s) b
+execState (StateF f) = f >>> arr fst
 
 instance Functor (StateFunctor s) where
     lift = StateF . first
