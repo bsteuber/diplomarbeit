@@ -12,3 +12,6 @@ copy i = take i . repeat
 
 single :: a -> [a]
 single = return
+
+bool2either :: Bool -> Either () ()
+bool2either b = if b then Left () else Right ()

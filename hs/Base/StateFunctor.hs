@@ -47,23 +47,3 @@ instance (Arrow ar) => ArrowState s (StateFunctor s ar)
     where
       get = StateF $ arr $ \ (_, state) -> (state, state)
       put = StateF $ arr $ \ (state, _) -> ((), state)
-
--- trans2eater :: (Trans a b) -> StateFunctor a b
--- trans2eater sc =  StateFunctor app
---     where app []     = Error "trans2eater: empty stream"
---           app (c:cs) = do res <- sc c
---                           return (cs, res)
-
--- eater2trans :: (Show a) => StateFunctor a b -> (Trans [a] b)
--- eater2trans eater stream = 
---     case eat eater stream of
---       Success ([], res) -> Success res
---       Success (rest, _) -> Error $ "eater2trans: StateFunctor could not eat " ++ show rest
---       Error msg         -> Error msg
-
--- eater2singleTrans :: (Show a) => StateFunctor a b -> (Trans a b)
--- eater2singleTrans eater sexp = 
---     case eat eater [sexp] of
---       Success ([], res) -> Success res
---       Success (rest, _) -> Error $ "eater2singleTrans: StateFunctor could not eat " ++ show rest
---       Error msg         -> Error msg

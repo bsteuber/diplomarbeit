@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
-module Parser where
+module Parser (execParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category
@@ -29,72 +29,41 @@ instance ArrowState [t] (Parser t) where
 execParser :: Parser t () a -> [t] -> IO a
 execParser = execProg . execFail . execState . runP    
 
-getList :: Parser t a (Either [t] [t])
-getList = get >>^ f
-    where f xs@[] = Left xs
-          f xs    = Right xs
-
-takeFirst :: Parser t a b -> Parser t (a, [t]) b -> Parser t a b
-takeFirst handleEmpty handleElt =
-    (getList &&& id) >>> arr prepare >>> (handleEmpty ||| ((handleElt &&& (snd ^>> tail ^>> put)) >>^ fst))
-    where prepare (Left _, x)       = Left x
-          prepare (Right stream, x) = Right (x, stream)
-
-empty :: (Show t) => Parser t a a
-empty = takeFirst id (arr (("Empty stream expected: "++) . show . snd) >>> fail)
+empty :: (Show t) => Parser t a ()
+empty = (get &&& id) >>> (ifArrow 
+                          (arr $ null . fst)
+                          voidArrow
+                          (arr errorMsg >>> fail))
+        where errorMsg (stream, _) = "Empty stream expected: " ++ (show stream)
 
 token :: Parser t a t
-token = takeFirst (constArrow "Nonempty stream expected" >>> fail) (arr (head . snd))
+token = get >>> (ifArrow 
+                 (arr $ not . null)
+                 (skip (arr tail >>> put) >>> arr head) 
+                 (constArrow "Nonempty stream expected" >>> fail))
 
- -- testEmpty >>> arr prepareChoice >>> FailF (arr Right ||| arr (errorMsg >>> Left))
- --    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
- --          errorMsg stream = "Empty stream expected: " ++ show stream
- --          prepareChoice (Left _, x)  = Left x
- --          prepareChoice (Right s, _) = Right s
+when :: (t -> Bool) -> (t -> String) -> Parser t a t
+when pred errorMsg =
+    token >>> (ifArrow 
+               (arr pred)
+               id
+               (arr errorMsg >>> fail))
 
--- token :: Parser t a t
--- token = P $ testEmpty >>> arr prepareChoice >>> FailF (constArrow (Left "Unexpected empty stream") ||| arr Right)
---     where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
---           prepareChoice (Left _, _)      = Left ()
---           prepareChoice (Right (t:_), _) = Right t
+eq :: (Eq t, Show t) => t -> Parser t a t
+eq x = when (==x) errorMsg
+    where errorMsg y = "\nToken " ++ show y ++ "\nShould be " ++ show x        
 
+notEq :: (Eq t, Show t) => t -> Parser t a t
+notEq x = when (/= x) errorMsg
+    where errorMsg _ = "\nToken should not be " ++ show x
 
--- eatAll e = (eatOr
---             (liftM (const []) empty)
---             (liftM2 (:) e (eatAll e)))
+member :: (Eq t, Show t) => [t] -> Parser t a t
+member xs = when (`elem` xs) errorMsg
+    where errorMsg y = "\nElement " ++ show y ++ "\nShould be member of " ++ show xs
 
--- eatCompletely :: StateFunctor a b -> StateFunctor a b
--- eatCompletely e = do
---   res <- e
---   empty
---   return res
+notMember :: (Eq t, Show t) => [t] -> Parser t a t
+notMember xs = when (not . (`elem` xs)) errorMsg
+    where errorMsg y = "\nElement " ++ show y ++ "\nShould not be member of " ++ show xs
 
--- eatAny :: StateFunctor a a
--- eatAny = eatWhen (const True) id
-
--- eatWhen :: (a -> Bool) -> (a -> b) -> StateFunctor a b
--- eatWhen p f = StateFunctor eat
---     where eat (x:xs) | p x       = Success (xs, f x)
---                      | otherwise = Error "eatWhen: predicate not satisfied"
---           eat _ = Error "eatWhen: empty stream"
-
--- token :: (Eq a) => a -> StateFunctor a a
--- token x = eatWhen (== x) id
-
--- stream :: (Eq a) => [a] -> StateFunctor a [a]
--- stream xs = sequence (map token xs)
-
--- eatNot :: StateFunctor a b -> StateFunctor a ()
--- eatNot e =
---     let f stream = case eat e stream of
---                      Error _   -> Success (stream, ())
---                      Success _ -> Error "StateFunctor for eatNot succeeded"
---     in
---       StateFunctor f
-
--- oneOf :: (Eq a) => [a] -> StateFunctor a a
--- oneOf xs = eatOrs (map token xs)
-    
--- noneOf :: (Eq a) => [a] -> StateFunctor a a
--- noneOf xs = do eatNot (oneOf xs)
---                eatAny
+streamEq :: (Eq t, Show t) => [t] -> Parser t a [t]
+streamEq = foldArrows . map eq
