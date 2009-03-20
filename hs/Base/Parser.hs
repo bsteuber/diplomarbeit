@@ -1,10 +1,10 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, TypeSynonymInstances #-}
 module Parser (execParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
 import Prelude hiding (id, (.), fail, Functor)
-import Data.List
+import Data.Typeable
+import Control.Exception (Exception, throw)
 import Control.Category
 import Control.Arrow
-import qualified Control.Monad as M
 import Util
 import Arrows
 import FailFunctor
@@ -14,7 +14,7 @@ newtype Program a b = Prog { runProg :: Kleisli IO a b }
     deriving (Category, Arrow, ArrowChoice, ArrowApply)
 
 instance ArrowFail Program where
-    fail = Prog $ Kleisli $ M.fail
+    fail = Prog $ Kleisli $ error . ("Error in Parser: "++)
 
 execProg :: Program a b -> a -> IO b
 execProg = runKleisli . runProg
