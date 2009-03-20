@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, TypeSynonymInstances #-}
-module Parser (execParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
+module Parser (arr, Parser, execParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.Typeable
 import Control.Exception (Exception, throw)

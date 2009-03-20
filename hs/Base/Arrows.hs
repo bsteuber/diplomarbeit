@@ -55,5 +55,5 @@ skipMany = skip . many
 skipMany1 :: (ArrowPlus ar) => ar a b -> ar a a
 skipMany1 = skip . many1
 
-sepBy :: (ArrowPlus ar) => ar a () -> ar a b -> ar a [b]
+sepBy :: (ArrowPlus ar) => ar a c -> ar a b -> ar a [b]
 sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ concat

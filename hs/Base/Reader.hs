@@ -1,68 +1,23 @@
-module Reader (readSexp, readSexps) where 
-
-import Prelude hiding (catch)
-import Control.Monad
-import qualified Control.Exception as E
-import Util
+module Reader (readSexp) where 
+import Control.Arrow
 import Sexp
-import Eater
+import Arrows
+import Parser
 
-type CharParser = Parser Char
+space = skip $ many $ member " \t\n"
+parseSym = many1 $ notMember " \t\n()"
 
-readSexp :: String -> Sexp
-readSexp input = case eater2trans (allowSpaceAfter parseSexp) input of
-                   Error err -> E.throw $ ReaderException err
-                   Success sexp -> sexp
+parens p = skip (eq '(') >>> p >>> skip (eq ')')
 
-readSexps :: String -> [Sexp]
-readSexps input = case eater2trans (allowSpaceAfter (eatMany parseSexp)) input of
-                   Error err -> E.throw $ ReaderException err
-                   Success sexps -> sexps
+parseSymbol = parseSym >>^ symbol
 
-space :: CharEater Char
-space = oneOf " \t\n"
+parseNode = parens ((parseSym &&& parseSexps) >>^ uncurry Sexp)
 
-spaces :: CharEater ()
-spaces = skipMany1 space
+parseSexp = space >>> (parseSymbol <+> parseNode)
 
-maybeSpaces :: CharEater ()
-maybeSpaces = skipMany space
+parseSexps = many (space >>> parseSexp)
 
-parseSimpleSymbol :: CharEater String
-parseSimpleSymbol = eatMany1 (noneOf "()[] \n")
+readSexp :: String -> IO Sexp
+readSexp = execParser (parseSexp >>> space >>> skip empty)
 
-parseQuotedSymbol :: CharEater String
-parseQuotedSymbol =
-    do stream "["
-       syms <- eatMany (eatOrs eaters)
-       stream "]"                       
-       return $ concat syms
-    where eaters = [
-           stream "\\[", 
-           stream "\\]",
-           (do stream "\\\\"
-               return "\\"),
-           liftM (\x -> [x]) (noneOf "[]"),
-           (do s <- parseQuotedSymbol
-               return $ "[" ++ s ++ "]")]
-
-parseSymbol :: CharEater String
-parseSymbol = do maybeSpaces
-                 eatOr parseQuotedSymbol parseSimpleSymbol
-
-parseNode :: CharEater Sexp
-parseNode = do maybeSpaces 
-               token '('
-               maybeSpaces
-               head <- parseSymbol
-               children <- eatMany parseSexp
-               maybeSpaces
-               token ')'
-               return (Node head children)      
-
-parseSexp :: CharEater Sexp
-parseSexp = eatOr (liftM Symbol parseSymbol) parseNode
-
-allowSpaceAfter p = do res <- p
-                       maybeSpaces
-                       return res
+readSexps = execParser (parseSexps >>> space >>> empty)

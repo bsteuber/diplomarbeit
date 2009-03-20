@@ -1,6 +1,5 @@
 module Code2String where
 import Prelude hiding (catch, lines, words)
-import Control.Exception
 import Util
 
 --- Data Types ---

@@ -10,6 +10,12 @@
 
   (= escapeLang (eatNodeNamed (str escapeLang) eatAny))
 
+
+quoteSexp :: String -> [Sexp] -> Sexp
+quoteSexp l cs =
+    Sexp "Sexp" [Sexp "str" [symbol l],
+                 Sexp "List" cs]
+
   (= oldQuote (eatNodeNamed (str ') eatInner)
      (where (= eatInner
                (eatOrs (List
