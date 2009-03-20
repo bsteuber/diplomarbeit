@@ -29,7 +29,7 @@ instance (ArrowZero ar) => ArrowZero (StateFunctor s ar) where
     zeroArrow = StateF zeroArrow
 
 instance (ArrowPlus ar) => ArrowPlus (StateFunctor s ar) where
-    StateF f <+> StateF g = StateF $ f <+> g
+    StateF f <+> StateF g = StateF $ (runStateF get &&& id) >>> ((voidArrow *** f) <+> ((runStateF put >>^ fst) *** g)) >>^ snd
 
 instance (ArrowChoice ar) => ArrowChoice (StateFunctor s ar) where
     left (StateF f) = StateF (arr (\ (z, s) -> case z of
