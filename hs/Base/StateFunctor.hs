@@ -49,6 +49,13 @@ fetch = StateF $ arr $ \ (_, s) -> (s, s)
 store :: (Arrow ar) => StateFunctor s ar s ()
 store = StateF $ arr $ \ (x, _) -> ((), x)
 
+fetchCons :: (ArrowChoice ar) => StateFunctor [t] ar () b -> StateFunctor [t] ar t b -> StateFunctor [t] ar a b
+fetchCons handleEmpty handleElt =
+    fetch >>> (test (arr null) &&& id) >>> arr prepareChoice >>> (handleEmpty ||| ((handleElt *** store) >>^ fst))
+    where prepareChoice (Left _, _)      = Left ()
+          prepareChoice (Right (token : rest), _) = Right (token, rest)
+
+
 -- trans2eater :: (Trans a b) -> StateFunctor a b
 -- trans2eater sc =  StateFunctor app
 --     where app []     = Error "trans2eater: empty stream"

@@ -7,7 +7,7 @@ import Util
 import Sexp
 import Eater
 
-type CharEater = Eater Char
+type CharParser = Parser Char
 
 readSexp :: String -> Sexp
 readSexp input = case eater2trans (allowSpaceAfter parseSexp) input of

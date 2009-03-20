@@ -6,6 +6,7 @@ import Control.Category
 import Control.Arrow
 import qualified Control.Monad as M
 import Util
+import Arrows
 import FailFunctor
 import StateFunctor
 
@@ -24,34 +25,22 @@ newtype Parser t a b = P {runP :: FailFunctor (StateFunctor [t] Program) a b }
 execParser :: Parser t () a -> [t] -> IO a
 execParser = execProg . execState . execFail . runP    
 
-empty :: Parser t a ()
-empty = P $ liftFail fetch >>> test (arr null) >>> ((arr (const ())) ||| fail "empty: non-empty stream")
+empty :: (Show t) => Parser t a a
+empty = P $ FailF $ fetchCons (constArrow $ Right)
+
+ testEmpty >>> arr prepareChoice >>> FailF (arr Right ||| arr (errorMsg >>> Left))
+    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
+          errorMsg stream = "Empty stream expected: " ++ show stream
+          prepareChoice (Left _, x)  = Left x
+          prepareChoice (Right s, _) = Right s
+
+token :: Parser t a t
+token = P $ testEmpty >>> arr prepareChoice >>> FailF (constArrow (Left "Unexpected empty stream") ||| arr Right)
+    where testEmpty = (liftFail fetch >>> test (arr null)) &&& id
+          prepareChoice (Left _, _)      = Left ()
+          prepareChoice (Right (t:_), _) = Right t
 
 
-
--- eatMaybe :: StateFunctor a b -> StateFunctor a [b] 
--- eatMaybe c = StateFunctor (\cs -> case eat c cs of
---                             Error msg -> Success (cs, [])
---                             Success (rest, out) -> Success (rest, [out]))
-
--- eatMany :: StateFunctor a b -> StateFunctor a [b]
--- eatMany c = eatOr (eatMany1 c) (return [])
-
--- eatMany1 :: StateFunctor a b -> StateFunctor a [b]
--- eatMany1 c = do fst  <- c
---                 rest <- eatMany c
---                 return (fst : rest)
-
-
--- skipMany :: StateFunctor a b -> StateFunctor a ()
--- skipMany e = do eatMany e
---                 return ()
-
--- skipMany1 :: StateFunctor a b -> StateFunctor a ()
--- skipMany1 e = do eatMany1 e
---                  return ()
-
--- eatAll :: StateFunctor a b -> StateFunctor a [b]
 -- eatAll e = (eatOr
 --             (liftM (const []) empty)
 --             (liftM2 (:) e (eatAll e)))
