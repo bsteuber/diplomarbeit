@@ -19,7 +19,7 @@ instance ArrowFail Program where
 execProg :: Program a b -> a -> IO b
 execProg = runKleisli . runProg
 
-newtype Parser t a b = P {runP :: FailFunctor (StateFunctor [t] Program) a b }
+newtype Parser t a b = P {runP :: StateFunctor [t] (FailFunctor Program) a b }
     deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
 
 instance ArrowState [t] (Parser t) where
@@ -27,7 +27,7 @@ instance ArrowState [t] (Parser t) where
     put = P put                                 
 
 execParser :: Parser t () a -> [t] -> IO a
-execParser = execProg . execState . execFail . runP    
+execParser = execProg . execFail . execState . runP    
 
 getList :: Parser t a (Either [t] [t])
 getList = get >>^ f
