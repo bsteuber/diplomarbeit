@@ -11,24 +11,17 @@ import Writer
 
 type SexpParser = Parser Sexp
 
-macro :: String -> SexpParser a b -> SexpParser a b
-macro name parseInner = 
+takeSexpWhen :: (String -> Bool) -> (String -> String) -> SexpParser a b -> SexpParser a b
+takeSexpWhen pred errorMsg parseInner = 
     (id &&& token) >>> (ifArrow
-                        (arr (snd >>> labelEq name))
+                        (arr (snd >>> label >>> pred))
                         (second (arr children) >>> runParser parseInner)
-                        (arr (snd >>> errorMsg) >>> fail))
-        where errorMsg = (\ (Sexp lbl _) -> "Expected symbol " ++ name ++ "\nGot " ++ lbl)
+                        (arr (snd >>> label >>> errorMsg) >>> fail))
 
--- eatNodeSatisfying :: SymbolPred -> (String -> (SexpEater a)) -> SexpEater a
-
--- sexpSplice :: Stream -> Stream
--- sexpSplice = concat . map f
---     where f (Node "returnAll" stream) = stream
---           f x = [x]
-
--- manySexp :: SexpEater Sexp -> SexpEater Stream
--- manySexp = liftM sexpSplice . eatAll
-
+macro :: String -> SexpParser a b -> SexpParser a b
+macro name = (takeSexpWhen 
+              (== name)
+              (\ lbl -> "Expected symbol " ++ name ++ "\nGot " ++ lbl))
 
 compile :: SexpParser () a -> Sexp -> IO a
 compile p sexp = execParser p [sexp]
@@ -39,21 +32,25 @@ compileStr p str = do
   res <- compile p sexp
   return $ show res
 
--- testMacro :: Macro -> [(String, String)] -> IO ()
--- testMacro _ [] = do putStrLn "Hooray! Tests passed."
---                     return ()
--- testMacro macro ((src, tgt):cases) = 
---     (E.catch 
---      (let res = compileStr macro src
---           exp = (code2string $ readSexp tgt)
---       in 
---         if res == exp
---         then
---             testMacro macro cases
---         else
---             ("Test " ++ (show $ readSexp src) ++ ":\n  Expected:\n" ++ exp ++ "\n  Got:\n" ++ res) |> TestException |> E.throw)
---      catchFun)
---     where catchFun :: MagiclException -> IO ()
---           catchFun e = ("Error when compiling test case:\n" ++ show src ++ "\n" ++ show e) |> putStrLn
+testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
+testMacro name mac testCases = do
+    putStrLn $ "Testing macro " ++ name    
+    recTest testCases False
+        where
+          recTest [] False = do putStrLn "Hooray! Tests passed."
+                                return ()
+          recTest [] True = do putStrLn "Sorry, there were errors."
+                               return ()
+          recTest ((src, tgt):cases) errorOccured = do
+                                 sexp    <- readSexp src       
+                                 res     <- compile mac sexp
+                                 tgtSexp <- readSexp tgt
+                                 (if res == tgtSexp then
+                                     recTest cases errorOccured
+                                  else
+                                      do putStrLn $ ("Compiler test failed for " ++
+                                                     show sexp  ++ ":\n  Expected:\n" ++ 
+                                                     show tgtSexp ++ "\n  Got:\n" ++ show res)
+                                         recTest cases True)
 
                 
