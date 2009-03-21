@@ -1,4 +1,6 @@
 module Compiler where
+import Prelude hiding (id, (.), fail, Functor)
+import Control.Category
 import Control.Arrow
 import Util
 import Arrows
@@ -9,15 +11,13 @@ import Writer
 
 type SexpParser = Parser Sexp
 
-sexpNamed :: String -> SexpParser a [Sexp]
-sexpNamed name = 
-    (when
-     (labelEq name) 
-     (\ Sexp lbl _ -> "Expected symbol " ++ name ++ "\nGot " ++ lbl))
-
 macro :: String -> SexpParser a b -> SexpParser a b
-macro name parseInner =
-    (sexpNamed name &&& id) >>> (id &&& get
+macro name parseInner = 
+    (id &&& token) >>> (ifArrow
+                        (arr (snd >>> labelEq name))
+                        (second (arr children) >>> runParser parseInner)
+                        (arr (snd >>> errorMsg) >>> fail))
+        where errorMsg = (\ (Sexp lbl _) -> "Expected symbol " ++ name ++ "\nGot " ++ lbl)
 
 -- eatNodeSatisfying :: SymbolPred -> (String -> (SexpEater a)) -> SexpEater a
 

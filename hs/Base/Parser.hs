@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, TypeSynonymInstances #-}
-module Parser (arr, Parser, execParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
+module Parser (arr, Parser, execParser, runParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.Typeable
 import Control.Exception (Exception, throw)
@@ -29,13 +29,8 @@ instance ArrowState [t] (Parser t) where
 execParser :: Parser t () a -> [t] -> IO a
 execParser = execProg . execFail . execState . runP    
 
-runParser :: Parser s a b -> Parser t (a, s) b
-runParser p = 
-
-macro :: String -> SexpParser a b -> SexpParser a b
-macro name parseInner =
-    (sexpNamed name &&& id) >>> (id &&& get
-
+runParser :: Parser s a b -> Parser s (a, [s]) b
+runParser (P p) = P (withState p)
 
 empty :: (Show t) => Parser t a ()
 empty = (get &&& id) >>> (ifArrow 
@@ -52,7 +47,7 @@ token = get >>> (ifArrow
 
 when :: (t -> Bool) -> (t -> String) -> Parser t a t
 when pred errorMsg =
-    token >>> (ifArrow 
+    token >>> (ifArrow
                (arr pred)
                id
                (arr errorMsg >>> fail))
