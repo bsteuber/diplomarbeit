@@ -1,7 +1,10 @@
 module Compiler where
-import Prelude hiding (id, (.), fail, Functor)
+import Prelude hiding (id, (.), take, fail, Functor)
 import Control.Category
 import Control.Arrow
+import Control.Monad (liftM)
+import System.Environment (getArgs)
+import System.IO
 import Util
 import Arrows
 import Sexp
@@ -11,17 +14,38 @@ import Writer
 
 type SexpParser = Parser Sexp
 
-takeSexpWhen :: (String -> Bool) -> (String -> String) -> SexpParser a b -> SexpParser a b
+takeSexp :: SexpParser a (String, [Sexp])
+takeSexp = take >>> arr sexp2tuple
+
+takeSymbol :: SexpParser a String
+takeSymbol = 
+    takeSexp >>> (ifArrow 
+                  (arr $ snd >>> null)
+                  (arr fst)
+                  (arr (tuple2sexp >>> show >>> ("Symbol expected: "++)) >>> fail))
+
+procSexp :: SexpParser TupleSexp TupleSexp -> SexpParser a Sexp
+procSexp procTuple = takeSexp >>> procTuple >>> arr tuple2sexp
+
+takeSexpWhen :: (String -> Bool) -> (String -> String) -> SexpParser (a, String) b -> SexpParser a b
 takeSexpWhen pred errorMsg parseInner = 
-    (id &&& token) >>> (ifArrow
-                        (arr (snd >>> label >>> pred))
-                        (second (arr children) >>> runParser parseInner)
-                        (arr (snd >>> label >>> errorMsg) >>> fail))
+    (id &&& takeSexp) >>> (ifArrow
+                           (arr (snd >>> fst >>> pred))
+                           (arr (\ (x, (lbl, stream)) -> ((x, lbl), stream)) >>> runParser parseInner)
+                           (arr (snd >>> fst >>> errorMsg) >>> fail))
+
+takeAnySexp = takeSexpWhen (const True) (const "")
+
+looseMacro :: String -> SexpParser a b -> SexpParser a b
+looseMacro name parseInner = (takeSexpWhen 
+                              (== name)
+                              (\ lbl -> "Expected symbol " ++ name ++ "\nGot " ++ lbl)
+                              (arr fst >>> parseInner))
 
 macro :: String -> SexpParser a b -> SexpParser a b
-macro name = (takeSexpWhen 
-              (== name)
-              (\ lbl -> "Expected symbol " ++ name ++ "\nGot " ++ lbl))
+macro name parseInner = looseMacro name (parseInner >>> empty)
+
+takeSymbolNamed name = macro name id
 
 compile :: SexpParser () a -> Sexp -> IO a
 compile p sexp = execParser p [sexp]
@@ -31,6 +55,12 @@ compileStr p str = do
   sexp <- readSexp str
   res <- compile p sexp
   return $ show res
+
+compiler :: (Show a) => SexpParser () a -> IO ()
+compiler macro = do
+  input <- getContents
+  output <- compileStr macro input
+  putStr output
 
 testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
 testMacro name mac testCases = do
@@ -43,14 +73,14 @@ testMacro name mac testCases = do
                                return ()
           recTest ((src, tgt):cases) errorOccured = do
                                  sexp    <- readSexp src       
-                                 res     <- compile mac sexp
-                                 tgtSexp <- readSexp tgt
-                                 (if res == tgtSexp then
+                                 res     <- liftM show (compile mac sexp)
+                                 (if res == tgt then
                                      recTest cases errorOccured
                                   else
-                                      do putStrLn $ ("Compiler test failed for " ++
-                                                     show sexp  ++ ":\n  Expected:\n" ++ 
-                                                     show tgtSexp ++ "\n  Got:\n" ++ show res)
+                                      do (putStrLn 
+                                          ("Compiler test failed for " ++
+                                           show sexp  ++ ":\n  Expected:\n" ++ 
+                                           tgt ++ "\n  Got:\n" ++ res))
                                          recTest cases True)
 
                 

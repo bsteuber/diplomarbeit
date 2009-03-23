@@ -46,7 +46,7 @@ runCompiler comp inFile outFile =
     (whenNewer
      inFile 
      outFile
-     (sysList ["gen/bin/" ++ comp, inFile, outFile] ))
+     (sysList ["gen/bin/" ++ comp, "<", "$" ++ inFile, "<", "$" ++ outFile] ))
 
 hs2c   = runCompiler "hs2c"
 cmp2hs = runCompiler "cmp2hs"
@@ -59,18 +59,19 @@ testCompiler comp = do
 
 testCompilers = liftM maximum .  mapM testCompiler
 
-test = testCompilers ["Haskell2Code", "Comp2Haskell"]
+test = testCompilers ["Haskell2Code"]--, "Comp2Haskell"]
 
 mkDirs = mapM $ \ dir -> system $ "mkdir -p " ++ dir
 
 build = do
-  system "rm -rf gen"
+--  system "rm -rf gen"
   mkDirs ["gen/bin", "gen/ghc", "gen/hs", "gen/sep/Haskell"]
-  ghc "hs/Progs/HS2C"
-  hs2c "sep/Haskell/Comp2Haskell.sep" "gen/hs/Comp2Haskell.hs"
-  ghc "hs/Progs/CMP2HS"
-  cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
-  hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
+  ghc "hs/Progs/Format"
+  -- ghc "hs/Progs/HS2C"
+  -- hs2c "sep/Haskell/Comp2Haskell.sep" "gen/hs/Comp2Haskell.hs"
+  -- ghc "hs/Progs/CMP2HS"
+  -- cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
+  -- hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
 
 
 main = do args  <- getArgs

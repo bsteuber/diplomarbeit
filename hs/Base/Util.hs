@@ -13,5 +13,9 @@ copy i = take i . repeat
 single :: a -> [a]
 single = return
 
+unSingle :: (Show a) => [a] -> a
+unSingle [x] = x
+unSingle xs  = error $ "Single element expected: " ++ show xs
+
 bool2either :: Bool -> Either () ()
 bool2either b = if b then Left () else Right ()

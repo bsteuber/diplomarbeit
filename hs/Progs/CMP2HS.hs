@@ -1,5 +1,5 @@
 module CMP2HS where
-import FileCompiler
+import Compiler
 import Comp2Haskell
 
-main = fileCompiler comp2haskell
+main = compiler comp2haskell

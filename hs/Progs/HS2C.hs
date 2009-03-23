@@ -1,5 +1,5 @@
 module HS2C where
-import FileCompiler
+import Compiler
 import Haskell2Code
 
-main = fileCompiler haskell2code
+main = compiler haskell2code

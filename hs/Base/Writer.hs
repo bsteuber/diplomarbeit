@@ -5,7 +5,7 @@ import Sexp
 import Code2String
 
 instance Show Sexp where
-    show sexp = "\n" ++ layoutSexp 25 sexp ++ "\n"
+    show sexp = layoutSexp 70 sexp
 
 layoutSexp :: Int -> Sexp -> String
 layoutSexp lineWidth = layout lineWidth . sexp2code

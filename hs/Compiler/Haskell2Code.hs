@@ -1,23 +1,16 @@
-module Haskell2Code where --(haskell, haskellStream) where
+module Haskell2Code where
 import Prelude hiding (lines, words)
-import Data.Char
-import Control.Monad
-import System.Environment (getArgs)
-import Util
+import Control.Arrow
+import Arrows
 import Sexp
-import Eater
-import Reader
-import Code2String
-
-import qualified Control.Exception as E
-
--- Utility
+import Parser
+import Compiler
 
 text :: String -> Sexp
-text = singleNode "text" . Symbol
+text = singleNode "text" . symbol
 
 newline :: Sexp
-newline = Symbol "newline"
+newline = symbol "newline"
 
 parens :: Sexp -> Sexp
 parens = singleNode "parens"
@@ -29,12 +22,13 @@ lines = node "lines"
 append = node "append"
 paragraphs = node "paragraphs"
 words = node "words"
+textWords = map text >>> words
 commaSep = node "commaSep"
 noFlat = singleNode "noFlat"
-indent x = node "indent" [Symbol "2", x]
+indent x = node "indent" [symbol "2", x]
 
 foldOp :: String -> [Sexp] -> Sexp
-foldOp op stream = node "foldOp" (Symbol op : stream)
+foldOp op stream = node "foldOp" (symbol op : stream)
 
 parenFoldOp op = parens . foldOp op
 
@@ -44,124 +38,115 @@ binParenOp op x y = parens $ binOp op x y
 tuple = parens . commaSep
 list = brackets . commaSep
 
-eatImpArgs :: SexpEater ([Sexp], [Sexp])
-eatImpArgs = eatOrs [ (do eatEmpty; return ([], [])),
-                      (do mods <- eatNodeNamed "hiding" $ manySexp $ eatSymbolFun text
-                          return ([], [text "hiding", tuple mods])),
-                      (do mods <- eatNodeNamed "only" $ manySexp $ eatSymbolFun text
-                          return ([], [tuple mods])),
-                      (do short <- eatSymbolFun text |> eatNodeNamed "qualified"
-                          return ([text "qualified"], [text "as", short]))
-                    ]
+compModule :: SexpParser a Sexp
+compModule = 
+    macro "module" (consArrow
+                    (takeSymbol >>> arr (\s -> textWords ["module", s, "where"]))
+                    (many compImport)
+                   ) >>> arr lines
+
+compImport :: SexpParser a Sexp
+compImport = 
+    takeAnySexp $ (arr snd &&&
+                 (impNormal <+> impQualified <+> impHiding <+> impOnly)) >>> arr imp
+    where impNormal              = empty >>> constArrow ([], [])
+          impQualified           = macro "qualified" (takeSymbol >>> arr calcQualified)
+          calcQualified short    = ([text "qualified"], [text "as", text short])
+          impHiding              = macro "hiding" (many takeSymbol >>> arr calcHiding)
+          calcHiding hides       = ([], [text "hiding", tuple (map text hides)])
+          impOnly                = macro "only" (many takeSymbol >>> arr calcOnly)
+          calcOnly onlys         = ([], [tuple (map text onlys)])
+          imp (name, (bef, aft)) = words $ [text "import"] ++ bef ++ [text name] ++ aft
+
+-- compTyped :: SexpParser a Sexp
+-- compTyped = compOrs [ compSymbolNamed "Unit"  (text "()")
+--                   , compNodeNamed   "List"  (liftM brackets compTyped)
+--                   , compNodeNamed   "Tuple" (liftM (tuple) (manySexp compTyped))
+--                   , compSymbolFun text
+--                   , compNodeNamed "Fun"   (liftM (parenFoldOp "->")  (manySexp compTyped))
+--                   , compNodeFun $ \genType -> do
+--                       args <- manySexp compTyped
+--                       return $ parens $ words $ text genType : args
+--                  ]
+
+-- isOp :: String -> Bool
+-- isOp = all (`elem` "!$%&/=?*+-.:<|>")
+
+-- compCallWithoutParens = 
+--     (compOr 
+--      (compSymbolFun text)
+--      (compNodeFun $ \lbl -> do
+--         let prefixFun = if isOp lbl then "("++lbl++")" else lbl
+--         tokens <- manySexp compExpr
+--         return $ words $ text prefixFun : tokens))
+
+-- compCall :: SexpParser a Sexp
+-- compCall = (compOr 
+--            (compSymbolFun text)
+--            (compNodeFun $ \lbl -> do
+--               tokens <- manySexp compExpr
+--               return $ if isOp lbl then
+--                            (parenFoldOp lbl tokens)
+--                        else
+--                            (node lbl tokens)))
+
+-- compLhs = compOrs [ compSymbolNamed "Unit"  $ text "()"
+--                 , compNodeNamed   "List"  $ liftM list $ manySexp compExpr
+--                 , compNodeNamed   "Tuple" $ liftM tuple $ manySexp compExpr
+--                 , compCall
+--                 ]
+
+-- compType :: SexpParser a Sexp
+-- compType = compNodeNamed "type" (liftM2 (binOp "::") (compLhs) (compTyped))
+
+-- compString =
+--     compNodeNamed "str" (do exps <- manySexp $ compSymbolFun text
+--                            return $ append $ strQ ++ exps ++ strQ)
+--         where strQ = [text "\""]
 
 
-eatImport :: SexpEater Sexp
-eatImport = do (imp, bef, aft) <- (eatOr 
-                                  (eatNodeFun (\imp -> do 
-                                                 (bef,aft) <- eatImpArgs
-                                                 return (imp, bef, aft)))
-                                  (eatSymbolFun (\s -> (s, [], []))))
-               ([text "import"] ++ bef ++ [text imp] ++ aft) |> words |> return
+-- compLambda = compNodeNamed "fun" (do 
+--                                  args <- (compOr 
+--                                          (compNodeNamed "args" (manySexp compLhs)))
+--                                          (liftM single compLhs)
+--                                  body <- compExpr
+--                                  return $ node "\\" $ args ++ [text "->", body]
+--                                )                                                                           
 
-eatModule :: SexpEater Sexp
-eatModule = 
-    (eatNodeNamed
-     "module"
-     (do modDef <- eatSymbolFun (\s -> ["module", s, "where"] |> map text |> words)
-         imports <- eatImport |> manySexp
-         (modDef:imports) |> lines |> return))
-
-
-
-eatTyped :: SexpEater Sexp
-eatTyped = eatOrs [ eatSymbolNamed "Unit"  (text "()")
-                  , eatNodeNamed   "List"  (liftM brackets eatTyped)
-                  , eatNodeNamed   "Tuple" (liftM (tuple) (manySexp eatTyped))
-                  , eatSymbolFun text
-                  , eatNodeNamed "Fun"   (liftM (parenFoldOp "->")  (manySexp eatTyped))
-                  , eatNodeFun $ \genType -> do
-                      args <- manySexp eatTyped
-                      return $ parens $ words $ text genType : args
-                 ]
-
-isOp :: String -> Bool
-isOp = all (`elem` "!$%&/=?*+-.:<|>")
-
-eatCallWithoutParens = 
-    (eatOr 
-     (eatSymbolFun text)
-     (eatNodeFun $ \lbl -> do
-        let prefixFun = if isOp lbl then "("++lbl++")" else lbl
-        tokens <- manySexp eatExpr
-        return $ words $ text prefixFun : tokens))
-
-eatCall :: SexpEater Sexp
-eatCall = (eatOr 
-           (eatSymbolFun text)
-           (eatNodeFun $ \lbl -> do
-              tokens <- manySexp eatExpr
-              return $ if isOp lbl then
-                           (parenFoldOp lbl tokens)
-                       else
-                           (node lbl tokens)))
-
-eatLhs = eatOrs [ eatSymbolNamed "Unit"  $ text "()"
-                , eatNodeNamed   "List"  $ liftM list $ manySexp eatExpr
-                , eatNodeNamed   "Tuple" $ liftM tuple $ manySexp eatExpr
-                , eatCall
-                ]
-
-eatType :: SexpEater Sexp
-eatType = eatNodeNamed "type" (liftM2 (binOp "::") (eatLhs) (eatTyped))
-
-eatString =
-    eatNodeNamed "str" (do exps <- manySexp $ eatSymbolFun text
-                           return $ append $ strQ ++ exps ++ strQ)
-        where strQ = [text "\""]
-
-
-eatLambda = eatNodeNamed "fun" (do 
-                                 args <- (eatOr 
-                                         (eatNodeNamed "args" (manySexp eatLhs)))
-                                         (liftM single eatLhs)
-                                 body <- eatExpr
-                                 return $ node "\\" $ args ++ [text "->", body]
-                               )                                                                           
-
-eatDo = eatNodeNamed "do" (do
-                            cmds <- manySexp (eatOr
-                                            (eatNodeNamed "<-" (liftM2 (binOp "<-")
-                                                                       eatLhs
-                                                                       eatExpr))
-                                            eatExpr)
-                            return $ noFlat $ node "do" cmds)
+-- compDo = compNodeNamed "do" (do
+--                             cmds <- manySexp (compOr
+--                                             (compNodeNamed "<-" (liftM2 (binOp "<-")
+--                                                                        compLhs
+--                                                                        compExpr))
+--                                             compExpr)
+--                             return $ noFlat $ node "do" cmds)
                             
 
-eatExpr :: SexpEater Sexp
-eatExpr = eatOrs [ eatString
-                 , eatLambda
-                 , eatDo
-                 , eatType
-                 , eatSymbolSatisfying isOp (parens . text)
-                 , eatLhs
-                 ]
+-- compExpr :: SexpParser a Sexp
+-- compExpr = compOrs [ compString
+--                  , compLambda
+--                  , compDo
+--                  , compType
+--                  , compSymbolSatisfying isOp (parens . text)
+--                  , compLhs
+--                  ]
 
-eatDef :: SexpEater Sexp
-eatDef = eatNodeNamed "=" (do
-                            res <- (liftM2 (binOp "=") eatCallWithoutParens eatExpr)
-                            whereDefs <- liftM concat $ eatMaybe $ eatNodeNamed "where" $ manySexp eatTopLevel
-                            return $ if null whereDefs
-                                     then
-                                         res
-                                     else
-                                         append [res, indent (append [newline, indent $ lines $ text "where" : whereDefs])])
+-- compDef :: SexpParser a Sexp
+-- compDef = compNodeNamed "=" (do
+--                             res <- (liftM2 (binOp "=") compCallWithoutParens compExpr)
+--                             whereDefs <- liftM concat $ compMaybe $ compNodeNamed "where" $ manySexp compTopLevel
+--                             return $ if null whereDefs
+--                                      then
+--                                          res
+--                                      else
+--                                          append [res, indent (append [newline, indent $ lines $ text "where" : whereDefs])])
 
-eatTopLevel = eatOr eatType eatDef
+-- compTopLevel = compOr compType compDef
 
-haskell2code :: Macro
-haskell2code = eater2singleTrans $
-               eatNodeNamed "haskell" (liftM2
-                                       (\a b -> paragraphs (a ++ b)) 
-                                       (eatMaybe eatModule)
-                                       (manySexp eatTopLevel))
+-- haskell2code :: Macro
+-- haskell2code = comper2singleTrans $
+--                compNodeNamed "haskell" (liftM2
+--                                        (\a b -> paragraphs (a ++ b)) 
+--                                        (compMaybe compModule)
+--                                        (manySexp compTopLevel))
           

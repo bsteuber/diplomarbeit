@@ -13,11 +13,11 @@ parseSymbol = parseSym >>^ symbol
 
 parseNode = parens ((parseSym &&& parseSexps) >>^ uncurry Sexp)
 
-parseSexp = space >>> (parseSymbol <+> parseNode)
+parseSexp = space >>> (parseSymbol <+> parseNode) >>> space
 
-parseSexps = many (space >>> parseSexp)
+parseSexps = many (space >>> parseSexp) >>> space
 
 readSexp :: String -> IO Sexp
-readSexp = execParser (parseSexp >>> space >>> skip empty)
+readSexp = execParser (parseSexp >>> empty)
 
-readSexps = execParser (parseSexps >>> space >>> empty)
+readSexps = execParser (parseSexps >>> empty)

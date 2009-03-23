@@ -1,9 +1,17 @@
 module Sexp where
+import Util
 
 data Sexp = Sexp { label    :: String,
                    children :: [Sexp] }
             deriving (Eq)
 
+symbol s = Sexp s []
+node = Sexp
+singleNode lbl = Sexp lbl . single
+
 labelEq name = (name==) . label
 
-symbol s = Sexp s []
+type TupleSexp = (String, [Sexp])
+
+sexp2tuple (Sexp lbl cs) = (lbl, cs)
+tuple2sexp (lbl, cs) = Sexp lbl cs

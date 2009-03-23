@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, TypeSynonymInstances #-}
-module Parser (arr, Parser, execParser, runParser, empty, token, when, eq, notEq, member, notMember, streamEq) where
-import Prelude hiding (id, (.), fail, Functor)
+module Parser where
+import Prelude hiding (id, (.), take, fail, Functor)
 import Data.Typeable
 import Control.Exception (Exception, throw)
 import Control.Category
@@ -32,40 +32,40 @@ execParser = execProg . execFail . execState . runP
 runParser :: Parser s a b -> Parser s (a, [s]) b
 runParser (P p) = P (withState p)
 
-empty :: (Show t) => Parser t a ()
+empty :: (Show t) => Parser t a a
 empty = (get &&& id) >>> (ifArrow 
                           (arr $ null . fst)
-                          voidArrow
+                          (arr snd)
                           (arr errorMsg >>> fail))
-        where errorMsg (stream, _) = "Empty stream expected: " ++ (show stream)
+    where errorMsg (stream, _) = "Empty stream expected: " ++ (show stream)
 
-token :: Parser t a t
-token = get >>> (ifArrow 
+take :: Parser t a t
+take = get >>> (ifArrow 
                  (arr $ not . null)
                  (skip (arr tail >>> put) >>> arr head) 
                  (constArrow "Nonempty stream expected" >>> fail))
 
-when :: (t -> Bool) -> (t -> String) -> Parser t a t
-when pred errorMsg =
-    token >>> (ifArrow
+takeWhen :: (t -> Bool) -> (t -> String) -> Parser t a t
+takeWhen pred errorMsg =
+    take >>> (ifArrow
                (arr pred)
                id
                (arr errorMsg >>> fail))
 
 eq :: (Eq t, Show t) => t -> Parser t a t
-eq x = when (==x) errorMsg
+eq x = takeWhen (==x) errorMsg
     where errorMsg y = "\nToken " ++ show y ++ "\nShould be " ++ show x        
 
 notEq :: (Eq t, Show t) => t -> Parser t a t
-notEq x = when (/= x) errorMsg
+notEq x = takeWhen (/= x) errorMsg
     where errorMsg _ = "\nToken should not be " ++ show x
 
 member :: (Eq t, Show t) => [t] -> Parser t a t
-member xs = when (`elem` xs) errorMsg
+member xs = takeWhen (`elem` xs) errorMsg
     where errorMsg y = "\nElement " ++ show y ++ "\nShould be member of " ++ show xs
 
 notMember :: (Eq t, Show t) => [t] -> Parser t a t
-notMember xs = when (not . (`elem` xs)) errorMsg
+notMember xs = takeWhen (not . (`elem` xs)) errorMsg
     where errorMsg y = "\nElement " ++ show y ++ "\nShould not be member of " ++ show xs
 
 streamEq :: (Eq t, Show t) => [t] -> Parser t a [t]
