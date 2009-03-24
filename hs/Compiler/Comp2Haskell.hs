@@ -1,13 +1,22 @@
 module Comp2Haskell where
-import Prelude hiding (lines, words)
+import Prelude hiding (lines, words, take)
+import Control.Arrow
+import Util
 import Arrows
 import Sexp
 import Parser
 import Compiler
+import qualified Haskell2Code as H
 
--- Utility
+quote :: SexpParser () Sexp
+quote = macro "'" inner
+    where inner                  = unquote <+> procSymbol <+> procNode
+          procSymbol             = takeSymbol >>> arr quoteSymbol
+          procNode               = takeAnySexp (arr snd &&& (voidArrow >>> inners)) >>> arr quoteSexp
+          inners                 = many (unquoteAll <+> (inner >>> arr (singleNode "List"))) >>> arr (Sexp "++")
+          unquote                = macro "," take
+          unquoteAll             = macro ",@" take
+          quoteSymbol            = singleNode "symbol" . singleNode "str" . symbol
+          quoteSexp (lbl, inner) = Sexp "Sexp" [singleNode "str" (symbol lbl), inner]
 
-quoteSexp :: String -> [Sexp] -> Sexp
-quoteSexp l cs =
-    Sexp "Sexp" [Sexp "str" [symbol l],
-                 Sexp "List" cs]
+compiler = macro "compiler"

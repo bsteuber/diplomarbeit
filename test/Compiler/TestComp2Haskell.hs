@@ -1,45 +1,23 @@
 module TestComp2Haskell where
-import Eater
-import Macro
+import Parser
+import Compiler
+import qualified Haskell2Code as H
 import Comp2Haskell
 
--- old...
--- quoteMacro = eater2singleTrans quote
--- quoteCases = [ ( "(' 42)"
---                , "(Symbol (str 42))" )
---              , ( "(' (+ 1 2))"
---                , "(Node (str +) (List (++ (List (Symbol (str 1))) (List (Symbol (str 2))))))" )
---              , ( "(' (, 1))"
---                , "1" )
---              , ( "(' (+ a (, (+ b c))))"
---                , "(Node (str +) (List (++ (List (Symbol (str a))) (List (+ b c)))))" )
---              , ( "(' (+ 1 (,@ args) 2))"
---                , "(Node (str +) (List (++ (List (Symbol (str 1))) args (List (Symbol (str 2))))))" )
---              ]
 
-quoteMacro = eater2singleTrans quote
 quoteCases = [ ( "(' 42)"
-               , "42" )
+               , "(symbol \"42\")" )
              , ( "(' (+ 1 2))"
-               , "(+ 1 2)" )
+               , "(Sexp \"+\" ([(symbol \"1\")] ++ [(symbol \"2\")]))" )
              , ( "(' (, 1))"
                , "1" )
              , ( "(' (+ a (, (+ b c))))"
-               , "(Node (str +) (List (++ (List (Symbol (str a))) (List (+ b c)))))" )
+               , "(Sexp \"+\" ([(symbol \"a\")] ++ [(b + c)]))" )
              , ( "(' (+ 1 (,@ args) 2))"
-               , "(Node (str +) (List (++ (List (Symbol (str 1))) args (List (Symbol (str 2))))))" )
+               , "(Sexp \"+\" ([(symbol \"1\")] ++ args ++ [(symbol \"2\")]))" )
              ]
 
-escapeLangMacro = eater2singleTrans escapeLang
-escapeLangCases = [ ( "(escapeLang 42)"
-                    , "42" )
-                  , ( "(escapeLang (= myFun (. id id)))"
-                    , "(= myFun (. id id))" )
-                  , ( "(escapeLang (type myFun (Fun a a)))"
-                    , "(type myFun (Fun a a))" )
-                  ]
+testComp name mac cases = testMacro name (parseOutput mac H.compExpr) cases
 
-      
 main = do 
-  testMacro quoteMacro      quoteCases
-  testMacro escapeLangMacro escapeLangCases
+  testComp "quote" quote quoteCases
