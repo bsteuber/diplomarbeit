@@ -16,6 +16,9 @@ class (Arrow ar) => ArrowState s ar | ar -> s where
     get :: ar a s
     put :: ar s () 
 
+liftA2 :: (Arrow ar) => (b -> c -> d) -> ar a b -> ar a c -> ar a d
+liftA2 fun f g = (f &&& g) >>> arr (uncurry fun)
+
 constArrow :: (Arrow ar) => b -> ar a b
 constArrow = arr . const
 

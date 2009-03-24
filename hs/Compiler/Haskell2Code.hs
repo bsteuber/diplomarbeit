@@ -1,6 +1,7 @@
 module Haskell2Code where
 import Prelude hiding (lines, words)
 import Control.Arrow
+import Util
 import Arrows
 import Sexp
 import Parser
@@ -35,8 +36,11 @@ parenFoldOp op = parens . foldOp op
 binOp op x y = foldOp op [x, y]
 binParenOp op x y = parens $ binOp op x y
 
-tuple = parens . commaSep
-list = brackets . commaSep
+tuple    = parens   . commaSep
+list     = brackets . commaSep
+wordList = parens   . words
+
+symbol2text = takeSymbol >>> arr text
 
 compModule :: SexpParser a Sexp
 compModule = 
@@ -58,95 +62,82 @@ compImport =
           calcOnly onlys         = ([], [tuple (map text onlys)])
           imp (name, (bef, aft)) = words $ [text "import"] ++ bef ++ [text name] ++ aft
 
--- compTyped :: SexpParser a Sexp
--- compTyped = compOrs [ compSymbolNamed "Unit"  (text "()")
---                   , compNodeNamed   "List"  (liftM brackets compTyped)
---                   , compNodeNamed   "Tuple" (liftM (tuple) (manySexp compTyped))
---                   , compSymbolFun text
---                   , compNodeNamed "Fun"   (liftM (parenFoldOp "->")  (manySexp compTyped))
---                   , compNodeFun $ \genType -> do
---                       args <- manySexp compTyped
---                       return $ parens $ words $ text genType : args
---                  ]
+compUnit = symbolMacro "Unit" (tuple [])
+compList compInner = macro "List" (compInner >>> arr list)
+compTuple compInner = macro "Tuple" (compInner >>> arr tuple)
 
--- isOp :: String -> Bool
--- isOp = all (`elem` "!$%&/=?*+-.:<|>")
+compTyped :: SexpParser a Sexp
+compTyped = (compUnit <+>
+             compList (compTyped >>> arr single) <+>
+             compTuple (many compTyped) <+>
+             symbol2text <+>
+             (macro "Fun" (many compTyped >>> arr (parenFoldOp "->"))) <+>
+             (takeAnySexp ((arr snd &&& many compTyped) >>> 
+                           arr (\ (name, innerTypes) -> wordList $ text name : innerTypes))))
 
--- compCallWithoutParens = 
---     (compOr 
---      (compSymbolFun text)
---      (compNodeFun $ \lbl -> do
---         let prefixFun = if isOp lbl then "("++lbl++")" else lbl
---         tokens <- manySexp compExpr
---         return $ words $ text prefixFun : tokens))
+isOp :: String -> Bool
+isOp = all (`elem` "!$%&/=?*+-.:<|>")
 
--- compCall :: SexpParser a Sexp
--- compCall = (compOr 
---            (compSymbolFun text)
---            (compNodeFun $ \lbl -> do
---               tokens <- manySexp compExpr
---               return $ if isOp lbl then
---                            (parenFoldOp lbl tokens)
---                        else
---                            (node lbl tokens)))
+genericCompCall :: (Sexp -> Sexp) -> SexpParser a Sexp
+genericCompCall processCall = 
+    (takeSymbol >>> arr (\ s -> if isOp s then tuple [text s] else text s)) <+>
+    (takeSexp >>> (arr fst &&& runParser (many compExpr)) >>> arr (processCall . buildCall))
+        where buildCall (name, innerExprs) =
+                  if isOp name then 
+                      foldOp name innerExprs
+                  else
+                      words $ text name : innerExprs
 
--- compLhs = compOrs [ compSymbolNamed "Unit"  $ text "()"
---                 , compNodeNamed   "List"  $ liftM list $ manySexp compExpr
---                 , compNodeNamed   "Tuple" $ liftM tuple $ manySexp compExpr
---                 , compCall
---                 ]
+compCall = genericCompCall parens
 
--- compType :: SexpParser a Sexp
--- compType = compNodeNamed "type" (liftM2 (binOp "::") (compLhs) (compTyped))
+genericCompPattern processCall = 
+    (compUnit <+>
+     compList (many compPattern) <+>
+     compTuple (many compPattern) <+>
+     compString <+>
+     genericCompCall processCall)
 
--- compString =
---     compNodeNamed "str" (do exps <- manySexp $ compSymbolFun text
---                            return $ append $ strQ ++ exps ++ strQ)
---         where strQ = [text "\""]
+compPattern = genericCompPattern parens
+compPatternWithoutParens :: SexpParser a Sexp
+compPatternWithoutParens = genericCompPattern id
+
+compType :: SexpParser a Sexp
+compType = macro "type" (liftA2 (binOp "::") compExpr compTyped)
+
+compString = macro "str" (many symbol2text >>> arr makeStr)
+    where makeStr exps = append $ strQ ++ exps ++ strQ
+          strQ = [text "\""]
 
 
--- compLambda = compNodeNamed "fun" (do 
---                                  args <- (compOr 
---                                          (compNodeNamed "args" (manySexp compLhs)))
---                                          (liftM single compLhs)
---                                  body <- compExpr
---                                  return $ node "\\" $ args ++ [text "->", body]
---                                )                                                                           
+compLambda = macro "fun" ((compArgs &&& compExpr) >>> arr buildLambda)
+    where compArgs = macro "args" (many compPattern) <+> (compPattern >>> arr single)
+          buildLambda (args, expr) = wordList $  [text "\\"] ++ args ++ [text "->", expr]
 
--- compDo = compNodeNamed "do" (do
---                             cmds <- manySexp (compOr
---                                             (compNodeNamed "<-" (liftM2 (binOp "<-")
---                                                                        compLhs
---                                                                        compExpr))
---                                             compExpr)
---                             return $ noFlat $ node "do" cmds)
-                            
+compDo = macro "do" ((many (macro "<-" (liftA2 
+                                        (binOp "<-")
+                                        compPattern compExpr)
+                            <+> compExpr))
+                     >>> arr buildDo)
+    where buildDo = parens . indent . lines . (text "do":)                            
 
--- compExpr :: SexpParser a Sexp
--- compExpr = compOrs [ compString
---                  , compLambda
---                  , compDo
---                  , compType
---                  , compSymbolSatisfying isOp (parens . text)
---                  , compLhs
---                  ]
+compExpr :: SexpParser a Sexp
+compExpr = (compLambda <+>
+            compDo <+>
+            compType <+>
+            compPattern)                 
 
--- compDef :: SexpParser a Sexp
--- compDef = compNodeNamed "=" (do
---                             res <- (liftM2 (binOp "=") compCallWithoutParens compExpr)
---                             whereDefs <- liftM concat $ compMaybe $ compNodeNamed "where" $ manySexp compTopLevel
---                             return $ if null whereDefs
---                                      then
---                                          res
---                                      else
---                                          append [res, indent (append [newline, indent $ lines $ text "where" : whereDefs])])
+compDef :: SexpParser a Sexp
+compDef = macro "=" ((liftA2 (binOp "=") compPatternWithoutParens compExpr &&& compWhere) >>> arr buildDef)
+    where compWhere = optional (macro "where" (many compTopLevel)) >>> arr concat
+          buildDef :: (Sexp, [Sexp]) -> Sexp
+          buildDef (def, []) = def
+          buildDef (def, whereDefs) =                                  
+              append [def, indent (append [newline, indent $ lines $ text "where" : whereDefs])]
 
--- compTopLevel = compOr compType compDef
+compTopLevel = compType <+> compDef
 
--- haskell2code :: Macro
--- haskell2code = comper2singleTrans $
---                compNodeNamed "haskell" (liftM2
---                                        (\a b -> paragraphs (a ++ b)) 
---                                        (compMaybe compModule)
---                                        (manySexp compTopLevel))
+haskell2code = macro "haskell" (liftA2 
+                                (\a b -> paragraphs (a ++ b)) 
+                                (optional compModule)
+                                (many compTopLevel))
           

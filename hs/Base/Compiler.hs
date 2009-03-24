@@ -45,7 +45,7 @@ looseMacro name parseInner = (takeSexpWhen
 macro :: String -> SexpParser a b -> SexpParser a b
 macro name parseInner = looseMacro name (parseInner >>> empty)
 
-takeSymbolNamed name = macro name id
+symbolMacro name retVal = macro name (constArrow retVal)
 
 compile :: SexpParser () a -> Sexp -> IO a
 compile p sexp = execParser p [sexp]

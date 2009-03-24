@@ -62,7 +62,7 @@ defCases = [ ( "(= x 5)"
            , ( "(= (f _ _) 33)"
              , "f _ _ = 33" )
            , ( "(= (|> x y) (y x))"
-             , "(|>) x y = (y x)" )
+             , "x |> y = (y x)" )
            , ( "(= con (str 12))"
              , "con = \"12\"" )
            , ( "(= con (List (str 12)))"
@@ -104,7 +104,7 @@ main = do testMacro "import" compImport importCases
           testMacro "module" compModule moduleCases
           testMacro "typed"  compTyped   typedCases
           testMacro "type"   compType     typeCases
-          -- testMacro    defMacro    defCases
-          -- testMacro   exprMacro   exprCases
-          -- testMacro lambdaMacro lambdaCases
-          -- testMacro     doMacro     doCases
+          testMacro "def"    compDef       defCases
+          testMacro "expr"   compExpr     exprCases
+          testMacro "lambda" compLambda lambdaCases
+          testMacro "do"     compDo         doCases
