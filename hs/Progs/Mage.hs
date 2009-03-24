@@ -31,11 +31,7 @@ ghciLoadPath = ghcLoadPath ++ ":test/Compiler"
 
 ghcCall = "ghc --make " ++ ghcLoadPath ++ " -outputdir gen/ghc"
 
-ghc file =
-    (whenNewer 
-     inFile
-     outFile 
-     (sysList [ghcCall, "-o", outFile, "-main-is", modName, inFile]))
+ghc file = sysList [ghcCall, "-o", outFile, "-main-is", modName, inFile]
   where modName = takeBaseName file
         outFile = "gen/bin/" ++ map toLower modName
         inFile  = file ++ ".hs"
@@ -64,7 +60,7 @@ test = testCompilers ["Haskell2Code"]--, "Comp2Haskell"]
 mkDirs = mapM $ \ dir -> system $ "mkdir -p " ++ dir
 
 build = do
---  system "rm -rf gen"
+  -- system "rm -rf gen"
   mkDirs ["gen/bin", "gen/ghc", "gen/hs", "gen/sep/Haskell"]
   ghc "hs/Progs/Format"
   -- ghc "hs/Progs/HS2C"
@@ -83,7 +79,8 @@ main = do args  <- getArgs
             [] -> do
               putStrLn "Building"
               buildRes <- build
-              putStrLn $ "Built with result: " ++ show buildRes
-              putStrLn "Testing"
-              testRes <- test
-              return testRes
+              (if buildRes == ExitSuccess then
+                   do putStrLn "Testing"
+                      test
+               else 
+                   return buildRes)

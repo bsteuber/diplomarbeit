@@ -32,6 +32,11 @@ execParser = execProg . execFail . execState . runP
 runParser :: Parser s a b -> Parser s (a, [s]) b
 runParser (P p) = P (withState p)
 
+debug :: String -> Parser s a a
+debug msg = P $ lift $ lift $ Prog $ Kleisli $ \ x -> do 
+              putStrLn msg
+              return x
+
 empty :: (Show t) => Parser t a a
 empty = (get &&& id) >>> (ifArrow 
                           (arr $ null . fst)

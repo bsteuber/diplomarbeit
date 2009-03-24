@@ -90,7 +90,7 @@ genericCompCall processCall =
 
 compCall = genericCompCall parens
 
-genericCompPattern processCall = 
+genericCompPattern processCall =
     (compUnit <+>
      compList (many compPattern) <+>
      compTuple (many compPattern) <+>
