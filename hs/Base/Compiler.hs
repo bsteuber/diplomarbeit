@@ -56,10 +56,22 @@ compileStr p str = do
   res <- compile p sexp
   return $ show res
 
+generateStr :: SexpParser () Sexp -> String -> IO String
+generateStr p str = do
+  sexp <- readSexp str
+  res <- compile p sexp
+  return $ showScode res
+
 compiler :: (Show a) => SexpParser () a -> IO ()
 compiler macro = do
   input <- getContents
   output <- compileStr macro input
+  putStr output
+
+generator :: SexpParser () Sexp -> IO ()
+generator macro = do
+  input <- getContents
+  output <- generateStr macro input
   putStr output
 
 testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
@@ -73,13 +85,14 @@ testMacro name mac testCases = do
                                return ()
           recTest ((src, tgt):cases) errorOccured = do
                                  sexp    <- readSexp src       
-                                 res     <- liftM show (compile mac sexp)
+                                 comp    <- compile mac sexp
+                                 let res = showScode comp
                                  (if res == tgt then
                                      recTest cases errorOccured
                                   else
                                       do (putStrLn 
                                           ("Compiler test failed for " ++
-                                           show sexp  ++ ":\n  Expected:\n" ++ 
+                                           showScode sexp  ++ ":\n  Expected:\n" ++ 
                                            tgt ++ "\n  Got:\n" ++ res))
                                          recTest cases True)
 

@@ -25,7 +25,6 @@ paragraphs = node "paragraphs"
 words = node "words"
 textWords = map text >>> words
 commaSep = node "commaSep"
-noFlat = singleNode "noFlat"
 indent x = node "indent" [symbol "2", x]
 
 foldOp :: String -> [Sexp] -> Sexp
