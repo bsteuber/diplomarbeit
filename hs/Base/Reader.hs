@@ -1,4 +1,4 @@
-module Reader (readSexp) where 
+module Reader (readSexp) where
 import Control.Arrow
 import Sexp
 import Arrows

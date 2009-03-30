@@ -1,5 +1,11 @@
 module Util where
 
+class OfString a where
+    ofString :: String -> a
+
+class ToString a where
+    toString :: a -> String
+
 interleave :: a -> [a] -> [a]
 interleave i (x:y:xs) = x : i : interleave i (y:xs)
 interleave _ xs = xs

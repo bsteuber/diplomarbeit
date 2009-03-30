@@ -2,7 +2,6 @@ module Compiler where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Control.Category
 import Control.Arrow
-import Control.Monad (liftM)
 import System.Environment (getArgs)
 import System.IO
 import Util
@@ -18,8 +17,8 @@ takeSexp :: SexpParser a (String, [Sexp])
 takeSexp = take >>> arr sexp2tuple
 
 takeSymbol :: SexpParser a String
-takeSymbol = 
-    takeSexp >>> (ifArrow 
+takeSymbol =
+    takeSexp >>> (ifArrow
                   (arr $ snd >>> null)
                   (arr fst)
                   (arr (tuple2sexp >>> show >>> ("Symbol expected: "++)) >>> fail))
@@ -28,7 +27,7 @@ procSexp :: SexpParser TupleSexp TupleSexp -> SexpParser a Sexp
 procSexp procTuple = takeSexp >>> procTuple >>> arr tuple2sexp
 
 takeSexpWhen :: (String -> Bool) -> (String -> String) -> SexpParser (a, String) b -> SexpParser a b
-takeSexpWhen pred errorMsg parseInner = 
+takeSexpWhen pred errorMsg parseInner =
     (id &&& takeSexp) >>> (ifArrow
                            (arr (snd >>> fst >>> pred))
                            (arr (\ (x, (lbl, stream)) -> ((x, lbl), stream)) >>> runParser parseInner)
@@ -37,7 +36,7 @@ takeSexpWhen pred errorMsg parseInner =
 takeAnySexp = takeSexpWhen (const True) (const "")
 
 looseMacro :: String -> SexpParser a b -> SexpParser a b
-looseMacro name parseInner = (takeSexpWhen 
+looseMacro name parseInner = (takeSexpWhen
                               (== name)
                               (\ lbl -> "Expected symbol " ++ name ++ "\nGot " ++ lbl)
                               (arr fst >>> parseInner))
@@ -76,7 +75,7 @@ generator macro = do
 
 testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
 testMacro name mac testCases = do
-    putStrLn $ "Testing macro " ++ name    
+    putStrLn $ "Testing macro " ++ name
     recTest testCases False
         where
           recTest [] False = do putStrLn "Hooray! Tests passed."
@@ -84,16 +83,16 @@ testMacro name mac testCases = do
           recTest [] True = do putStrLn "Sorry, there were errors."
                                return ()
           recTest ((src, tgt):cases) errorOccured = do
-                                 sexp    <- readSexp src       
+                                 sexp    <- readSexp src
                                  comp    <- compile mac sexp
                                  let res = showScode comp
                                  (if res == tgt then
                                      recTest cases errorOccured
                                   else
-                                      do (putStrLn 
+                                      do (putStrLn
                                           ("Compiler test failed for " ++
-                                           showScode sexp  ++ ":\n  Expected:\n" ++ 
+                                           showScode sexp  ++ ":\n  Expected:\n" ++
                                            tgt ++ "\n  Got:\n" ++ res))
                                          recTest cases True)
 
-                
+
