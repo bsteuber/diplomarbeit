@@ -2,6 +2,7 @@ module Compiler where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Control.Category
 import Control.Arrow
+import Control.Monad (liftM)
 import System.Environment (getArgs)
 import System.IO
 import Util
@@ -46,32 +47,8 @@ macro name parseInner = looseMacro name (parseInner >>> empty)
 
 symbolMacro name retVal = macro name (constArrow retVal)
 
-compile :: SexpParser () a -> Sexp -> IO a
-compile p sexp = execParser p [sexp]
-
-compileStr :: (Show a) => SexpParser () a -> String -> IO String
-compileStr p str = do
-  sexp <- readSexp str
-  res <- compile p sexp
-  return $ show res
-
-generateStr :: SexpParser () Sexp -> String -> IO String
-generateStr p str = do
-  sexp <- readSexp str
-  res <- compile p sexp
-  return $ showScode res
-
-compiler :: (Show a) => SexpParser () a -> IO ()
-compiler macro = do
-  input <- getContents
-  output <- compileStr macro input
-  putStr output
-
-generator :: SexpParser () Sexp -> IO ()
-generator macro = do
-  input <- getContents
-  output <- generateStr macro input
-  putStr output
+-- compile :: SexpParser () a -> Sexp -> IO a
+-- compile p sexp = execParser p [sexp]
 
 testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
 testMacro name mac testCases = do

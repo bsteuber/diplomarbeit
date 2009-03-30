@@ -4,6 +4,7 @@ import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category
 import Control.Arrow
+import Control.Monad (liftM)
 import Util
 
 class Functor f where
@@ -14,7 +15,13 @@ class (Arrow ar) => ArrowFail ar where
 
 class (Arrow ar) => ArrowState s ar | ar -> s where
     get :: ar a s
-    put :: ar s () 
+    put :: ar s ()
+
+class (Arrow ar) => ArrowIO ar where
+    toIO :: ar a b -> a -> IO b
+
+instance ArrowIO (->) where
+    toIO f = return . f
 
 liftA2 :: (Arrow ar) => (b -> c -> d) -> ar a b -> ar a c -> ar a d
 liftA2 fun f g = (f &&& g) >>> arr (uncurry fun)
@@ -32,13 +39,13 @@ consArrow :: (Arrow ar) => ar a b -> ar a [b] -> ar a [b]
 consArrow eltArrow listArrow = (eltArrow &&& listArrow) >>> arr (uncurry (:))
 
 foldArrows :: (Arrow ar) => [ar a b] -> ar a [b]
-foldArrows = foldr consArrow nilArrow 
+foldArrows = foldr consArrow nilArrow
 
 ifArrow :: (ArrowChoice ar) => ar a Bool -> ar a b -> ar a b -> ar a b
 ifArrow testArrow thenArrow elseArrow =
     ((testArrow >>> arr bool2either) &&& id) >>> arr eitherRes >>> (thenArrow ||| elseArrow)
         where eitherRes (Left  _, x) = Left  x
-              eitherRes (Right _, x) = Right x    
+              eitherRes (Right _, x) = Right x
 
 optional :: (ArrowPlus ar) => ar a b -> ar a [b]
 optional f = (f >>^ single) <+> nilArrow
@@ -61,3 +68,5 @@ skipMany1 = skip . many1
 sepBy :: (ArrowPlus ar) => ar a c -> ar a b -> ar a [b]
 sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ concat
 
+-- test :: (Arrow ar) => ar a Bool -> ar a (Either a a)
+-- test f = (f &&& id) >>> (arr $ \ (b, x) -> if b then Left x else Right x)

@@ -16,7 +16,7 @@ instance Functor FailFunctor where
 
 instance (ArrowChoice ar) => Arrow (FailFunctor ar) where
     arr f = lift $ arr f
-    first (FailF f) = 
+    first (FailF f) =
         FailF $ first f >>^ tuple2either
             where tuple2either (Left msg, y)  = Left msg
                   tuple2either (Right res, y) = Right (res, y)
@@ -27,7 +27,7 @@ instance (ArrowChoice ar) => Category (FailFunctor ar) where
   id = lift id
 
 instance (ArrowChoice ar) => ArrowChoice (FailFunctor ar) where
-    left (FailF f) = 
+    left (FailF f) =
         FailF $ left f >>^ flipEither
             where flipEither (Left (Left x))  = Left x
                   flipEither (Left (Right y)) = Right (Left y)
@@ -52,5 +52,13 @@ instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) wher
     get = lift get
     put = lift put
 
-test :: (Arrow ar) => ar a Bool -> ar a (Either a a)
-test f = (f &&& id) >>> (arr $ \ (b, x) -> if b then Left x else Right x)
+type Trans a b = FailFunctor (->) a b
+
+instance ArrowFail (->) where
+    fail msg = error msg
+
+runTrans :: Trans a b -> a -> Either String b
+runTrans = runFailF
+
+forceTrans :: Trans a b -> a -> b
+forceTrans = execFail

@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
 module Code (Code, layout,
              text, newline, indent, append, group,
              conc, joinBy, lines, paragraphs,
@@ -5,6 +6,7 @@ module Code (Code, layout,
              braces, commaSep) where
 import Prelude hiding (catch, lines, words)
 import Util
+import Model
 
 --- Data Types ---
 
@@ -62,7 +64,7 @@ simp w k ts =
 layout :: Int -> Code -> String
 layout lineWidth code = layoutSimple (simp lineWidth 0 [(0,code)])
 
-instance ToString Code where
+instance ToString (->) Code where
     toString = layout 70
 
 --- Interfacing constructor functions ---
