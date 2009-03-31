@@ -17,13 +17,15 @@ class (Arrow ar) => ArrowState s ar | ar -> s where
     get :: ar a s
     put :: ar s ()
 
-type IOArrow = Kleisi IO
+type IOFun a b = a -> IO b
+
+type IOArrow = Kleisli IO
 
 class (Arrow ar) => ArrowIO ar where
-    toIO :: ar a b -> IOFun a b
+    toIO :: ar a b -> IOArrow a b
 
 instance ArrowIO (->) where
-    toIO f = return . f
+    toIO f = Kleisli (return . f)
 
 liftA2 :: (Arrow ar) => (b -> c -> d) -> ar a b -> ar a c -> ar a d
 liftA2 fun f g = (f &&& g) >>> arr (uncurry fun)

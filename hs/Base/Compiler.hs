@@ -12,6 +12,7 @@ import Sexp
 import Parser
 import Reader
 import Writer
+import Model
 
 type SexpParser = Parser Sexp
 
@@ -52,25 +53,4 @@ symbolMacro name retVal = macro name (constArrow retVal)
 -- compile p sexp = execParser p [sexp]
 
 testMacro :: (ToString a) => String -> SexpParser () a -> [(String, String)] -> IO ()
-testMacro name mac testCases = do
-    putStrLn $ "Testing macro " ++ name
-    recTest testCases False
-        where
-          recTest [] False = do putStrLn "Hooray! Tests passed."
-                                return ()
-          recTest [] True = do putStrLn "Sorry, there were errors."
-                               return ()
-          recTest ((src, tgt):cases) errorOccured = do
-                                 sexp    <- readSexp src
-                                 comp    <- compile mac sexp
-                                 let res = showScode comp
-                                 (if res == tgt then
-                                     recTest cases errorOccured
-                                  else
-                                      do (putStrLn
-                                          ("Compiler test failed for " ++
-                                           showScode sexp  ++ ":\n  Expected:\n" ++
-                                           tgt ++ "\n  Got:\n" ++ res))
-                                         recTest cases True)
-
-
+testMacro name mac testCases = testCompiler name (execParser mac) testCases

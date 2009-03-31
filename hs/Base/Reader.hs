@@ -17,7 +17,8 @@ parseSexp = space >>> (parseSymbol <+> parseNode) >>> space
 
 parseSexps = many (space >>> parseSexp) >>> space
 
-readSexp :: String -> IO Sexp
+readSexp :: IOArrow String Sexp
 readSexp = execParser (parseSexp >>> empty)
 
+readSexps :: IOArrow String [Sexp]
 readSexps = execParser (parseSexps >>> empty)

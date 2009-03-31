@@ -6,6 +6,7 @@ module Code (Code, layout,
              braces, commaSep) where
 import Prelude hiding (catch, lines, words)
 import Util
+import Arrows
 import Model
 
 --- Data Types ---
@@ -64,8 +65,8 @@ simp w k ts =
 layout :: Int -> Code -> String
 layout lineWidth code = layoutSimple (simp lineWidth 0 [(0,code)])
 
-instance ToString (->) Code where
-    toString = layout 70
+instance ToString Code where
+    toString = toIO (layout 70)
 
 --- Interfacing constructor functions ---
 

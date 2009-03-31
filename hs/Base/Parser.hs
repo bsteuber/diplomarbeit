@@ -17,7 +17,7 @@ instance ArrowFail Program where
     fail = Prog $ Kleisli $ error . ("Error in Parser: "++)
 
 instance ArrowIO Program where
-    toIO = runKleisli . runProg
+    toIO = runProg
 
 newtype Parser t a b = P {runP :: StateFunctor [t] (FailFunctor Program) a b }
     deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
@@ -26,11 +26,11 @@ instance ArrowState [t] (Parser t) where
     get = P get
     put = P put
 
-execParser :: Parser t () a -> IOFun [t] a
+execParser :: Parser t () a -> IOArrow [t] a
 execParser = toIO . execFail . execState . runP
 
-execSingleParser :: Parser t () a -> IOFun t a
-execSingleParser = execParser . single
+execSingleParser :: Parser t () a -> IOArrow t a
+execSingleParser p = arr single >>> execParser p
 
 runParser :: Parser s a b -> Parser s (a, [s]) b
 runParser (P p) = P (withState p)

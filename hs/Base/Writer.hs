@@ -1,20 +1,24 @@
 {-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
 module Writer () where
 import Prelude hiding (catch, lines, words)
+import Control.Arrow
 import Util
+import Arrows
 import Sexp
 import Code
 import Model
 
-instance OfSexp (->) Code where
-    ofSexp (Sexp str [])     = text str
-    ofSexp (Sexp str stream) = prin (text str : map ofSexp stream)
-        where prin = parens . group . (indent 2) . lines
+instance OfSexp Code where
+    ofSexp = toIO sexp2code
+        where sexp2code (Sexp str stream) =
+                  case stream of
+                    [] -> text str
+                    _  -> prin (text str : map sexp2code stream)
+              prin = parens . group . (indent 2) . lines
 
-instance ToString (->) Sexp where
-    toString sexp = toString code
-        where code :: Code
-              code = ofSexp sexp
+instance ToString Sexp where
+    toString = (ofSexp :: IOArrow Sexp Code) >>> toString
+
 
 -- scode2code :: Sexp -> Code
 -- scode2code sexp =
