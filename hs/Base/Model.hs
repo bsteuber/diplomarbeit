@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -XFlexibleInstances -XUndecidableInstances #-}
 module Model where
 import Control.Arrow
 import Util
@@ -15,6 +16,12 @@ class OfSexp a where
 
 class ToSexp a where
     toSexp :: IOArrow a Sexp
+
+instance (ToString a) => ToString [a] where
+    toString = amap toString >>> arr concat
+
+instance ToString Char where
+    toString = toIO show
 
 compileStr :: (OfString a, ToString b) => IOArrow a b -> IOFun String String
 compileStr f = runKleisli $ ofString >>> f >>> toString

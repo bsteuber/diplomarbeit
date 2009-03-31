@@ -9,6 +9,7 @@ import Util
 import Arrows
 import FailFunctor
 import StateFunctor
+import Model
 
 newtype Program a b = Prog { runProg :: Kleisli IO a b }
     deriving (Category, Arrow, ArrowChoice, ArrowApply)
@@ -19,6 +20,9 @@ instance ArrowFail Program where
 instance ArrowIO Program where
     toIO = runProg
 
+ioToParser :: IOArrow a b -> Parser t a b
+ioToParser = P . lift . lift . Prog
+
 newtype Parser t a b = P {runP :: StateFunctor [t] (FailFunctor Program) a b }
     deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
 
@@ -27,7 +31,7 @@ instance ArrowState [t] (Parser t) where
     put = P put
 
 execParser :: Parser t () a -> IOArrow [t] a
-execParser = toIO . execFail . execState . runP
+execParser = runProg . execFail . execState . runP
 
 execSingleParser :: Parser t () a -> IOArrow t a
 execSingleParser p = arr single >>> execParser p
@@ -43,12 +47,12 @@ debug msg = P $ lift $ lift $ Prog $ Kleisli $ \ x -> do
               putStrLn msg
               return x
 
-empty :: (Show t) => Parser t a a
+empty :: (ToString t) => Parser t a a
 empty = (get &&& id) >>> (ifArrow
                           (arr $ null . fst)
                           (arr snd)
-                          (arr errorMsg >>> fail))
-    where errorMsg (stream, _) = "Empty stream expected: " ++ (show stream)
+                          (arr fst >>> ioToParser toString >>> arr errorMsg >>> fail))
+    where errorMsg str = "Empty stream expected: " ++ str
 
 take :: Parser t a t
 take = get >>> (ifArrow

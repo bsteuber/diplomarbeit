@@ -45,6 +45,14 @@ consArrow eltArrow listArrow = (eltArrow &&& listArrow) >>> arr (uncurry (:))
 foldArrows :: (Arrow ar) => [ar a b] -> ar a [b]
 foldArrows = foldr consArrow nilArrow
 
+afoldr :: (ArrowChoice ar) => ar (a, b) b -> ar () b -> ar [a] b
+afoldr comb init = arr uncons >>> (init ||| (second (afoldr comb init) >>> comb)) 
+    where uncons []     = Left ()
+          uncons (x:xs) = Right (x, xs)
+
+amap :: (ArrowChoice ar) => ar a b -> ar [a] [b]
+amap f = afoldr (first f >>> arr (uncurry (:))) nilArrow
+
 ifArrow :: (ArrowChoice ar) => ar a Bool -> ar a b -> ar a b -> ar a b
 ifArrow testArrow thenArrow elseArrow =
     ((testArrow >>> arr bool2either) &&& id) >>> arr eitherRes >>> (thenArrow ||| elseArrow)

@@ -24,7 +24,7 @@ takeSymbol =
     takeSexp >>> (ifArrow
                   (arr $ snd >>> null)
                   (arr fst)
-                  (arr (tuple2sexp >>> show >>> ("Symbol expected: "++)) >>> fail))
+                  (arr tuple2sexp >>> ioToParser toString >>> arr ("Symbol expected: "++) >>> fail))
 
 procSexp :: SexpParser TupleSexp TupleSexp -> SexpParser a Sexp
 procSexp procTuple = takeSexp >>> procTuple >>> arr tuple2sexp
@@ -54,3 +54,6 @@ symbolMacro name retVal = macro name (constArrow retVal)
 
 testMacro :: (ToString a) => String -> SexpParser () a -> [(String, String)] -> IO ()
 testMacro name mac testCases = testCompiler name (execParser mac) testCases
+
+sexpCompiler :: (ToString b) => SexpParser () b -> IO ()
+sexpCompiler mac = compiler (execParser mac)

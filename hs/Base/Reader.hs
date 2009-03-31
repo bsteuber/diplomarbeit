@@ -1,8 +1,10 @@
-module Reader (readSexp) where
+{-# OPTIONS_GHC -XFlexibleInstances #-}
+module Reader () where
 import Control.Arrow
 import Sexp
 import Arrows
 import Parser
+import Model
 
 space = skip $ many $ member " \t\n"
 parseSym = many1 $ notMember " \t\n()"
@@ -17,8 +19,8 @@ parseSexp = space >>> (parseSymbol <+> parseNode) >>> space
 
 parseSexps = many (space >>> parseSexp) >>> space
 
-readSexp :: IOArrow String Sexp
-readSexp = execParser (parseSexp >>> empty)
+instance OfString Sexp where
+    ofString = execParser (parseSexp >>> empty)
 
-readSexps :: IOArrow String [Sexp]
-readSexps = execParser (parseSexps >>> empty)
+instance OfString [Sexp] where
+    ofString = execParser (parseSexps >>> empty)
