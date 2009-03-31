@@ -17,8 +17,10 @@ class (Arrow ar) => ArrowState s ar | ar -> s where
     get :: ar a s
     put :: ar s ()
 
+type IOArrow = Kleisi IO
+
 class (Arrow ar) => ArrowIO ar where
-    toIO :: ar a b -> a -> IO b
+    toIO :: ar a b -> IOFun a b
 
 instance ArrowIO (->) where
     toIO f = return . f

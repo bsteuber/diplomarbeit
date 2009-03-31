@@ -51,7 +51,7 @@ symbolMacro name retVal = macro name (constArrow retVal)
 -- compile :: SexpParser () a -> Sexp -> IO a
 -- compile p sexp = execParser p [sexp]
 
-testMacro :: String -> SexpParser () Sexp -> [(String, String)] -> IO ()
+testMacro :: (ToString a) => String -> SexpParser () a -> [(String, String)] -> IO ()
 testMacro name mac testCases = do
     putStrLn $ "Testing macro " ++ name
     recTest testCases False

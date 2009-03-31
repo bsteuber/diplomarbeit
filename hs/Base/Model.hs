@@ -1,40 +1,27 @@
-{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
 module Model where
 import Util
 import Arrows
 import Sexp
 
-class (ArrowIO ar) => OfString ar a | a -> ar where
-    ofString :: ar String a
+class OfString a where
+    ofString :: IOFun String a
 
-class (ArrowIO ar) => ToString ar a | a -> ar where
-    toString :: ar a String
+class ToString IOFun a where
+    toString :: IOFun a String
 
-class (ArrowIO ar) => OfSexp ar a | a -> ar where
-    ofSexp :: ar Sexp a
+class OfSexp IOFun a where
+    ofSexp :: IOFun Sexp a
 
-class (ArrowIO ar) => ToSexp ar a | a -> ar where
-    toSexp :: ar a Sexp
+class ToSexp IOFun a where
+    toSexp :: IOFun a Sexp
 
-ofStringIO :: (OfString ar a) => String -> IO a
-ofStringIO = toIO ofString
-
-toStringIO :: (ToString ar a) => a -> IO String
-toStringIO = toIO toString
-
-ofSexpIO :: (OfSexp ar a) => Sexp -> IO a
-ofSexpIO = toIO ofSexp
-
-toSexpIO :: (ToSexp ar a) => a -> IO Sexp
-toSexpIO = toIO toSexp
-
-compileStr :: (ArrowIO ar, OfString ar1 a, ToString ar2 b) => ar a b -> String -> IO String
+compileStr :: (OfString a, ToString b) => IOFun a b -> String -> IO String
 compileStr f inStr = do
-  input  <- ofStringIO inStr
+  input  <- ofString inStr
   output <- toIO f input
-  toStringIO output
+  toString output
 
-compiler :: (ArrowIO ar, OfString ar1 a, ToString ar2 b) => ar a b -> IO ()
+compiler :: (OfString a, ToString b) => IOFun a b -> IO ()
 compiler f = do
   input <- getContents
   output <- compileStr f input
