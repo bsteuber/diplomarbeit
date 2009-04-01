@@ -1,5 +1,5 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
-module StateFunctor where 
+{-# OPTIONS -fglasgow-exts #-}
+module StateFunctor where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.List
 import Control.Category

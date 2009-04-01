@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XFlexibleInstances #-}
+{-# OPTIONS -fglasgow-exts #-}
 module Reader () where
 import Control.Arrow
 import Sexp

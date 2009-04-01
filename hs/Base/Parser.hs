@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, GeneralizedNewtypeDeriving, TypeSynonymInstances #-}
+{-# OPTIONS -fglasgow-exts #-}
 module Parser where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Data.Typeable

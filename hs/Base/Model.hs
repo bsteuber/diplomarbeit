@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XFlexibleInstances -XUndecidableInstances #-}
+{-# OPTIONS -fglasgow-exts #-}
 module Model where
 import Control.Arrow
 import Util

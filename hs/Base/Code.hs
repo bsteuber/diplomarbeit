@@ -78,6 +78,8 @@ group x    = Or (flatten x) x
 
 --- Utilities ---
 
+indent2 = indent 2
+
 conc :: [Code] -> Code
 conc = foldr append NoCode
 
@@ -91,7 +93,7 @@ paragraphs :: [Code] -> Code
 paragraphs = joinBy $ text "\n\n"
 
 space :: Code
-space = Text " "
+space = text " "
 
 words :: [Code] -> Code
 words = joinBy space
@@ -110,3 +112,15 @@ braces = embrace "{" "}"
 
 commaSep :: [Code] -> Code
 commaSep cs = joinBy (Text ", ") cs
+
+tuple    = parens   . commaSep
+list     = brackets . commaSep
+wordList = parens   . words
+
+binOp op x y = words x (text op) y
+binParenOp op x y = parens $ binOp op x y
+foldOp :: String -> [Code] -> Code
+foldOp op = foldr1 (binOp op)
+parenFoldOp op = parens . foldOp op
+
+

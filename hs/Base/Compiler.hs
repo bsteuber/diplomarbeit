@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
+
 module Compiler where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Control.Category

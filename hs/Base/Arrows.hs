@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
+{-# OPTIONS -fglasgow-exts #-}
 module Arrows where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.List
