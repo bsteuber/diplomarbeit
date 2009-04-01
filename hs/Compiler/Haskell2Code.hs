@@ -28,20 +28,11 @@ data Type         = NormalType String
                   | FunType [Type]
 --data Expr         = 
 
-haskell2code = macro "haskell" (liftA2
-                                Haskell
-                                (optional parseModule)
-                                (many parseTopLevel))
-
-parseModule =
-    macro "module" (consArrow
-                    (takeSymbol >>> arr (\s -> textWords ["module", s, "where"]))
-                    (many parseImport)
-                   ) >>> arr lines
-
-parseImport =
+parseHaskell   = macro "haskell" (liftA2 Haskell (optional parseModule) (many parseTopLevel))
+parseModule    = macro "module"  (liftA3 Module takeSymbol (optional (many takeSymbol)) (many parseImport
+parseImport    =
     takeAnySexp $ (arr snd &&&
-                 (impNormal <+> impQualified <+> impHiding <+> impOnly)) >>> arr imp
+                   (impNormal <+> impQualified <+> impHiding <+> impOnly)) >>> arr imp
     where impNormal              = empty >>> constArrow ([], [])
           impQualified           = macro "qualified" (takeSymbol >>> arr calcQualified)
           calcQualified short    = ([text "qualified"], [text "as", text short])

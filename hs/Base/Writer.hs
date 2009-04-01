@@ -10,11 +10,9 @@ import Model
 
 instance OfSexp Code where
     ofSexp = toIO sexp2code
-        where sexp2code (Sexp str stream) =
-                  case stream of
-                    [] -> text str
-                    _  -> prin (text str : map sexp2code stream)
-              prin = parens . group . (indent 2) . lines
+        where sexp2code (Symbol name) = text name
+              sexp2code (Node sexps)  = prin $ map sexp2code sexps
+              prin = parens . group . indent2 . lines
 
 instance ToString Sexp where
     toString = (ofSexp :: IOArrow Sexp Code) >>> toString

@@ -13,14 +13,14 @@ parens p = skip (eq '(') >>> p >>> skip (eq ')')
 
 parseSymbol = parseSym >>^ symbol
 
-parseNode = parens ((parseSym &&& parseSexps) >>^ uncurry Sexp)
+parseNode = parens parseSexps >>^ node
 
-parseSexp = space >>> (parseSymbol <+> parseNode) >>> space
+parseSexp = space >>> (parseSymbol <+> parseNode)
 
-parseSexps = many (space >>> parseSexp) >>> space
+parseSexps = many parseSexp >>> space
 
 instance OfString Sexp where
-    ofString = execParser (parseSexp >>> empty)
+    ofString = execParser (parseSexp >>> space >>> empty)
 
 instance OfString [Sexp] where
     ofString = execParser (parseSexps >>> empty)

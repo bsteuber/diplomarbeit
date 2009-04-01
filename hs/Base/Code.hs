@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
 module Code (Code, layout,
-             text, newline, indent, append, group,
+             text, newline, indent, indent2, append, group,
              conc, joinBy, lines, paragraphs,
              space, words, embrace, parens, brackets,
-             braces, commaSep) where
+             braces, commaSep, binOp, parenBinOp, foldOp, parenFoldOp) where
 import Prelude hiding (catch, lines, words)
 import Util
 import Arrows
@@ -117,8 +117,8 @@ tuple    = parens   . commaSep
 list     = brackets . commaSep
 wordList = parens   . words
 
-binOp op x y = words x (text op) y
-binParenOp op x y = parens $ binOp op x y
+binOp op x y = words [x, text op, y]
+parenBinOp op x y = parens $ binOp op x y
 foldOp :: String -> [Code] -> Code
 foldOp op = foldr1 (binOp op)
 parenFoldOp op = parens . foldOp op
