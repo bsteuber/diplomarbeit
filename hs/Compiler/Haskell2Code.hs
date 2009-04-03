@@ -11,79 +11,112 @@ import Compiler
 import Code
 
 type ModuleName = String
-type Exports = [String]
 type FunctionName = String
 type ModuleAbbrev = String
 
-
 data Haskell = Haskell (Maybe Module) [Toplevel]
+
 instance Parsable Sexp Haskell where
     parse = macro "haskell" (liftA2 Haskell parse parse)
 
-data Module = Module ModuleName (Maybe Exports) [Import]
+data Module = Module ModuleName (Maybe Export) [Import]
+
 instance Parsable Sexp Module where
     parse = macro "module" (liftA3 Module parse parse parse)
 
-data Import = Import ModuleName ImportArgs
-instance Parsable Sexp Import where
-    parse  = parseNode (liftA2 Import parse parse)
-instance Compilable Import Code where
-    compile = toIO comp where
-        comp (Import modName impArgs) = words $ [text "import"] ++ bef ++ [text modName] ++ aft
-            where (bef, aft) = case impArgs of
-                                 Simple -> ([], [])
-                                 Qualified abb -> ([text "qualified"], [text "as", text abb])
-                                 Only onlys    -> ([], [tuple (map text onlys)])
-                                 Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
+instance FunComp Module Code where
+    comp (Module name exports imports) = 
+        (lines $
+         [words $ [text "module", text name] ++ compExports exports ++ [text "where"]]
+         ++ map comp imports)
+        where compExports Nothing     = []
+              compExports (Just (Export funs)) = [tuple $ map text funs]
+
+instance Compilable Module Code where
+    compile = toIO comp                                                
+
+data Export = Export [String]
+instance Parsable Sexp Export where
+    parse = liftA1 Export (macro "export" parse)
 
 data ImportArgs = Simple
                 | Qualified ModuleAbbrev
                 | Only [FunctionName]
                 | Hiding [FunctionName]
-instance Parsable Sexp ImportArgs where
-    parse = (empty >>> constArrow Simple)               <+> 
-            (macro "qualified" parse >>> arr Qualified) <+>
-            (macro "only" parse >>> arr Only)           <+>
-            (macro "hiding" parse >>> arr Hiding)
+
+data Import = Import ModuleName ImportArgs
+
+instance Parsable Sexp Import where
+    parse  = (takeSymbol >>^ \ n -> Import n Simple) <+>
+             parseNode (liftA2 Import parse parseArgs)
+        where parseArgs =
+                  ((empty >>> constArrow Simple)               <+> 
+                   (macro "qualified" parse >>> arr Qualified) <+>
+                   (macro "only" parse >>> arr Only)           <+>
+                   (macro "hiding" parse >>> arr Hiding))
+
+instance FunComp Import Code where
+    comp (Import modName impArgs) = words $ [text "import"] ++ bef ++ [text modName] ++ aft
+        where (bef, aft) = case impArgs of
+                             Simple -> ([], [])
+                             Qualified abb -> ([text "qualified"], [text "as", text abb])
+                             Only onlys    -> ([], [tuple (map text onlys)])
+                             Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
+
+instance Compilable Import Code where
+    compile = toIO comp
 
 data Toplevel = TopTypeDef TypeDef
               | TopDef Def
+
 instance Parsable Sexp Toplevel where
     parse = (parse >>^ TopTypeDef) <+> (parse >>^ TopDef)
 
 data TypeDef = TypeDef Expr Type
+
 instance Parsable Sexp TypeDef where
     parse = liftA2 TypeDef parse parse
+
+instance FunComp TypeDef Code where
+    comp (TypeDef expr typ) = binOp "::" (comp expr) (comp typ)
+
+instance Compilable TypeDef Code where
+    compile = toIO comp
 
 data Type = NormalType String
           | ListType Type
           | TupleType [Type]
           | FunType [Type]
+          | ParamType String [Type]
+
 instance Parsable Sexp Type where
-    parse = liftA1 NormalType parse
+    parse = ((liftA0 (TupleType []) (symbolMacro "Unit"))    <+> 
+             (liftA1  TupleType     (macro "Tuple" parse))   <+>
+             (liftA1  ListType      (macro "List"  parse))   <+>
+             (liftA1  FunType       (macro "Fun"   parse))   <+>
+             (liftA2  ParamType     (parseNode parse parse)) <+>
+             (liftA1  NormalType    parse))
+
+instance FunComp Type Code where
+    comp (NormalType str)   = text str
+    comp (ListType t)       = brackets $ comp t
+    comp (TupleType ts)     = tuple $ map comp ts
+    comp (FunType ts)       = parenFoldOp "->" $ map comp ts
+    comp (ParamType str ts) = wordList (text str : map comp ts)
+
+instance Compilable Type Code where
+    compile = toIO comp
 
 data Def = Def String
+
 instance Parsable Sexp Def where
     parse = liftA1 Def parse
+
 data Expr = Expr String
+
 instance Parsable Sexp Expr where
     parse = liftA1 Expr parse
 
-
-
-
--- parseUnit = symbolMacro "Unit" (tuple [])
--- parseList parseInner = macro "List" (parseInner >>> arr list)
--- parseTuple parseInner = macro "Tuple" (parseInner >>> arr tuple)
-
--- parseTyped :: SexpParser a Sexp
--- parseTyped = (parseUnit <+>
---              parseList (parseTyped >>> arr single) <+>
---              parseTuple (many parseTyped) <+>
---              symbol2text <+>
---              (macro "Fun" (many parseTyped >>> arr (parenFoldOp "->"))) <+>
---              (takeAnySexp ((arr snd &&& many parseTyped) >>>
---                            arr (\ (name, innerTypes) -> wordList $ text name : innerTypes))))
 
 -- isOp :: String -> Bool
 -- isOp = all (`elem` "!$%&/=?*+-.:<|>")

@@ -9,6 +9,9 @@ import Sexp
 class Compilable a b where
     compile :: IOArrow a b
 
+class FunComp a b where
+    comp :: a -> b
+
 instance (Compilable a String) => Compilable [a] String where
     compile = amap compile >>> arr concat
 

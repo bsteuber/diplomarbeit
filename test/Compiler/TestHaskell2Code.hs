@@ -101,11 +101,11 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import" (parse :: SexpParser () Import) importCases
-          -- testMacro "module" compModule moduleCases
-          -- testMacro "typed"  compTyped   typedCases
-          -- testMacro "type"   compType     typeCases
-          -- testMacro "def"    compDef       defCases
-          -- testMacro "expr"   compExpr     exprCases
-          -- testMacro "lambda" compLambda lambdaCases
-          -- testMacro "do"     compDo         doCases
+main = do testMacro "import"  (parse :: SexpParser () Import)    importCases
+          testMacro "module"  (parse :: SexpParser () Module)    moduleCases
+          testMacro "typedef" (parse :: SexpParser () TypeDef)   typedCases
+          -- testMacro "type"   (parse :: SexpParser () Type)     typeCases
+          -- testMacro "def"    (parse :: SexpParser () Def)       defCases
+          -- testMacro "expr"   (parse :: SexpParser () Expr)     exprCases
+          -- testMacro "lambda" (parse :: SexpParser () Lambda) lambdaCases
+          -- testMacro "do"     (parse :: SexpParser () Do)         doCases

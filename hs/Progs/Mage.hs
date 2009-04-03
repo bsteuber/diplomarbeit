@@ -55,7 +55,7 @@ testCompiler comp = do
 
 testCompilers = liftM maximum .  mapM testCompiler
 
-test = testCompilers ["Haskell2Code", "Comp2Haskell"]
+test = testCompilers ["Haskell2Code"]--, "Comp2Haskell"]
 
 mkDirs = mapM $ createDirectoryIfMissing True
 

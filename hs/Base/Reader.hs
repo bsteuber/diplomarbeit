@@ -21,3 +21,9 @@ parseSexps = many parseSexp >>> space
 
 instance Parsable Char Sexp where
     parse = parseSexp >>> space
+
+instance Compilable String Sexp where
+    compile = execParser parse
+
+instance Compilable String [Sexp] where
+    compile = execParser parse

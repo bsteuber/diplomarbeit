@@ -2,7 +2,7 @@
 module Code (Code, layout,
              text, newline, indent, indent2, append, group,
              conc, joinBy, lines, paragraphs,
-             space, words, embrace, parens, brackets,
+             space, words, textWords, embrace, parens, brackets,
              braces, commaSep, tuple, list, wordList,
              binOp, parenBinOp, foldOp, parenFoldOp) where
 import Prelude hiding (catch, lines, words)
@@ -92,13 +92,15 @@ lines :: [Code] -> Code
 lines = joinBy newline
 
 paragraphs :: [Code] -> Code
-paragraphs = joinBy $ text "\n\n"
+paragraphs = joinBy $ append newline newline
 
 space :: Code
 space = text " "
 
 words :: [Code] -> Code
 words = joinBy space
+
+textWords = words . map text
 
 embrace :: String -> String -> Code -> Code
 embrace l r code = conc [text l, code, text r]
@@ -124,5 +126,3 @@ parenBinOp op x y = parens $ binOp op x y
 foldOp :: String -> [Code] -> Code
 foldOp op = foldr1 (binOp op)
 parenFoldOp op = parens . foldOp op
-
-

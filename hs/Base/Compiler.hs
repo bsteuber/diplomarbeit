@@ -28,7 +28,7 @@ takeSymbol :: SexpParser a String
 takeSymbol =
     takeSexp >>> (id ||| (ioToParser compile >>> arr ("Symbol expected: "++) >>> fail))
 
-takeSymbolNamed = skip . eq . symbol
+symbolMacro = skip . eq . symbol
 
 takeNode :: SexpParser a [Sexp]
 takeNode =
@@ -39,18 +39,16 @@ parseNode parseInner = applyParser takeNode parseInner
 
 looseMacro :: String -> SexpParser a b -> SexpParser a b
 looseMacro name parseInner = 
-    parseNode $ takeSymbolNamed name >>> parseInner
+    parseNode $ symbolMacro name >>> parseInner
 
 macro :: String -> SexpParser a b -> SexpParser a b
 macro name parseInner = looseMacro name (parseInner >>> empty)
-
-symbolMacro name retVal = takeSymbolNamed name >>> constArrow retVal
 
 -- compile :: SexpParser () a -> Sexp -> IO a
 -- compile p sexp = execParser p [sexp]
 
 testMacro :: (Compilable a Code) => String -> SexpParser () a -> [(String, String)] -> IO ()
-testMacro name mac testCases = testCompiler name (execParser mac >>> compile) testCases
+testMacro name mac testCases = testCompiler name ((execParser mac >>> compile) :: IOArrow [Sexp] Code) testCases
 
-sexpCompiler :: (Compilable b Code) => SexpParser () b -> IO ()
-sexpCompiler mac = compiler (execParser mac >>> compile)
+sexpCompiler :: (Compilable a Code) => SexpParser () a -> IO ()
+sexpCompiler mac = compiler ((execParser mac >>> compile) :: IOArrow [Sexp] Code)

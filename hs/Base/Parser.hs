@@ -36,12 +36,6 @@ instance (Parsable t a) => Parsable t [a] where
 instance (Parsable t a) => Parsable t (Maybe a) where
     parse = optional parse
 
-instance (Parsable t a) => Compilable [t] a where
-    compile = execParser parse
-
-instance (Parsable t a) => Compilable t a where
-    compile = arr single >>> execParser parse
-
 instance ArrowState [t] (Parser t) where
     get = P get
     put = P put
