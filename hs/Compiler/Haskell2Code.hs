@@ -16,28 +16,9 @@ type ModuleAbbrev = String
 
 data Haskell = Haskell (Maybe Module) [Toplevel]
 
-instance Parsable Sexp Haskell where
-    parse = macro "haskell" (liftA2 Haskell parse parse)
-
 data Module = Module ModuleName (Maybe Export) [Import]
 
-instance Parsable Sexp Module where
-    parse = macro "module" (liftA3 Module parse parse parse)
-
-instance FunComp Module Code where
-    comp (Module name exports imports) = 
-        (lines $
-         [words $ [text "module", text name] ++ compExports exports ++ [text "where"]]
-         ++ map comp imports)
-        where compExports Nothing     = []
-              compExports (Just (Export funs)) = [tuple $ map text funs]
-
-instance Compilable Module Code where
-    compile = toIO comp                                                
-
 data Export = Export [String]
-instance Parsable Sexp Export where
-    parse = liftA1 Export (macro "export" parse)
 
 data ImportArgs = Simple
                 | Qualified ModuleAbbrev
@@ -45,6 +26,51 @@ data ImportArgs = Simple
                 | Hiding [FunctionName]
 
 data Import = Import ModuleName ImportArgs
+
+data Toplevel = TopTypeDef TypeDef
+              | TopDef Def
+
+data TypeDef = TypeDef Expr Type
+
+data Type = NormalType String
+          | ListType Type
+          | TupleType [Type]
+          | FunType [Type]
+          | ParamType String [Type]
+
+data Def = Def Pattern Expr (Maybe Where)
+
+data Expr = LambdaExpr  [Pattern] Expr
+          | DoExpr      [DoCmd]
+          | TypeExpr    Type
+          | PatternExpr Pattern
+
+data DoCmd = DoAssign Pattern Expr
+           | DoCmdExpr Expr
+
+data Where = Where [Toplevel]
+
+data Pattern = ListPattern [Pattern]
+             | TuplePattern [Pattern]
+             | StringPattern String
+             | CallPattern Call
+
+data Call = ConstCall String
+          | ConstOpCall String
+          | FunCall Expr [Expr]
+          | OpFoldCall String [Expr]
+
+isOp :: String -> Bool
+isOp = all (`elem` "!$%&/=?*+-.:<|>")
+
+instance Parsable Sexp Haskell where
+    parse = macro "haskell" (liftA2 Haskell parse parse)
+
+instance Parsable Sexp Module where
+    parse = macro "module" (liftA3 Module parse parse parse)
+
+instance Parsable Sexp Export where
+    parse = liftA1 Export (macro "export" parse)
 
 instance Parsable Sexp Import where
     parse  = (takeSymbol >>^ \ n -> Import n Simple) <+>
@@ -55,6 +81,63 @@ instance Parsable Sexp Import where
                    (macro "only" parse >>> arr Only)           <+>
                    (macro "hiding" parse >>> arr Hiding))
 
+instance Parsable Sexp Toplevel where
+    parse = (parse >>^ TopTypeDef) <+> (parse >>^ TopDef)
+
+instance Parsable Sexp TypeDef where
+    parse = liftA2 TypeDef parse parse
+
+instance Parsable Sexp Type where
+    parse = ((symbolMacro "Unit" >>> constArrow (TupleType [])) <+> 
+             (liftA1  TupleType     (macro "Tuple" parse))      <+>
+             (liftA1  ListType      (macro "List"  parse))      <+>
+             (liftA1  FunType       (macro "Fun"   parse))      <+>
+             (parseNode (liftA2 ParamType parse parse))         <+>
+             (liftA1  NormalType    parse))
+
+instance Parsable Sexp Def where
+    parse = liftA3 Def parse parse parse
+
+instance Parsable Sexp Expr where
+    parse = 
+        (macro "fun" (liftA2 LambdaExpr (macro "args" parse <+> (parse >>^ single)) parse) <+>
+         liftA1 DoExpr (macro "do" parse)                                                  <+>
+         liftA1 TypeExpr parse                                                             <+>
+         liftA1 PatternExpr parse)
+
+instance Parsable Sexp DoCmd where
+    parse =
+        (macro "<-" (liftA2 DoAssign parse parse) <+>
+         liftA1 DoCmdExpr parse)
+
+instance Parsable Sexp Where where
+    parse = macro "where" (liftA1 Where parse)
+
+instance Parsable Sexp Pattern where
+    parse = 
+        (liftA1 ListPattern (macro "List" parse)   <+>
+         liftA1 TuplePattern (macro "Tuple" parse) <+>
+         liftA1 StringPattern (macro "Str" parse)  <+>
+         liftA1 CallPattern parse)
+
+instance Parsable Sexp Call where
+    parse = 
+        (liftA1 ConstOpCall (parse >>> failUnless isOp) <+>
+         liftA1 ConstCall   parse                       <+>
+         parseNode (liftA2 
+                    OpFoldCall 
+                    (parse >>> failUnless isOp)
+                    parse)                              <+>
+         parseNode (liftA2 FunCall parse parse))
+
+instance FunComp Module Code where
+    comp (Module name exports imports) = 
+        (lines $
+         [words $ [text "module", text name] ++ compExports exports ++ [text "where"]]
+         ++ map comp imports)
+        where compExports Nothing     = []
+              compExports (Just (Export funs)) = [tuple $ map text funs]
+
 instance FunComp Import Code where
     comp (Import modName impArgs) = words $ [text "import"] ++ bef ++ [text modName] ++ aft
         where (bef, aft) = case impArgs of
@@ -63,39 +146,9 @@ instance FunComp Import Code where
                              Only onlys    -> ([], [tuple (map text onlys)])
                              Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
 
-instance Compilable Import Code where
-    compile = toIO comp
-
-data Toplevel = TopTypeDef TypeDef
-              | TopDef Def
-
-instance Parsable Sexp Toplevel where
-    parse = (parse >>^ TopTypeDef) <+> (parse >>^ TopDef)
-
-data TypeDef = TypeDef Expr Type
-
-instance Parsable Sexp TypeDef where
-    parse = liftA2 TypeDef parse parse
 
 instance FunComp TypeDef Code where
     comp (TypeDef expr typ) = binOp "::" (comp expr) (comp typ)
-
-instance Compilable TypeDef Code where
-    compile = toIO comp
-
-data Type = NormalType String
-          | ListType Type
-          | TupleType [Type]
-          | FunType [Type]
-          | ParamType String [Type]
-
-instance Parsable Sexp Type where
-    parse = ((liftA0 (TupleType []) (symbolMacro "Unit"))    <+> 
-             (liftA1  TupleType     (macro "Tuple" parse))   <+>
-             (liftA1  ListType      (macro "List"  parse))   <+>
-             (liftA1  FunType       (macro "Fun"   parse))   <+>
-             (liftA2  ParamType     (parseNode parse parse)) <+>
-             (liftA1  NormalType    parse))
 
 instance FunComp Type Code where
     comp (NormalType str)   = text str
@@ -104,18 +157,25 @@ instance FunComp Type Code where
     comp (FunType ts)       = parenFoldOp "->" $ map comp ts
     comp (ParamType str ts) = wordList (text str : map comp ts)
 
+instance Compilable Module Code where
+    compile = toIO comp                                                
+
+instance Compilable Import Code where
+    compile = toIO comp
+
+instance Compilable TypeDef Code where
+    compile = toIO comp
+
 instance Compilable Type Code where
     compile = toIO comp
 
-data Def = Def String
 
-instance Parsable Sexp Def where
-    parse = liftA1 Def parse
 
-data Expr = Expr String
-
-instance Parsable Sexp Expr where
-    parse = liftA1 Expr parse
+-- parseExpr :: SexpParser a Sexp
+-- parseExpr = (parseLambda <+>
+--             parseDo <+>
+--             parseType <+>
+--             parsePattern)
 
 
 -- isOp :: String -> Bool
@@ -144,30 +204,6 @@ instance Parsable Sexp Expr where
 -- parsePatternWithoutParens :: SexpParser a Sexp
 -- parsePatternWithoutParens = genericParsePattern id
 
--- parseType :: SexpParser a Sexp
--- parseType = macro "type" (liftA2 (binOp "::") parseExpr parseTyped)
-
--- parseString = macro "str" (many symbol2text >>> arr makeStr)
---     where makeStr exps = append $ strQ ++ exps ++ strQ
---           strQ = [text "\""]
-
-
--- parseLambda = macro "fun" ((parseArgs &&& parseExpr) >>> arr buildLambda)
---     where parseArgs = macro "args" (many parsePattern) <+> (parsePattern >>> arr single)
---           buildLambda (args, expr) = wordList $  [text "\\"] ++ args ++ [text "->", expr]
-
--- parseDo = macro "do" ((many (macro "<-" (liftA2
---                                         (binOp "<-")
---                                         parsePattern parseExpr)
---                             <+> parseExpr))
---                      >>> arr buildDo)
---     where buildDo = parens . indent . lines . (text "do":)
-
--- parseExpr :: SexpParser a Sexp
--- parseExpr = (parseLambda <+>
---             parseDo <+>
---             parseType <+>
---             parsePattern)
 
 -- parseDef :: SexpParser a Sexp
 -- parseDef = macro "=" ((liftA2 (binOp "=") parsePatternWithoutParens parseExpr &&& parseWhere) >>> arr buildDef)
@@ -204,8 +240,6 @@ instance Parsable Sexp Expr where
 --              (takeAnySexp ((arr snd &&& many compTyped) >>>
 --                            arr (\ (name, innerTypes) -> wordList $ text name : innerTypes))))
 
--- isOp :: String -> Bool
--- isOp = all (`elem` "!$%&/=?*+-.:<|>")
 
 -- genericCompCall :: (Sexp -> Sexp) -> SexpParser a Sexp
 -- genericCompCall processCall =

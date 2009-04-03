@@ -61,6 +61,9 @@ ifArrow testArrow thenArrow elseArrow =
         where eitherRes (Left  _, x) = Left  x
               eitherRes (Right _, x) = Right x
 
+failUnless :: (ArrowChoice ar, ArrowFail ar) => (a -> Bool) -> ar a a
+failUnless pred = ifArrow (arr pred) id (constArrow "failUnless failed" >>> fail)
+
 optional :: (ArrowPlus ar) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
 
