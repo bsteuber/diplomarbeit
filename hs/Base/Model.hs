@@ -1,38 +1,30 @@
 {-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE OverlappingInstances, UndecidableInstances #-}
 module Model where
 import Control.Arrow
 import Util
 import Arrows
 import Sexp
 
-class OfString a where
-    ofString :: IOArrow String a
+class Compilable a b where
+    compile :: IOArrow a b
 
-class ToString a where
-    toString :: IOArrow a String
+instance (Compilable a String) => Compilable [a] String where
+    compile = amap compile >>> arr concat
 
-class OfSexp a where
-    ofSexp :: IOArrow Sexp a
+instance Compilable Char String where
+    compile = toIO show
 
-class ToSexp a where
-    toSexp :: IOArrow a Sexp
+compileStr :: (Compilable String a, Compilable b String) => IOArrow a b -> IOFun String String
+compileStr f = runKleisli $ compile >>> f >>> compile
 
-instance (ToString a) => ToString [a] where
-    toString = amap toString >>> arr concat
-
-instance ToString Char where
-    toString = toIO show
-
-compileStr :: (OfString a, ToString b) => IOArrow a b -> IOFun String String
-compileStr f = runKleisli $ ofString >>> f >>> toString
-
-compiler :: (OfString a, ToString b) => IOArrow a b -> IO ()
+compiler :: (Compilable String a, Compilable b String) => IOArrow a b -> IO ()
 compiler f = do
   input <- getContents
   output <- compileStr f input
   putStr output
 
-testCompiler :: (OfString a, ToString b) => String -> IOArrow a b -> [(String, String)] -> IO ()
+testCompiler :: (Compilable String a, Compilable b String) => String -> IOArrow a b -> [(String, String)] -> IO ()
 testCompiler name comp testCases = do
     putStrLn $ "Testing macro " ++ name
     recTest testCases False

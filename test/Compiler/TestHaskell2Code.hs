@@ -1,5 +1,6 @@
 module TestHaskell2Code where
 import Control.Arrow
+import Parser
 import Compiler
 import Haskell2Code
 
@@ -100,11 +101,11 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import" compImport importCases
-          testMacro "module" compModule moduleCases
-          testMacro "typed"  compTyped   typedCases
-          testMacro "type"   compType     typeCases
-          testMacro "def"    compDef       defCases
-          testMacro "expr"   compExpr     exprCases
-          testMacro "lambda" compLambda lambdaCases
-          testMacro "do"     compDo         doCases
+main = do testMacro "import" (parse :: SexpParser () Import) importCases
+          -- testMacro "module" compModule moduleCases
+          -- testMacro "typed"  compTyped   typedCases
+          -- testMacro "type"   compType     typeCases
+          -- testMacro "def"    compDef       defCases
+          -- testMacro "expr"   compExpr     exprCases
+          -- testMacro "lambda" compLambda lambdaCases
+          -- testMacro "do"     compDo         doCases

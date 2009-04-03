@@ -19,3 +19,7 @@ unSingle xs  = error $ "Single element expected: " ++ show xs
 
 bool2either :: Bool -> Either () ()
 bool2either b = if b then Left () else Right ()
+
+unMaybeList :: Maybe [a] -> [a]
+unMaybeList  Nothing  = []
+unMaybeList (Just xs) = xs

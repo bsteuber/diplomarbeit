@@ -1,4 +1,5 @@
-
+{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE OverlappingInstances, UndecidableInstances, IncoherentInstances #-}
 module Compiler where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Control.Category
@@ -8,6 +9,7 @@ import System.Environment (getArgs)
 import System.IO
 import Util
 import Arrows
+import Code
 import Sexp
 import Parser
 import Reader
@@ -16,44 +18,39 @@ import Model
 
 type SexpParser = Parser Sexp
 
-takeSexp :: SexpParser a (String, [Sexp])
-takeSexp = take >>> arr sexp2tuple
+takeSexp :: SexpParser a (Either String [Sexp])
+takeSexp = take >>^ sexp2either
+
+instance Parsable Sexp String where
+    parse = takeSymbol
 
 takeSymbol :: SexpParser a String
 takeSymbol =
-    takeSexp >>> (ifArrow
-                  (arr $ snd >>> null)
-                  (arr fst)
-                  (arr tuple2sexp >>> ioToParser toString >>> arr ("Symbol expected: "++) >>> fail))
+    takeSexp >>> (id ||| (ioToParser compile >>> arr ("Symbol expected: "++) >>> fail))
 
-procSexp :: SexpParser TupleSexp TupleSexp -> SexpParser a Sexp
-procSexp procTuple = takeSexp >>> procTuple >>> arr tuple2sexp
+takeSymbolNamed = skip . eq . symbol
 
-takeSexpWhen :: (String -> Bool) -> (String -> String) -> SexpParser (a, String) b -> SexpParser a b
-takeSexpWhen pred errorMsg parseInner =
-    (id &&& takeSexp) >>> (ifArrow
-                           (arr (snd >>> fst >>> pred))
-                           (arr (\ (x, (lbl, stream)) -> ((x, lbl), stream)) >>> runParser parseInner)
-                           (arr (snd >>> fst >>> errorMsg) >>> fail))
+takeNode :: SexpParser a [Sexp]
+takeNode =
+    takeSexp >>> ((arr ("Node expected: "++) >>> fail) ||| id)
 
-takeAnySexp = takeSexpWhen (const True) (const "")
+parseNode :: SexpParser a b -> SexpParser a b
+parseNode parseInner = applyParser takeNode parseInner
 
 looseMacro :: String -> SexpParser a b -> SexpParser a b
-looseMacro name parseInner = (takeSexpWhen
-                              (== name)
-                              (\ lbl -> "Expected symbol " ++ name ++ "\nGot " ++ lbl)
-                              (arr fst >>> parseInner))
+looseMacro name parseInner = 
+    parseNode $ takeSymbolNamed name >>> parseInner
 
 macro :: String -> SexpParser a b -> SexpParser a b
 macro name parseInner = looseMacro name (parseInner >>> empty)
 
-symbolMacro name retVal = macro name (constArrow retVal)
+symbolMacro name retVal = takeSymbolNamed name >>> constArrow retVal
 
 -- compile :: SexpParser () a -> Sexp -> IO a
 -- compile p sexp = execParser p [sexp]
 
-testMacro :: (ToString a) => String -> SexpParser () a -> [(String, String)] -> IO ()
-testMacro name mac testCases = testCompiler name (execParser mac) testCases
+testMacro :: (Compilable a Code) => String -> SexpParser () a -> [(String, String)] -> IO ()
+testMacro name mac testCases = testCompiler name (execParser mac >>> compile) testCases
 
-sexpCompiler :: (ToString b) => SexpParser () b -> IO ()
-sexpCompiler mac = compiler (execParser mac)
+sexpCompiler :: (Compilable b Code) => SexpParser () b -> IO ()
+sexpCompiler mac = compiler (execParser mac >>> compile)

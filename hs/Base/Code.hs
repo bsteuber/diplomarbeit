@@ -1,13 +1,18 @@
-{-# OPTIONS_GHC -XMultiParamTypeClasses -XFunctionalDependencies #-}
+{-# OPTIONS -fglasgow-exts #-}
 module Code (Code, layout,
              text, newline, indent, indent2, append, group,
              conc, joinBy, lines, paragraphs,
              space, words, embrace, parens, brackets,
-             braces, commaSep, binOp, parenBinOp, foldOp, parenFoldOp) where
+             braces, commaSep, tuple, list, wordList,
+             binOp, parenBinOp, foldOp, parenFoldOp) where
 import Prelude hiding (catch, lines, words)
+import Control.Arrow
 import Util
 import Arrows
 import Model
+
+instance Compilable Code String where
+    compile = toIO (layout 70)
 
 --- Data Types ---
 
@@ -64,9 +69,6 @@ simp w k ts =
 
 layout :: Int -> Code -> String
 layout lineWidth code = layoutSimple (simp lineWidth 0 [(0,code)])
-
-instance ToString Code where
-    toString = toIO (layout 70)
 
 --- Interfacing constructor functions ---
 

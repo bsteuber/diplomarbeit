@@ -19,8 +19,5 @@ parseSexp = space >>> (parseSymbol <+> parseNode)
 
 parseSexps = many parseSexp >>> space
 
-instance OfString Sexp where
-    ofString = execParser (parseSexp >>> space >>> empty)
-
-instance OfString [Sexp] where
-    ofString = execParser (parseSexps >>> empty)
+instance Parsable Char Sexp where
+    parse = parseSexp >>> space

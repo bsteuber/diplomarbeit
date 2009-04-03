@@ -27,8 +27,10 @@ class (Arrow ar) => ArrowIO ar where
 instance ArrowIO (->) where
     toIO f = Kleisli (return . f)
 
-liftA2 :: (Arrow ar) => (b -> c -> d) -> ar a b -> ar a c -> ar a d
-liftA2 fun f g = (f &&& g) >>> arr (uncurry fun)
+liftA0 c = constArrow c
+liftA1 fun f = f >>^ fun
+liftA2 fun f g = (f &&& g) >>^ uncurry fun
+liftA3 fun f g h = (f &&& g &&& h) >>^ \ (x, (y, z)) -> fun x y z
 
 constArrow :: (Arrow ar) => b -> ar a b
 constArrow = arr . const
@@ -59,8 +61,8 @@ ifArrow testArrow thenArrow elseArrow =
         where eitherRes (Left  _, x) = Left  x
               eitherRes (Right _, x) = Right x
 
-optional :: (ArrowPlus ar) => ar a b -> ar a [b]
-optional f = (f >>^ single) <+> nilArrow
+optional :: (ArrowPlus ar) => ar a b -> ar a (Maybe b)
+optional f = (f >>^ Just) <+> constArrow Nothing
 
 many :: (ArrowPlus ar) => ar a b -> ar a [b]
 many f = many1 f <+> nilArrow
@@ -78,7 +80,7 @@ skipMany1 :: (ArrowPlus ar) => ar a b -> ar a a
 skipMany1 = skip . many1
 
 sepBy :: (ArrowPlus ar) => ar a c -> ar a b -> ar a [b]
-sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ concat
+sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
 
 -- test :: (Arrow ar) => ar a Bool -> ar a (Either a a)
 -- test f = (f &&& id) >>> (arr $ \ (b, x) -> if b then Left x else Right x)
