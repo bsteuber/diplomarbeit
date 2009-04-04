@@ -21,6 +21,21 @@ type IOFun a b = a -> IO b
 
 type IOArrow = Kleisli IO
 
+class Executable x a b | x -> a b where
+    toIO :: x -> IOArrow a b
+
+instance Executable (IOArrow a b) a b where
+    toIO = id
+
+instance Executable (a -> b) a b where
+    toIO f = Kleisli (return . f)
+
+class (Executable x a b) => Compilable x a b | a b -> x where
+    comp :: x
+
+compile :: (Compilable x a b) => IOArrow a b
+compile = toIO comp
+
 liftA0 c = constArrow c
 liftA1 fun f = f >>^ fun
 liftA2 fun f g = (f &&& g) >>^ uncurry fun

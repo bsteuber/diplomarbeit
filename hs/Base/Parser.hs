@@ -27,23 +27,20 @@ ioToParser = P . lift . lift . Prog
 newtype Parser t a b = P {runP :: StateFunctor [t] (FailFunctor Program) a b }
     deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
 
--- class (Compilable t String) => Parsable t a where
---     parse :: Parser t () a
-
--- instance (Parsable t a) => Parsable t [a] where
---     parse = many parse
-
--- instance (Parsable t a) => Parsable t (Maybe a) where
---     parse = optional parse
-
 instance ArrowState [t] (Parser t) where
     get = P get
     put = P put
 
-instance (Compilable x t String) => Executable (Parser t () a) [t] a where
+instance (Show t) => Executable (Parser t () a) [t] a where
     toIO = execParser
 
-execParser :: (Compilable x t String) => Parser t () a -> IOArrow [t] a
+instance (Show t, Compilable (Parser t () a) [t] a) => Compilable (Parser t () [a]) [t] [a] where
+    comp = many comp
+
+instance (Show t, Compilable (Parser t () a) [t] a) => Compilable (Parser t () (Maybe a)) [t] (Maybe a) where
+    comp = optional comp
+
+execParser :: (Show t) => Parser t () a -> IOArrow [t] a
 execParser p = (runProg . execFail . execState . runP) (p >>> empty) 
 
 applyParser :: Parser s a [s] -> Parser s a b -> Parser s a b
@@ -54,12 +51,12 @@ debug msg = P $ lift $ lift $ Prog $ Kleisli $ \ x -> do
               putStrLn msg
               return x
 
-empty :: (Compilable x t String) => Parser t a a
+empty :: (Show t) => Parser t a a
 empty = (get &&& id) >>> (ifArrow
                           (arr $ null . fst)
                           (arr snd)
-                          (arr fst >>> (ioToParser compile :: Parser t [t] String) >>> arr errorMsg >>> fail))
-    where errorMsg str = "Empty stream expected: " ++ str
+                          (arr fst >>> arr errorMsg >>> fail))
+    where errorMsg x = "Empty stream expected: " ++ show x
 
 take :: Parser t a t
 take = get >>> (ifArrow
@@ -67,27 +64,27 @@ take = get >>> (ifArrow
                  (skip (arr tail >>> put) >>> arr head)
                  (constArrow "Nonempty stream expected" >>> fail))
 
-takeWhen :: (t -> Bool) -> (Parser t t String) -> Parser t a t
+takeWhen :: (t -> Bool) -> (t -> String) -> Parser t a t
 takeWhen pred errorMsg =
     take >>> (ifArrow
                (arr pred)
                id
-               (errorMsg >>> fail))
+               (arr errorMsg >>> fail))
 
-eq :: (Eq t, Compilable x t String) => t -> Parser t a t
-eq x = takeWhen (==x) (ioToParser ((constArrow x >>> compile) &&& compile) >>> arr errorMsg)
-    where errorMsg (x, y) = "\nToken " ++ y ++ "\nShould be " ++ x
+eq :: (Eq t, Show t) => t -> Parser t a t
+eq x = takeWhen (==x) errorMsg
+    where errorMsg y = "\nToken " ++ show y ++ "\nShould be " ++ show x
 
-notEq :: (Eq t, Compilable x t String) => t -> Parser t a t
-notEq x = takeWhen (/= x) (ioToParser compile >>> arr ("\nToken should not be "++))
+notEq :: (Eq t, Show t) => t -> Parser t a t
+notEq x = takeWhen (/= x) (const $ "\nToken should not be " ++ show x)
 
-member :: (Eq t, Compilable x t String) => [t] -> Parser t a t
-member xs = takeWhen (`elem` xs) (ioToParser ((constArrow xs >>> compile) &&& compile) >>> arr errorMsg)
-    where errorMsg (xs, y) = "\nElement " ++ y ++ "\nShould be member of " ++ xs
+member :: (Eq t, Show t) => [t] -> Parser t a t
+member xs = takeWhen (`elem` xs) errorMsg
+    where errorMsg y = "\nElement " ++ show y ++ "\nShould be member of " ++ show xs
 
-notMember :: (Eq t, Compilable x t String) => [t] -> Parser t a t
-notMember xs = takeWhen (not . (`elem` xs)) (ioToParser ((constArrow xs >>> compile) &&& compile) >>> arr errorMsg)
-    where errorMsg (xs, y) = "\nElement " ++ y ++ "\nShould not be member of " ++ xs
+notMember :: (Eq t, Show t) => [t] -> Parser t a t
+notMember xs = takeWhen (not . (`elem` xs)) errorMsg
+    where errorMsg y = "\nElement " ++ show y ++ "\nShould not be member of " ++ show xs
 
-streamEq :: (Eq t, Compilable x t String) => [t] -> Parser t a [t]
+streamEq :: (Eq t, Show t) => [t] -> Parser t a [t]
 streamEq = foldArrows . map eq

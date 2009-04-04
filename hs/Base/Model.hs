@@ -5,23 +5,11 @@ import Control.Arrow
 import Util
 import Arrows
 
-class Executable x a b | x -> a b where
-    toIO :: x -> IOArrow a b
+-- instance (Compilable (a -> String) a String) => Compilable ([a] -> String) [a] String where
+--     comp = map comp >>> concat
 
-class (Executable x a b) => Compilable x a b | a b -> x where
-    comp :: x
-
-compile :: (Compilable x a b) => IOArrow a b
-compile = toIO comp
-
-instance Executable (a -> b) a b where
-    toIO f = Kleisli (return . f)
-
-instance (Compilable (a -> String) a String) => Compilable ([a] -> String) [a] String where
-    comp = map comp >>> concat
-
-instance Compilable (Char -> String) Char String where
-    comp = show
+-- instance Compilable (Char -> String) Char String where
+--     comp = show
 
 compileStr :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IOFun String String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile

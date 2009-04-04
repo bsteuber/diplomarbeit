@@ -8,11 +8,12 @@ import Sexp
 import Code
 import Model
 
-instance Compilable Sexp Code where
-    compile = toIO sexp2code
-        where sexp2code (Symbol name) = text name
-              sexp2code (Node sexps)  = prin $ map sexp2code sexps
-              prin = parens . group . indent2 . lines
+instance Compilable (Sexp -> Code) Sexp Code where
+    comp (Symbol name) = text name
+    comp (Node sexps)  = parens $ group $ indent2 $ lines $ map comp sexps
 
-instance Compilable Sexp String where
-    compile = (compile :: IOArrow Sexp Code) >>> compile
+instance Compilable (Sexp -> String) Sexp String where
+    comp = (comp :: Sexp -> Code) >>> comp
+
+instance Show Sexp where
+    show = comp

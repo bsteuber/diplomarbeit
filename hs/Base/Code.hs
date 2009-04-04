@@ -11,8 +11,8 @@ import Util
 import Arrows
 import Model
 
-instance Compilable Code String where
-    compile = toIO (layout 70)
+instance Compilable (Code -> String) Code String where
+    comp = layout 70
 
 --- Data Types ---
 

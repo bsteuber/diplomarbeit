@@ -14,6 +14,12 @@ label = symbolName . head . children
 symbol = Symbol
 node = Node
 
+isNode (Node _)   = True
+isNode (Symbol _) = False
+
+isSymbol (Node _)   = False
+isSymbol (Symbol _) = True
+
 -- lbl children = Node (Symbol lbl : children)
 -- singleNode lbl = node lbl . single
 

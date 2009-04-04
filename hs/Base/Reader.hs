@@ -15,15 +15,9 @@ parseSymbol = parseSym >>^ symbol
 
 parseNode = parens parseSexps >>^ node
 
-parseSexp = space >>> (parseSymbol <+> parseNode)
+parseSexp = space >>> (parseSymbol <+> parseNode) >>> space
 
-parseSexps = many parseSexp >>> space
+parseSexps = many parseSexp
 
-instance Parsable Char Sexp where
-    parse = parseSexp >>> space
-
-instance Compilable String Sexp where
-    compile = execParser parse
-
-instance Compilable String [Sexp] where
-    compile = execParser parse
+instance Compilable (Parser Char () Sexp) String Sexp where
+    comp = parseSexp 
