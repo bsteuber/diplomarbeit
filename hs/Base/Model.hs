@@ -4,30 +4,35 @@ module Model where
 import Control.Arrow
 import Util
 import Arrows
-import Sexp
 
-class Compilable a b where
-    compile :: IOArrow a b
+class Executable x a b | x -> a b where
+    toIO :: x -> IOArrow a b
 
-class FunComp a b where
-    comp :: a -> b
+class (Executable x a b) => Compilable x a b | a b -> x where
+    comp :: x
 
-instance (Compilable a String) => Compilable [a] String where
-    compile = amap compile >>> arr concat
+compile :: (Compilable x a b) => IOArrow a b
+compile = toIO comp
 
-instance Compilable Char String where
-    compile = toIO show
+instance Executable (a -> b) a b where
+    toIO f = Kleisli (return . f)
 
-compileStr :: (Compilable String a, Compilable b String) => IOArrow a b -> IOFun String String
-compileStr f = runKleisli $ compile >>> f >>> compile
+instance (Compilable (a -> String) a String) => Compilable ([a] -> String) [a] String where
+    comp = map comp >>> concat
 
-compiler :: (Compilable String a, Compilable b String) => IOArrow a b -> IO ()
+instance Compilable (Char -> String) Char String where
+    comp = show
+
+compileStr :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IOFun String String
+compileStr f = runKleisli $ compile >>> toIO f >>> compile
+
+compiler :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IO ()
 compiler f = do
   input <- getContents
   output <- compileStr f input
   putStr output
 
-testCompiler :: (Compilable String a, Compilable b String) => String -> IOArrow a b -> [(String, String)] -> IO ()
+testCompiler :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => String -> x2 -> [(String, String)] -> IO ()
 testCompiler name comp testCases = do
     putStrLn $ "Testing macro " ++ name
     recTest testCases False

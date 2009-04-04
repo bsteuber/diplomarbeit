@@ -21,12 +21,6 @@ type IOFun a b = a -> IO b
 
 type IOArrow = Kleisli IO
 
-class (Arrow ar) => ArrowIO ar where
-    toIO :: ar a b -> IOArrow a b
-
-instance ArrowIO (->) where
-    toIO f = Kleisli (return . f)
-
 liftA0 c = constArrow c
 liftA1 fun f = f >>^ fun
 liftA2 fun f g = (f &&& g) >>^ uncurry fun
