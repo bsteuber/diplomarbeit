@@ -42,7 +42,7 @@ data Def = Def Pattern Expr (Maybe Where)
 
 data Expr = LambdaExpr  [Pattern] Expr
           | DoExpr      [DoCmd]
-          | TypeExpr    Type
+          | TypeExpr    TypeDef
           | PatternExpr Pattern
 
 data DoCmd = DoAssign Pattern Expr
@@ -57,7 +57,7 @@ data Pattern = ListPattern [Pattern]
 
 data Call = ConstCall String
           | ConstOpCall String
-          | FunCall Expr [Expr]
+          | FunCall [Expr]
           | OpFoldCall String [Expr]
 
 isOp :: String -> Bool
@@ -67,19 +67,19 @@ instance Compilable (Parser Sexp () Haskell) [Sexp] Haskell where
     comp = macro "haskell" (liftA2 Haskell comp comp)
 
 instance Compilable (Parser Sexp () Module) [Sexp] Module where
-    comp = macro "module" (liftA3 Module comp comp comp)
+    comp = macro "module" (liftA3 Module takeSymbol comp comp)
 
 instance Compilable (Parser Sexp () Export) [Sexp] Export where
-    comp = liftA1 Export (macro "export" comp)
+    comp = liftA1 Export (macro "export" (many takeSymbol))
 
 instance Compilable (Parser Sexp () Import) [Sexp] Import where
     comp  = (takeSymbol >>^ \ n -> Import n Simple) <+>
-             parseNode (liftA2 Import comp compArgs)
+             parseNode (liftA2 Import takeSymbol compArgs)
         where compArgs =
                   ((empty >>> constArrow Simple)               <+> 
-                   (macro "qualified" comp >>> arr Qualified) <+>
-                   (macro "only" comp >>> arr Only)           <+>
-                   (macro "hiding" comp >>> arr Hiding))
+                   (macro "qualified" takeSymbol >>> arr Qualified) <+>
+                   (macro "only" (many takeSymbol) >>> arr Only)           <+>
+                   (macro "hiding" (many takeSymbol) >>> arr Hiding))
 
 instance Compilable (Parser Sexp () Toplevel) [Sexp] Toplevel where
     comp = (comp >>^ TopTypeDef) <+> (comp >>^ TopDef)
@@ -92,8 +92,8 @@ instance Compilable (Parser Sexp () Type) [Sexp] Type where
              (liftA1  TupleType     (macro "Tuple" comp))      <+>
              (liftA1  ListType      (macro "List"  comp))      <+>
              (liftA1  FunType       (macro "Fun"   comp))      <+>
-             (parseNode (liftA2 ParamType comp comp))         <+>
-             (liftA1  NormalType    comp))
+             (parseNode (liftA2 ParamType takeSymbol comp))         <+>
+             (liftA1  NormalType    takeSymbol))
 
 instance Compilable (Parser Sexp () Def) [Sexp] Def where
     comp = liftA3 Def comp comp comp
@@ -117,20 +117,29 @@ instance Compilable (Parser Sexp () Pattern) [Sexp] Pattern where
     comp = 
         (liftA1 ListPattern (macro "List" comp)   <+>
          liftA1 TuplePattern (macro "Tuple" comp) <+>
-         liftA1 StringPattern (macro "Str" comp)  <+>
+         liftA1 StringPattern (macro "Str" takeSymbol)  <+>
          liftA1 CallPattern comp)
 
 instance Compilable (Parser Sexp () Call) [Sexp] Call where
     comp = 
-        (liftA1 ConstOpCall (comp >>> failUnless isOp) <+>
-         liftA1 ConstCall   comp                       <+>
+        (liftA1 ConstOpCall (takeSymbol >>> failUnless isOp) <+>
+         liftA1 ConstCall   takeSymbol                       <+>
          parseNode (liftA2 
                     OpFoldCall 
-                    (comp >>> failUnless isOp)
+                    (takeSymbol >>> failUnless isOp)
                     comp)                              <+>
-         parseNode (liftA2 FunCall comp comp))
+         parseNode (liftA1 FunCall comp))
 
-instance FunComp Module Code where
+-------------
+-- To Code --
+-------------
+
+instance Compilable (Haskell -> Code) Haskell Code where
+    comp (Haskell mayMod tops) = paragraphs $ compMod mayMod ++ map comp tops
+        where compMod Nothing  = []
+              compMod (Just m) = [comp m]
+
+instance Compilable (Module -> Code) Module Code where
     comp (Module name exports imports) = 
         (lines $
          [words $ [text "module", text name] ++ compExports exports ++ [text "where"]]
@@ -138,7 +147,7 @@ instance FunComp Module Code where
         where compExports Nothing     = []
               compExports (Just (Export funs)) = [tuple $ map text funs]
 
-instance FunComp Import Code where
+instance Compilable (Import -> Code) Import Code where
     comp (Import modName impArgs) = words $ [text "import"] ++ bef ++ [text modName] ++ aft
         where (bef, aft) = case impArgs of
                              Simple -> ([], [])
@@ -147,39 +156,52 @@ instance FunComp Import Code where
                              Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
 
 
-instance FunComp TypeDef Code where
+instance Compilable (Toplevel -> Code) Toplevel Code where
+    comp (TopTypeDef td) = comp td
+    comp (TopDef d)      = comp d
+
+instance Compilable (TypeDef -> Code) TypeDef Code where
     comp (TypeDef expr typ) = binOp "::" (comp expr) (comp typ)
 
-instance FunComp Type Code where
+instance Compilable (Type -> Code) Type Code where
     comp (NormalType str)   = text str
     comp (ListType t)       = brackets $ comp t
     comp (TupleType ts)     = tuple $ map comp ts
     comp (FunType ts)       = parenFoldOp "->" $ map comp ts
     comp (ParamType str ts) = wordList (text str : map comp ts)
 
-instance Compilable Module Code where
-    compile = toIO comp                                                
+instance Compilable (Def -> Code) Def Code where
+    comp (Def pat expr mayWhere) =
+        case mayWhere of 
+          Nothing -> defi
+          Just wh -> indent2 $ lines $ defi : [comp wh]
+      where defi = binOp "=" (comp pat) (comp expr)
 
-instance Compilable Import Code where
-    compile = toIO comp
+instance Compilable (Expr -> Code) Expr Code where
+    comp (LambdaExpr patterns expr) = 
+        parens $ words $ [text "\\"] ++ map (parens . comp) patterns ++ [text "->", comp expr]
+    comp (DoExpr doCmds) = parens $ indent2 $ lines $ (text "do" : map comp doCmds)
+    comp (TypeExpr typeDef) = comp typeDef
+    comp (PatternExpr pattern) = comp pattern
+                                            
+instance Compilable (DoCmd -> Code) DoCmd Code where
+    comp (DoAssign pat expr) = binOp "<-" (comp pat) (comp expr)
+    comp (DoCmdExpr expr) = comp expr
 
-instance Compilable TypeDef Code where
-    compile = toIO comp
+instance Compilable (Where -> Code) Where Code where
+    comp (Where tops) = indent2 $ lines $ text "where" : map comp tops
 
-instance Compilable Type Code where
-    compile = toIO comp
+instance Compilable (Pattern -> Code) Pattern Code where
+    comp (ListPattern pats)  = list $ map comp pats
+    comp (TuplePattern pats) = tuple $ map comp pats
+    comp (StringPattern str) = string str
+    comp (CallPattern call)  = comp call
 
-
-
--- parseExpr :: SexpParser a Sexp
--- parseExpr = (parseLambda <+>
---             parseDo <+>
---             parseType <+>
---             parsePattern)
-
-
--- isOp :: String -> Bool
--- isOp = all (`elem` "!$%&/=?*+-.:<|>")
+instance Compilable (Call -> Code) Call Code where
+    comp (ConstCall str)        = text str
+    comp (ConstOpCall str)      = parens $ text str
+    comp (FunCall exprs)        = wordList (map comp exprs)
+    comp (OpFoldCall str exprs) = parenFoldOp str (map comp exprs)
 
 -- genericParseCall :: (Sexp -> Sexp) -> SexpParser a Sexp
 -- genericParseCall processCall =

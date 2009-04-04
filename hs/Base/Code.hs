@@ -3,7 +3,7 @@ module Code (Code, layout,
              text, newline, indent, indent2, append, group,
              conc, joinBy, lines, paragraphs,
              space, words, textWords, embrace, parens, brackets,
-             braces, commaSep, tuple, list, wordList,
+             braces, commaSep, tuple, list, wordList, string,
              binOp, parenBinOp, foldOp, parenFoldOp) where
 import Prelude hiding (catch, lines, words)
 import Control.Arrow
@@ -116,6 +116,8 @@ braces = embrace "{" "}"
 
 commaSep :: [Code] -> Code
 commaSep cs = joinBy (Text ", ") cs
+
+string = embrace "\"" "\"" . text
 
 tuple    = parens   . commaSep
 list     = brackets . commaSep

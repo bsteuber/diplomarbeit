@@ -23,3 +23,7 @@ bool2either b = if b then Left () else Right ()
 unMaybeList :: Maybe [a] -> [a]
 unMaybeList  Nothing  = []
 unMaybeList (Just xs) = xs
+
+maybe2list :: Maybe a -> [a]
+maybe2list (Just x) = [x]
+maybe2list _        = []
