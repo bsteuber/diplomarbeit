@@ -3,7 +3,10 @@ import Control.Arrow
 import Arrows
 import Parser
 import Compiler
+import Haskell
+import Sexp2Haskell
 import Haskell2Code
+
 
 importCases = [ ( "Mod1"
                 , "import Mod1" )
@@ -27,7 +30,7 @@ moduleCases = [ ( "(module MyMod)"
                 , "module MyMod where\nimport Control.Exception\nimport Prelude hiding (words)" )
               ]
 
-typedCases = [ ( "Int"
+typeCases = [ ( "Int"
               , "Int" )
             , ( "a"
               , "a" )
@@ -45,7 +48,7 @@ typedCases = [ ( "Int"
               , "(a, b, (a -> b))" )
             ]
 
-typeCases = [ ( "(type x Int)"
+typeDefCases = [ ( "(type x Int)"
               , "x :: Int" )
             , ( "(type myMap (Fun (Fun a b) (List a) (List b)))" 
               , "myMap :: ((a -> b) -> [a] -> [b])" )
@@ -65,22 +68,22 @@ defCases = [ ( "(= x 5)"
              , "f _ _ = 33" )
            , ( "(= (|> x y) (y x))"
              , "x |> y = (y x)" )
-           , ( "(= con (str 12))"
+           , ( "(= con (Str 12))"
              , "con = \"12\"" )
-           , ( "(= con (List (str 12)))"
+           , ( "(= con (List (Str 12)))"
              , "con = [\"12\"]" )
-           , ( "(= con (List (str 12) (str 32)))"
+           , ( "(= con (List (Str 12) (Str 32)))"
              , "con = [\"12\", \"32\"]" )
            , ( "(= res (f 1 2) (where (= (f a b) (+ a b))))"
              , "res = (f 1 2)\n  where\n    f a b = (a + b)" )
            ]
 
 
-exprCases = [ ( "(str 42)"
+exprCases = [ ( "(Str 42)"
                 , "\"42\"" )
-              , ( "(str a  b c)"
-                , "\"abc\"" )
-              , ( "(List a b (str c))"
+              , ( "(Str a  b c)"
+                , "\"a b c\"" )
+              , ( "(List a b (Str c))"
                 , "[a, b, \"c\"]" )
               , ( "(map + myList)"
                 , "(map (+) myList)" )
@@ -92,6 +95,8 @@ lambdaCases = [ ( "(fun x 42)"
                 , "(\\ x -> 42)" )
               , ( "(fun (args x (List y)) (plus x y))"
                 , "(\\ x [y] -> (plus x y))" )
+              , ( "(fun (Node n) (show n))"
+                , "(\\ (Node n) -> (show n))" )
               ]
 
 doCases = [ ( "(do 42)"
@@ -102,11 +107,12 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import"  (comp :: SexpParser () Import)    importCases
-          testMacro "module"  (comp :: SexpParser () Module)    moduleCases
-          testMacro "typedef" (comp :: SexpParser () TypeDef)   typedCases
-          -- testMacro "type"   (comp :: SexpParser () Type)     typeCases
-          -- testMacro "def"    (comp :: SexpParser () Def)       defCases
-          -- testMacro "expr"   (comp :: SexpParser () Expr)     exprCases
-          -- testMacro "lambda" (comp :: SexpParser () Lambda) lambdaCases
-          -- testMacro "do"     (comp :: SexpParser () Do)         doCases
+main = do testMacro "import"  (comp :: SexpParser () Import)   importCases
+          testMacro "module"  (comp :: SexpParser () Module)   moduleCases
+          testMacro "type"    (comp :: SexpParser () Type)       typeCases
+          testMacro "typedef" (comp :: SexpParser () TypeDef) typeDefCases
+          testMacro "def"     (comp :: SexpParser () Def)         defCases
+          testMacro "expr"    (comp :: SexpParser () Expr)       exprCases
+          testMacro "lambda"  (comp :: SexpParser () Expr)     lambdaCases
+          testMacro "do"      (comp :: SexpParser () Expr)         doCases
+

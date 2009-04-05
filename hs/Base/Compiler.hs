@@ -31,12 +31,14 @@ takeNode :: SexpParser a [Sexp]
 takeNode =
     takeSexp >>> ((arr (show >>> ("Node expected: "++)) >>> fail) ||| id)
 
-parseNode :: SexpParser a b -> SexpParser a b
-parseNode parseInner = applyParser takeNode parseInner
+looseParseNode :: SexpParser a b -> SexpParser a b
+looseParseNode parseInner = applyParser takeNode parseInner
+
+parseNode parseInner = looseParseNode (parseInner >>> empty)
 
 looseMacro :: String -> SexpParser a b -> SexpParser a b
 looseMacro name parseInner = 
-    parseNode $ symbolMacro name >>> parseInner
+    looseParseNode $ symbolMacro name >>> parseInner
 
 macro :: String -> SexpParser a b -> SexpParser a b
 macro name parseInner = looseMacro name (parseInner >>> empty)
@@ -45,4 +47,4 @@ testMacro :: (Compilable x a Code) => String -> SexpParser () a -> [(String, Str
 testMacro name mac testCases = testCompiler name ((toIO mac >>> compile) :: IOArrow [Sexp] Code) testCases
 
 sexpCompiler :: (Compilable x a Code) => SexpParser () a -> IO ()
-sexpCompiler mac = compiler ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
+sexpCompiler mac = compiler (((Kleisli (\x -> (do putStrLn "here";return x))) >>> toIO mac >>> compile) :: IOArrow [Sexp] Code)

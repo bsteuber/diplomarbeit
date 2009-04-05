@@ -25,7 +25,7 @@ whenNewer inFile outFile action =
 
 sysList = system . unwords
 
-ghcLoadPath = "-ihs" </> "Base:hs" </> "Compiler:gen" </> "hs"
+ghcLoadPath = "-ihs" </> "Base:hs" </> "Compiler:hs" </> "Model:gen" </> "hs"
 ghciLoadPath = ghcLoadPath ++ ":test" </> "Compiler"
 
 
