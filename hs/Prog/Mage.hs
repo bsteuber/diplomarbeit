@@ -25,7 +25,7 @@ whenNewer inFile outFile action =
 
 sysList = system . unwords
 
-ghcLoadPath = "-ihs" </> "Base:hs" </> "Compiler:hs" </> "Model:gen" </> "hs"
+ghcLoadPath = "-ihs" </> "Base:hs" </> "Compiler:hs" </> "Model:hs" </> "Arrow:gen" </> "hs"
 ghciLoadPath = ghcLoadPath ++ ":test" </> "Compiler"
 
 
@@ -62,10 +62,10 @@ mkDirs = mapM $ createDirectoryIfMissing True
 build = do
   -- system "rm -rf gen"
   mkDirs ["gen" </> "bin", "gen" </> "ghc", "gen" </> "hs", "gen" </> "sep" </> "Haskell"]
-  ghc $ "hs" </> "Progs" </> "Format"
-  -- ghc "hs/Progs/HS2C"
+  ghc $ "hs" </> "Prog" </> "Format"
+  -- ghc "hs/Prog/HS2C"
   -- hs2c "sep/Haskell/Comp2Haskell.sep" "gen/hs/Comp2Haskell.hs"
-  -- ghc "hs/Progs/CMP2HS"
+  -- ghc "hs/Prog/CMP2HS"
   -- cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
   -- hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
 

@@ -27,6 +27,10 @@ ioToParser = P . lift . lift . Prog
 newtype Parser t a b = P {runP :: StateFunctor [t] (FailFunctor Program) a b }
     deriving (Category, Arrow, ArrowChoice, ArrowZero, ArrowPlus, ArrowFail)
 
+
+
+type ExecParser a b = Parser a () b
+
 instance ArrowState [t] (Parser t) where
     get = P get
     put = P put
