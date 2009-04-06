@@ -5,4 +5,5 @@ import Sexp
 import Parser
 import Compiler
 
-format = take
+format :: ExecFunParser a [a]
+format = many take

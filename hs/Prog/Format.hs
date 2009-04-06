@@ -1,5 +1,5 @@
 module Format where
-import Compiler
+import Sexp
 import Formatter
 
 main = sexpCompiler format
