@@ -11,7 +11,7 @@ newtype FailFunctor ar a b = FailF {runFailF :: ar a (Either String b)}
 execFail :: (ArrowChoice ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
 execFail (FailF f) = f >>> (fail ||| id)
 
-instance Functor FailFunctor where
+instance (Arrow ar) => Functor (FailFunctor ar) ar where
     lift f = FailF $ f >>^ Right
 
 instance (ArrowChoice ar) => Arrow (FailFunctor ar) where
@@ -52,13 +52,10 @@ instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) wher
     get = lift get
     put = lift put
 
-type Trans a b = FailFunctor (->) a b
+-- type Trans a b = FailFunctor (->) a b
 
-instance ArrowFail (->) where
-    fail msg = error msg
+-- runTrans :: Trans a b -> a -> Either String b
+-- runTrans = runFailF
 
-runTrans :: Trans a b -> a -> Either String b
-runTrans = runFailF
-
-forceTrans :: Trans a b -> a -> b
-forceTrans = execFail
+-- forceTrans :: Trans a b -> a -> b
+-- forceTrans = execFail

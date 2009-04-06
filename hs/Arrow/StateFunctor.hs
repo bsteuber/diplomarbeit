@@ -16,7 +16,7 @@ execState (StateF f) = arr (\ s -> ((), s)) >>> f >>> arr fst
 withState :: (Arrow ar) => StateFunctor s ar a b -> StateFunctor s ar (a, s) b
 withState (StateF f) = StateF (first (f >>^ fst))
 
-instance Functor (StateFunctor s) where
+instance (Arrow ar) => Functor (StateFunctor s ar) ar where
     lift = StateF . first
 
 instance (Arrow ar) => Arrow (StateFunctor s ar) where
