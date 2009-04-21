@@ -14,104 +14,63 @@
 
 \begin{document}
 
-\title{Ein S-Expression-basiertes Framework für die Erzeugung von Programmiersprachen}
+\title{MagicL: Ein Arrow-basiertes Compilerbau-Framework}
 \author{Benjamin Teuber}
-\date{16. Januar 2009}
+% \date{16. Januar 2009}
 
-\maketitle
+% \maketitle
 
 \begin{abstract}
-  Diese Diplomarbeit stellt ein
+  MagicL ist der Versuch eines universellen Frameworks für den Entwurf
+  von Programmier- und Auszeichnungssprachen. Es soll dem
+  Meta-Programmierer praktische Werkzeuge für das Parsing und Übersetzen
+  neuer sowie für Generation von Code bestehender Sprachen an die Hand
+  geben, wobei insbesondere (jedoch nicht ausschließlich) aus
+  S-Expressions aufgebaute Sprachen unterstützt werden. Die Parser- und
+  Compilererstellung erfolgt nach einem kategorientheoretisch
+  motivierten Baukastenansatz, so dass beispielsweise Parser durch die
+  Kombination von Arrows erzeugt werden.
 \end{abstract}
 
-\tableofcontents
+% \tableofcontents
 
 \section{Einleitung}
 \label{sec:intro}
 
-\section{Lisp}
-\label{sec:lisp}
+\subsection{Motivation}
+\label{sec:intro:motiv}
 
-\subsection{S-Expressions}
-\label{sec:lisp:sexp}
+-Modellgetriebene Softwareentwicklung sehr in Mode (Beispiele: Oslo,
+?)
+-Vorteile: DRY, Domänenexperten von Prog.Sprache unabhängig, ...
+-Probleme: Aufwand der Metaprogrammierung
 
-\subsubsection{Vergleich mit XML}
-\label{sec:lisp:sexp:xml}
+TODO: Einlesen in bestehende Frameworks
 
-\subsection{Makros}
-\label{sec:lisp:macros}
+\subsection{Lisp}
+\label{sec:into:lisp}
 
-\section{Kategorientheorie}
-\label{sec:category}
+-Code-Generation und Metaprogrammierung seit fast 50 Jahren
+-was können wir lernen?
+--Einheitliche Syntax macht vieles leichter
+--compilererweitungen durch makros
 
-\subsection{Monaden}
-\label{sec:category:monads}
+diskussion: s-exp vs. xml
 
-\subsection{Arrows}
-\label{sec:category:arrows}
+diskussion: makros good or bad
 
-\section{Grundlegende Architektur}
-\label{sec:basic}
+\subsection{Zielsetzung}
+\label{sec:intro:goal}
 
-\subsection{Datenmodell}
-\label{sec:basic:model}
+\section{Erster Prototyp in Ruby}
+\label{sec:sexy}
 
-\subsection{Transformatoren}
-\label{sec:basic:trans}
+\section{Arrow-basierte Implementation in Haskell}
+\label{sec:magicl}
 
-\subsection{Eater}
-\label{sec:basic:eater}
-
-\section{Systemkomponenten}
-\label{sec:system}
-
-\subsection{Reader}
-\label{sec:system:reader}
-
-\subsection{Pretty-Printer}
-\label{sec:system:pretty}
-
-\subsection{Makros}
-\label{sec:system:macros}
-
-\subsection{Compiler}
-\label{sec:system:compiler}
-
-\subsection{Kommandozeilen-Interface}
-\label{sec:system:mage}
-
-\section{Modellsprachen}
-\label{sec:lang}
-
-\subsection{Quellcode}
-\label{sec:lang:code}
-
-\subsection{Haskell}
-\label{sec:lang:haskell}
-
-\subsection{Compiler}
-\label{sec:lang:compiler}
-
-\subsection{Test}
-\label{sec:lang:test}
-
-\subsection{Latex}
-\label{sec:lang:latex}
+\subsection{Kategorientheoretische Grundlagen}
+\label{sec:magicl:cats}
 
 
-\section{Mögliche Erweiterungen}
-\label{sec:maybe}
-
-\subsection{Verarbeitung von Graphen}
-\label{sec:maybe:graphs}
-
-\subsection{Petri-Netze}
-\label{sec:maybe:petri}
-
-\subsection{Einheitentheorie}
-\label{sec:maybe:units}
-
-\section{Zusammenfassung und Ausblick}
-\label{sec:preview}
 
 \end{document}
