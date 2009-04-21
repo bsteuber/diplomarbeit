@@ -16,19 +16,19 @@ instance Compilable (ExecFunParser Sexp Haskell) [Sexp] Haskell where
     comp = macro "haskell" (liftA2 Haskell comp comp)
 
 instance Compilable (ExecFunParser Sexp Module) [Sexp] Module where
-    comp = macro "module" (liftA3 Module takeSymbol comp comp)
+    comp = macro "module" (liftA3 Module comp comp comp)
 
 instance Compilable (ExecFunParser Sexp Export) [Sexp] Export where
-    comp = liftA1 Export (macro "export" (many takeSymbol))
+    comp = liftA1 Export (macro "export" (many comp))
 
 instance Compilable (ExecFunParser Sexp Import) [Sexp] Import where
-    comp  = (takeSymbol >>^ \ n -> Import n Simple) <+>
-             compNode (liftA2 Import takeSymbol compArgs)
+    comp  = (comp >>^ \ n -> Import n Simple) <+>
+             compNode (liftA2 Import comp compArgs)
         where compArgs =
                   ((empty >>> constArrow Simple)               <+> 
-                   (macro "qualified" takeSymbol >>> arr Qualified) <+>
-                   (macro "only" (many takeSymbol) >>> arr Only)           <+>
-                   (macro "hiding" (many takeSymbol) >>> arr Hiding))
+                   (macro "qualified" comp >>> arr Qualified) <+>
+                   (macro "only" (many comp) >>> arr Only)           <+>
+                   (macro "hiding" (many comp) >>> arr Hiding))
 
 instance Compilable (ExecFunParser Sexp Toplevel) [Sexp] Toplevel where
     comp = (comp >>^ TopTypeDef) <+> (comp >>^ TopDef)
@@ -41,8 +41,8 @@ instance Compilable (ExecFunParser Sexp Type) [Sexp] Type where
              (liftA1  TupleType     (macro "Tuple" comp))      <+>
              (liftA1  ListType      (macro "List"  comp))      <+>
              (liftA1  FunType       (macro "Fun"   comp))      <+>
-             (compNode (liftA2 ParamType takeSymbol comp))         <+>
-             (liftA1  NormalType    takeSymbol))
+             (compNode (liftA2 ParamType comp comp))         <+>
+             (liftA1  NormalType    comp))
 
 instance Compilable (ExecFunParser Sexp Def) [Sexp] Def where
     comp = macro "=" $ liftA3 Def comp comp comp
@@ -66,15 +66,15 @@ instance Compilable (ExecFunParser Sexp Pattern) [Sexp] Pattern where
     comp = 
         (liftA1 ListPattern (macro "List" comp)   <+>
          liftA1 TuplePattern (macro "Tuple" comp) <+>
-         liftA1 StringPattern (macro "Str" (many takeSymbol >>> arr unwords))  <+>
+         liftA1 StringPattern (macro "Str" (many comp >>> arr unwords))  <+>
          liftA1 CallPattern comp)
 
 instance Compilable (ExecFunParser Sexp Call) [Sexp] Call where
     comp = 
-        (liftA1 ConstOpCall (takeSymbol >>> failUnless isOp)      <+>
-         liftA1 ConstCall   (takeSymbol <+> compNode takeSymbol) <+>
+        (liftA1 ConstOpCall (comp >>> failUnless isOp)      <+>
+         liftA1 ConstCall   (comp <+> compNode comp) <+>
          compNode (liftA2 
                     OpFoldCall 
-                    (takeSymbol >>> failUnless isOp)
+                    (comp >>> failUnless isOp)
                     comp)                                         <+>
          compNode (liftA1 FunCall comp))

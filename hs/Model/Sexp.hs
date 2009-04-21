@@ -62,6 +62,9 @@ takeSexp = take >>^ sexp2either
 takeSymbol =
     takeSexp >>> (id ||| (arr (show >>> ("Symbol expected: "++)) >>> fail))
 
+instance Compilable (ExecFunParser Sexp String) [Sexp] String where
+    comp = takeSymbol
+
 symbolMacro = skip . eq . symbol
 
 takeNode =
@@ -82,16 +85,21 @@ sexpCompiler mac = compiler ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
 
 -- Pretty Print sexps
 
-layoutSexp f =
+customLayoutSexp f =
     f <+> layoutSym <+> layoutNode
         where layoutSym  = takeSymbol >>^ text
-              layoutNode = compNode (many (layoutSexp f) >>^ (parens . group . indent2 . lines))
+              layoutNode = compNode (many (customLayoutSexp f) >>^ (parens . group . indent2 . lines))
+
+customLayoutSexps f = many (customLayoutSexp f) >>^ paragraphs
+
+layoutSexps = customLayoutSexps zeroArrow
+
+customPrintSexps f = customLayoutSexps f >>> lift comp
+
+printSexps = customPrintSexps zeroArrow
 
 instance Compilable (ExecFunParser Sexp Code) [Sexp] Code where
-    comp = many (layoutSexp zeroArrow) >>^ paragraphs
-
-instance Compilable (ExecFunParser Sexp String) [Sexp] String where
-    comp = (comp :: ExecFunParser Sexp Code) >>> lift comp
+    comp = layoutSexps
 
 instance Show Sexp where
-    show = execParser comp . single
+    show = execParser printSexps . single
