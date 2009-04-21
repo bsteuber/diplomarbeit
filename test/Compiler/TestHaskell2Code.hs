@@ -2,7 +2,7 @@ module TestHaskell2Code where
 import Control.Arrow
 import Arrows
 import Parser
-import Compiler
+import Sexp
 import Haskell
 import Sexp2Haskell
 import Haskell2Code
@@ -107,12 +107,12 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import"  (comp :: SexpParser () Import)   importCases
-          testMacro "module"  (comp :: SexpParser () Module)   moduleCases
-          testMacro "type"    (comp :: SexpParser () Type)       typeCases
-          testMacro "typedef" (comp :: SexpParser () TypeDef) typeDefCases
-          testMacro "def"     (comp :: SexpParser () Def)         defCases
-          testMacro "expr"    (comp :: SexpParser () Expr)       exprCases
-          testMacro "lambda"  (comp :: SexpParser () Expr)     lambdaCases
-          testMacro "do"      (comp :: SexpParser () Expr)         doCases
+main = do testMacro "import"  (comp :: SexpParser Import)   importCases
+          testMacro "module"  (comp :: SexpParser Module)   moduleCases
+          testMacro "type"    (comp :: SexpParser Type)       typeCases
+          testMacro "typedef" (comp :: SexpParser TypeDef) typeDefCases
+          testMacro "def"     (comp :: SexpParser Def)         defCases
+          testMacro "expr"    (comp :: SexpParser Expr)       exprCases
+          testMacro "lambda"  (comp :: SexpParser Expr)     lambdaCases
+          testMacro "do"      (comp :: SexpParser Expr)         doCases
 

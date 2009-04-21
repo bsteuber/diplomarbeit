@@ -18,7 +18,7 @@ data Sexp = Symbol { symbolName :: String }
           | Node   { children   :: [Sexp] }
             deriving (Eq)
 
-type SexpParser = ParseFunctor Sexp
+type SexpParser a = ExecFunParser Sexp a
 
 sexp2either (Symbol s)   = Left s
 sexp2either (Node sexps) = Right sexps

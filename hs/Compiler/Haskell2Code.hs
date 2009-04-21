@@ -4,10 +4,8 @@ import Prelude hiding (lines, words)
 import Control.Arrow
 import Util
 import Arrows
-import Sexp
 import Model
 import Parser
-import Compiler
 import Code
 import Haskell
 
