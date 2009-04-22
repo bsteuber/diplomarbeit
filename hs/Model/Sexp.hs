@@ -8,6 +8,7 @@ import System.Environment (getArgs)
 import System.IO
 import Util
 import Arrows
+import FailFunctor
 import Code
 import Parser
 import Model
@@ -59,10 +60,11 @@ instance Compilable (ExecFunParser Char [Sexp]) String [Sexp] where
 
 takeSexp = take >>^ sexp2either
 
+takeSymbol :: SexpParser String
 takeSymbol =
     takeSexp >>> (id ||| (arr (show >>> ("Symbol expected: "++)) >>> fail))
 
-instance Compilable (ExecFunParser Sexp String) [Sexp] String where
+instance Compilable (SexpParser String) [Sexp] String where
     comp = takeSymbol
 
 symbolMacro = skip . eq . symbol
@@ -92,14 +94,17 @@ customLayoutSexp f =
 
 customLayoutSexps f = many (customLayoutSexp f) >>^ paragraphs
 
+layoutSexps :: SexpParser Code
 layoutSexps = customLayoutSexps zeroArrow
 
-customPrintSexps f = customLayoutSexps f >>> lift comp
+customPrintSexps :: SexpParser Code -> SexpParser String
+customPrintSexps f = customLayoutSexps f >>> lift (lift comp)
 
+printSexps :: SexpParser String
 printSexps = customPrintSexps zeroArrow
 
-instance Compilable (ExecFunParser Sexp Code) [Sexp] Code where
+instance Compilable (SexpParser Code) [Sexp] Code where
     comp = layoutSexps
 
 instance Show Sexp where
-    show = execParser printSexps . single
+    show = forceFailFun (execParser printSexps) . single

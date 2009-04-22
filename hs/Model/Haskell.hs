@@ -19,6 +19,7 @@ data Import = Import ModuleName ImportArgs
 
 data Toplevel = TopTypeDef TypeDef
               | TopDef Def
+              | TopInstance Instance
 
 data TypeDef = TypeDef Expr Type
 
@@ -49,3 +50,5 @@ data Call = ConstCall String
           | ConstOpCall String
           | FunCall [Expr]
           | OpFoldCall String [Expr]
+
+data Instance = Instance [Type] Where

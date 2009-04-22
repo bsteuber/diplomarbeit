@@ -1,4 +1,17 @@
+{-# OPTIONS -fglasgow-exts #-}
 module Util where
+import Data.Typeable
+import Control.Exception
+
+data MagicError = MagicError String
+                  deriving (Typeable)
+
+instance Show MagicError where
+    show (MagicError msg) = msg
+
+instance Exception MagicError
+
+magicError = throw . MagicError
 
 interleave :: a -> [a] -> [a]
 interleave i (x:y:xs) = x : i : interleave i (y:xs)

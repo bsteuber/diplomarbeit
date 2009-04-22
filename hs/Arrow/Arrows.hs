@@ -2,9 +2,10 @@
 module Arrows where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.List
+import qualified Control.Exception as E
 import Control.Category
 import Control.Arrow
-import Control.Monad (liftM)
+import qualified Control.Monad as M
 import Util
 
 type IOFun a b = a -> IO b
@@ -30,11 +31,8 @@ class (Executable x a b) => Compilable x a b | a b -> x where
 compile :: (Compilable x a b) => IOArrow a b
 compile = toIO comp
 
-instance ArrowFail (->) where
-    fail = error
-
 instance ArrowFail IOArrow where
-    fail = Kleisli $ error
+    fail = Kleisli $ magicError
 
 instance Executable (a -> b) a b where
     toIO f = Kleisli (return . f)

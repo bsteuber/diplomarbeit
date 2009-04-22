@@ -12,16 +12,16 @@ import Haskell
 isOp :: String -> Bool
 isOp = all (`elem` "!$%&/=?*+-.:<|>")
 
-instance Compilable (ExecFunParser Sexp Haskell) [Sexp] Haskell where
+instance Compilable (SexpParser Haskell) [Sexp] Haskell where
     comp = macro "haskell" (liftA2 Haskell comp comp)
 
-instance Compilable (ExecFunParser Sexp Module) [Sexp] Module where
+instance Compilable (SexpParser Module) [Sexp] Module where
     comp = macro "module" (liftA3 Module comp comp comp)
 
-instance Compilable (ExecFunParser Sexp Export) [Sexp] Export where
+instance Compilable (SexpParser Export) [Sexp] Export where
     comp = liftA1 Export (macro "export" (many comp))
 
-instance Compilable (ExecFunParser Sexp Import) [Sexp] Import where
+instance Compilable (SexpParser Import) [Sexp] Import where
     comp  = (comp >>^ \ n -> Import n Simple) <+>
              compNode (liftA2 Import comp compArgs)
         where compArgs =
@@ -30,13 +30,13 @@ instance Compilable (ExecFunParser Sexp Import) [Sexp] Import where
                    (macro "only" (many comp) >>> arr Only)           <+>
                    (macro "hiding" (many comp) >>> arr Hiding))
 
-instance Compilable (ExecFunParser Sexp Toplevel) [Sexp] Toplevel where
-    comp = (comp >>^ TopTypeDef) <+> (comp >>^ TopDef)
+instance Compilable (SexpParser Toplevel) [Sexp] Toplevel where
+    comp = (comp >>^ TopTypeDef) <+> (comp >>^ TopDef) <+> (comp >>^ TopInstance)
 
-instance Compilable (ExecFunParser Sexp TypeDef) [Sexp] TypeDef where
+instance Compilable (SexpParser TypeDef) [Sexp] TypeDef where
     comp = macro "type" (liftA2 TypeDef comp comp)
 
-instance Compilable (ExecFunParser Sexp Type) [Sexp] Type where
+instance Compilable (SexpParser Type) [Sexp] Type where
     comp = ((symbolMacro "Unit" >>> constArrow (TupleType [])) <+> 
              (liftA1  TupleType     (macro "Tuple" comp))      <+>
              (liftA1  ListType      (macro "List"  comp))      <+>
@@ -44,32 +44,32 @@ instance Compilable (ExecFunParser Sexp Type) [Sexp] Type where
              (compNode (liftA2 ParamType comp comp))         <+>
              (liftA1  NormalType    comp))
 
-instance Compilable (ExecFunParser Sexp Def) [Sexp] Def where
+instance Compilable (SexpParser Def) [Sexp] Def where
     comp = macro "=" $ liftA3 Def comp comp comp
 
-instance Compilable (ExecFunParser Sexp Expr) [Sexp] Expr where
+instance Compilable (SexpParser Expr) [Sexp] Expr where
     comp = 
         (macro "fun" (liftA2 LambdaExpr (macro "args" comp <+> (comp >>^ single)) comp) <+>
          liftA1 DoExpr (macro "do" comp)                                                  <+>
          liftA1 TypeExpr comp                                                             <+>
          liftA1 PatternExpr comp)
 
-instance Compilable (ExecFunParser Sexp DoCmd) [Sexp] DoCmd where
+instance Compilable (SexpParser DoCmd) [Sexp] DoCmd where
     comp =
         (macro "<-" (liftA2 DoAssign comp comp) <+>
          liftA1 DoCmdExpr comp)
 
-instance Compilable (ExecFunParser Sexp Where) [Sexp] Where where
+instance Compilable (SexpParser Where) [Sexp] Where where
     comp = macro "where" (liftA1 Where comp)
 
-instance Compilable (ExecFunParser Sexp Pattern) [Sexp] Pattern where
+instance Compilable (SexpParser Pattern) [Sexp] Pattern where
     comp = 
         (liftA1 ListPattern (macro "List" comp)   <+>
          liftA1 TuplePattern (macro "Tuple" comp) <+>
          liftA1 StringPattern (macro "Str" (many comp >>> arr unwords))  <+>
          liftA1 CallPattern comp)
 
-instance Compilable (ExecFunParser Sexp Call) [Sexp] Call where
+instance Compilable (SexpParser Call) [Sexp] Call where
     comp = 
         (liftA1 ConstOpCall (comp >>> failUnless isOp)      <+>
          liftA1 ConstCall   (comp <+> compNode comp) <+>
@@ -78,3 +78,6 @@ instance Compilable (ExecFunParser Sexp Call) [Sexp] Call where
                     (comp >>> failUnless isOp)
                     comp)                                         <+>
          compNode (liftA1 FunCall comp))
+
+instance Compilable (SexpParser Instance) [Sexp] Instance where
+    comp = macro "instance" (liftA2 Instance (compNode comp) comp)

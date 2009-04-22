@@ -33,6 +33,7 @@ instance Compilable (Import -> Code) Import Code where
 instance Compilable (Toplevel -> Code) Toplevel Code where
     comp (TopTypeDef td) = comp td
     comp (TopDef d)      = comp d
+    comp (TopInstance i) = comp i
 
 instance Compilable (TypeDef -> Code) TypeDef Code where
     comp (TypeDef expr typ) = binOp "::" (comp expr) (comp typ)
@@ -44,11 +45,14 @@ instance Compilable (Type -> Code) Type Code where
     comp (FunType ts)       = parenFoldOp "->" $ map comp ts
     comp (ParamType str ts) = wordList (text str : map comp ts)
 
+withWhere :: Code -> Where -> Code
+withWhere c wh = indent2 $ lines $ c : [comp wh]
+
 instance Compilable (Def -> Code) Def Code where
     comp (Def pat expr mayWhere) =
         case mayWhere of 
           Nothing -> defi
-          Just wh -> indent2 $ lines $ defi : [comp wh]
+          Just wh -> withWhere defi wh
       where defi = binOp "=" (comp pat) (comp expr)
 
 instance Compilable (Expr -> Code) Expr Code where
@@ -77,9 +81,12 @@ compPatternWithParens pattern =
       CallPattern (OpFoldCall _ _) -> parens $ comp pattern
       _                            -> comp pattern
 
-
 instance Compilable (Call -> Code) Call Code where
     comp (ConstCall str)        = text str
     comp (ConstOpCall str)      = parens $ text str
     comp (FunCall exprs)        = words (map comp exprs)
     comp (OpFoldCall str exprs) = foldOp str (map comp exprs)
+
+instance Compilable (Instance -> Code) Instance Code where
+    comp (Instance types whereClause) = 
+        withWhere (words $ text "instance" : map comp types) whereClause

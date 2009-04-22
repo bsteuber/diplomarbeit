@@ -8,6 +8,8 @@ import Arrows
 
 newtype FailFunctor ar a b = FailF {runFailF :: ar a (Either String b)}
 
+type FailFun = FailFunctor (->)
+
 execFail :: (ArrowChoice ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
 execFail (FailF f) = f >>> (fail ||| id)
 
@@ -52,10 +54,10 @@ instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) wher
     get = lift get
     put = lift put
 
--- type Trans a b = FailFunctor (->) a b
+instance (Executable (ar a (Either String b)) a (Either String b)) => Executable (FailFunctor ar a b) a b where
+    toIO (FailF f) = toIO f >>> (fail ||| id)
 
--- runTrans :: Trans a b -> a -> Either String b
--- runTrans = runFailF
-
--- forceTrans :: Trans a b -> a -> b
--- forceTrans = execFail
+forceFailFun :: FailFun a b -> a -> b
+forceFailFun (FailF f) x = case f x of
+                             Left msg -> error msg
+                             Right res -> res

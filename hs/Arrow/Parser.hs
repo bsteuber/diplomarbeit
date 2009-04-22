@@ -14,15 +14,11 @@ import Model
 
 newtype ParseFunctor t ar a b = P {runP :: StateFunctor [t] (FailFunctor ar) a b }
 
-type IOParser t a b = ParseFunctor t IOArrow a b
-
-type FunParser t a b = ParseFunctor t (->) a b
-
+type FunParser   t a b = ParseFunctor t FailFun a b
+type IOParser    t a b = ParseFunctor t IOArrow a b
 type ExecParser ar a b = ParseFunctor a ar () b
-
-type ExecFunParser a b = ExecParser (->) a b
-
-type ExecIOParser a b = ExecParser IOArrow a b
+type ExecFunParser a b = ExecParser FailFun a b
+type ExecIOParser  a b = ExecParser IOArrow a b
 
 instance (ArrowChoice ar) => Category (ParseFunctor t ar) where
     id = arr id

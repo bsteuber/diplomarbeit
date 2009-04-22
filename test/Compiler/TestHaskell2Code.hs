@@ -60,6 +60,12 @@ typeDefCases = [ ( "(type x Int)"
               , "(f x y) :: ()" )
             ]
 
+instanceCases = [ ( "(instance (X Y) (where (= bla blub)))"
+                  , "instance X Y\n  where\n    bla = blub" )
+                , ( "(instance (A (Fun B c) D) (where (= (f x) (g x))))"
+                  , "instance A (B -> c) D\n  where\n    f x = (g x)" )
+                ]
+
 defCases = [ ( "(= x 5)"
              , "x = 5" )
            , ( "(= (x) 42)"
@@ -107,12 +113,13 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import"  (comp :: SexpParser Import)   importCases
-          testMacro "module"  (comp :: SexpParser Module)   moduleCases
-          testMacro "type"    (comp :: SexpParser Type)       typeCases
-          testMacro "typedef" (comp :: SexpParser TypeDef) typeDefCases
-          testMacro "def"     (comp :: SexpParser Def)         defCases
-          testMacro "expr"    (comp :: SexpParser Expr)       exprCases
-          testMacro "lambda"  (comp :: SexpParser Expr)     lambdaCases
-          testMacro "do"      (comp :: SexpParser Expr)         doCases
+main = do testMacro "import"   (comp :: SexpParser Import)     importCases
+          testMacro "module"   (comp :: SexpParser Module)     moduleCases
+          testMacro "type"     (comp :: SexpParser Type)         typeCases
+          testMacro "typedef"  (comp :: SexpParser Toplevel)  typeDefCases
+          testMacro "instance" (comp :: SexpParser Toplevel) instanceCases
+          testMacro "def"      (comp :: SexpParser Toplevel)      defCases
+          testMacro "expr"     (comp :: SexpParser Expr)         exprCases
+          testMacro "lambda"   (comp :: SexpParser Expr)       lambdaCases
+          testMacro "do"       (comp :: SexpParser Expr)           doCases
 
