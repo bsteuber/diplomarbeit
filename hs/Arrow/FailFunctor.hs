@@ -54,5 +54,5 @@ instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) wher
     get = lift get
     put = lift put
 
-instance (Executable (ar a (Either String b)) a (Either String b)) => Executable (FailFunctor ar a b) a b where
+instance (Executable (ar a (Failable b)) a (Failable b)) => Executable (FailFunctor ar a b) a b where
     toIO (FailF f) = toIO f >>> (fail ||| id)

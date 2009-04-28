@@ -47,23 +47,26 @@ instance (ArrowChoice ar) => ArrowState [t] (ParseFunctor t ar) where
     get = P get
     put = P put
 
-instance (Show t, ArrowFail ar, ArrowChoice ar, Executable (ar [t] a) [t] a) => 
+instance (Show t, ArrowFail ar, ArrowChoice ar, Executable (ar [t] (Failable a)) [t] (Failable a)) => 
     Executable (ParseFunctor t ar () a) [t] a where
         toIO = toIO . execParser
 
-instance (Show t, ArrowFail ar, ArrowChoice ar, Executable (ar [t] [a]) [t] [a], 
+instance (Show t, ArrowFail ar, ArrowChoice ar, Executable (ar [t] (Failable [a])) [t] (Failable [a]), 
           Compilable (ParseFunctor t ar () a) [t] a) =>
     Compilable (ParseFunctor t ar () [a]) [t] [a] where
         comp = many comp
 
 instance (Show t, ArrowFail ar, ArrowChoice ar, 
-          Executable (ar [t] (Maybe a)) [t] (Maybe a), 
+          Executable (ar [t] (Failable (Maybe a))) [t] (Failable (Maybe a)), 
           Compilable (ParseFunctor t ar () a) [t] a) => 
     Compilable (ParseFunctor t ar () (Maybe a)) [t] (Maybe a) where
         comp = optional comp
 
-execParser :: (Show t, ArrowFail ar, ArrowChoice ar) => ParseFunctor t ar () a -> ar [t] a
-execParser p = (execFail . execFail . execState . runP) (p >>> empty) 
+execParser :: (Show t, ArrowFail ar, ArrowChoice ar) => ParseFunctor t ar () a -> FailFunctor ar [t] a
+execParser p = (execFail . execState . runP) (p >>> empty) 
+
+forceParser :: (Show t, ArrowFail ar, ArrowChoice ar) => ParseFunctor t ar () a -> ar [t] a
+forceParser = execFail . execParser
 
 applyParser :: (ArrowChoice ar) => ParseFunctor t ar a [t] -> ParseFunctor t ar a b -> ParseFunctor t ar a b
 applyParser getInner (P parseInner) = (id &&& getInner) >>> P (withState parseInner)
