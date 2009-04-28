@@ -5,7 +5,6 @@ import Data.List
 import qualified Control.Exception as E
 import Control.Category
 import Control.Arrow
-import qualified Control.Monad as M
 import Util
 
 type IOFun a b = a -> IO b
@@ -31,8 +30,11 @@ class (Executable x a b) => Compilable x a b | a b -> x where
 compile :: (Compilable x a b) => IOArrow a b
 compile = toIO comp
 
+instance ArrowFail (->) where
+    fail = magicError
+
 instance ArrowFail IOArrow where
-    fail = Kleisli $ magicError
+    fail = Kleisli fail
 
 instance Executable (a -> b) a b where
     toIO f = Kleisli (return . f)

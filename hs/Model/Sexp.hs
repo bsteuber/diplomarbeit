@@ -98,7 +98,7 @@ layoutSexps :: SexpParser Code
 layoutSexps = customLayoutSexps zeroArrow
 
 customPrintSexps :: SexpParser Code -> SexpParser String
-customPrintSexps f = customLayoutSexps f >>> lift (lift comp)
+customPrintSexps f = customLayoutSexps f >>> lift comp
 
 printSexps :: SexpParser String
 printSexps = customPrintSexps zeroArrow
@@ -107,4 +107,4 @@ instance Compilable (SexpParser Code) [Sexp] Code where
     comp = layoutSexps
 
 instance Show Sexp where
-    show = forceFailFun (execParser printSexps) . single
+    show = execFail (execParser printSexps) . single

@@ -6,7 +6,7 @@ import Control.Arrow
 import Util
 import Arrows
 
-newtype FailFunctor ar a b = FailF {runFailF :: ar a (Either String b)}
+newtype FailFunctor ar a b = FailF {runFailF :: ar a (Failable b)}
 
 type FailFun = FailFunctor (->)
 
@@ -56,8 +56,3 @@ instance (ArrowChoice ar, ArrowState s ar) => ArrowState s (FailFunctor ar) wher
 
 instance (Executable (ar a (Either String b)) a (Either String b)) => Executable (FailFunctor ar a b) a b where
     toIO (FailF f) = toIO f >>> (fail ||| id)
-
-forceFailFun :: FailFun a b -> a -> b
-forceFailFun (FailF f) x = case f x of
-                             Left msg -> error msg
-                             Right res -> res
