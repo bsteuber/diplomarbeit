@@ -19,9 +19,11 @@ data Import = Import ModuleName ImportArgs
 
 data Toplevel = TopTypeDef TypeDef
               | TopDef Def
+              | TopData Data
+              | TopClass Class
               | TopInstance Instance
 
-data TypeDef = TypeDef Expr Type
+data TypeDef = TypeDef Expr (Maybe TypeDependancy) Type
 
 data Type = NormalType String
           | ListType Type
@@ -51,4 +53,12 @@ data Call = ConstCall String
           | FunCall [Expr]
           | OpFoldCall String [Expr]
 
-data Instance = Instance [Type] Where
+data Data = Data Type [Constructor]
+
+data Constructor = Constructor String [Type]
+
+data Class = Class (Maybe TypeDependancy) [Type] Where
+
+data Instance = Instance (Maybe TypeDependancy) [Type] Where
+
+data TypeDependancy = TypeDependancy [Type]

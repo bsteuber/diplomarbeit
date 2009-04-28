@@ -58,12 +58,28 @@ typeDefCases = [ ( "(type x Int)"
               , "x :: (Failing Int)" )
             , ( "(type (f x y) Unit)" 
               , "(f x y) :: ()" )
+            , ( "(type (f x y) (dep (Show a) (Eq a)) (List a))" 
+              , "(f x y) :: ((Show a), (Eq a)) => [a]" )
             ]
+
+dataCases = [ ( "(data Blub (Blub String))"
+              , "data Blub = Blub String" )
+            , ( "(data (StrangeEither a b) (Left a) (Right b) Nada)"
+              , "data StrangeEither a b =\n  Left a |\n  Right b |\n  Nada" )
+            ]
+
+classCases = [ ( "(class (X a) (where (type bla Unit)))"
+               , "class X a\n  where\n    bla :: ()" )
+             , ( "(class (dep (Show a) (Eq b)) (MyClass a b) (where (type f (Fun a b)) (type g (Fun b a))))"
+               , "class (Show a, Eq b) => MyClass a b \n  where\n    f :: (a -> b)\n    g :: (b -> a)" )
+             ]
 
 instanceCases = [ ( "(instance (X Y) (where (= bla blub)))"
                   , "instance X Y\n  where\n    bla = blub" )
                 , ( "(instance (A (Fun B c) D) (where (= (f x) (g x))))"
                   , "instance A (B -> c) D\n  where\n    f x = (g x)" )
+                , ( "(instance (dep (Blub b)) (A (Fun b c) (where (= (f x) (g x)))))"
+                  , "instance (Blub b) => A (b -> c)\n  where\n    f x = (g x)" )
                 ]
 
 defCases = [ ( "(= x 5)"
@@ -117,6 +133,8 @@ main = do testMacro "import"   (comp :: SexpParser Import)     importCases
           testMacro "module"   (comp :: SexpParser Module)     moduleCases
           testMacro "type"     (comp :: SexpParser Type)         typeCases
           testMacro "typedef"  (comp :: SexpParser Toplevel)  typeDefCases
+          testMacro "data"     (comp :: SexpParser Toplevel)     dataCases
+          testMacro "class"    (comp :: SexpParser Toplevel)    classCases
           testMacro "instance" (comp :: SexpParser Toplevel) instanceCases
           testMacro "def"      (comp :: SexpParser Toplevel)      defCases
           testMacro "expr"     (comp :: SexpParser Expr)         exprCases

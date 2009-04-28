@@ -33,10 +33,12 @@ instance Compilable (Import -> Code) Import Code where
 instance Compilable (Toplevel -> Code) Toplevel Code where
     comp (TopTypeDef td) = comp td
     comp (TopDef d)      = comp d
+    comp (TopData d)     = comp d
+    comp (TopClass c)    = comp c
     comp (TopInstance i) = comp i
 
 instance Compilable (TypeDef -> Code) TypeDef Code where
-    comp (TypeDef expr typ) = binOp "::" (comp expr) (comp typ)
+    comp (TypeDef expr mayDep typ) = binOp "::" (comp expr) (append (layoutMaybe comp mayDep) (comp typ))
 
 instance Compilable (Type -> Code) Type Code where
     comp (NormalType str)   = text str
@@ -87,6 +89,19 @@ instance Compilable (Call -> Code) Call Code where
     comp (FunCall exprs)        = words (map comp exprs)
     comp (OpFoldCall str exprs) = foldOp str (map comp exprs)
 
+instance Compilable (Data -> Code) Data Code where
+    comp (Data typ constrs) = indent2 $ lines $ words [text "data", comp typ, text "="] : map comp constrs
+
+instance Compilable (Constructor -> Code) Constructor Code where
+    comp (Constructor name types) = words $ text name : map comp types
+
+instance Compilable (Class -> Code) Class Code where
+    comp (Class mayDep types whereClause) = 
+        withWhere (words $ text "class" : layoutMaybe comp mayDep : map comp types) whereClause                  
+
 instance Compilable (Instance -> Code) Instance Code where
-    comp (Instance types whereClause) = 
-        withWhere (words $ text "instance" : map comp types) whereClause
+    comp (Instance mayDep types whereClause) = 
+        withWhere (words $ text "instance" : layoutMaybe comp mayDep : map comp types) whereClause
+
+instance Compilable (TypeDependancy -> Code) TypeDependancy Code where
+    comp (TypeDependancy deps) = words [tuple (map comp deps), text "=> "]

@@ -1,22 +1,2 @@
-(compiler Latex
-
-
-(defmac
-  (latex exprs)
-  (' (lines (,@ exprs)))
-  (with (exprs (many expr))))
-
-(def expr (aor cmd))
-        
-(defmac 
-  (cmd name optArgs args)
-  (' (append \ (, name) (,@ optArgs) (,@ args)))
-  (with
-    (name takeSymbol)
-    (optArgs (optional (mac 
-                         (opt oArgs)
-                         (' (brackets (commaSexp (,@ oArgs))))
-                         (with (oArgs (many expr))))))
-    (args (many (acombine expr (afun x (' (braces (, x)))))))))
-
-)
+(FunCompiler Latex Code
+  

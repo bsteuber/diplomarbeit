@@ -4,7 +4,7 @@ module Code (Code, layout,
              conc, joinBy, lines, paragraphs,
              space, words, textWords, embrace, parens, brackets,
              braces, commaSep, tuple, list, wordList, string,
-             binOp, parenBinOp, foldOp, parenFoldOp) where
+             binOp, parenBinOp, foldOp, parenFoldOp, layoutMaybe) where
 import Prelude hiding (catch, lines, words)
 import Control.Arrow
 import Util
@@ -72,6 +72,7 @@ layout lineWidth code = layoutSimple (simp lineWidth 0 [(0,code)])
 
 --- Interfacing constructor functions ---
 
+noCode     = NoCode
 text s     = Text s
 newline    = Newline
 indent i x = Indent i x
@@ -128,3 +129,7 @@ parenBinOp op x y = parens $ binOp op x y
 foldOp :: String -> [Code] -> Code
 foldOp op = foldr1 (binOp op)
 parenFoldOp op = parens . foldOp op
+
+layoutMaybe :: (a -> Code) -> Maybe a -> Code
+layoutMaybe f Nothing  = noCode
+layoutMaybe f (Just x) = f x

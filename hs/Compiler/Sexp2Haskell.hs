@@ -31,10 +31,14 @@ instance Compilable (SexpParser Import) [Sexp] Import where
                    (macro "hiding" (many comp) >>> arr Hiding))
 
 instance Compilable (SexpParser Toplevel) [Sexp] Toplevel where
-    comp = (comp >>^ TopTypeDef) <+> (comp >>^ TopDef) <+> (comp >>^ TopInstance)
+    comp = (comp >>^ TopTypeDef) <+> 
+           (comp >>^ TopDef)     <+> 
+           (comp >>^ TopData)    <+> 
+           (comp >>^ TopClass)   <+> 
+           (comp >>^ TopInstance)
 
 instance Compilable (SexpParser TypeDef) [Sexp] TypeDef where
-    comp = macro "type" (liftA2 TypeDef comp comp)
+    comp = macro "type" (liftA3 TypeDef comp comp comp)
 
 instance Compilable (SexpParser Type) [Sexp] Type where
     comp = ((symbolMacro "Unit" >>> constArrow (TupleType [])) <+> 
@@ -71,13 +75,25 @@ instance Compilable (SexpParser Pattern) [Sexp] Pattern where
 
 instance Compilable (SexpParser Call) [Sexp] Call where
     comp = 
-        (liftA1 ConstOpCall (comp >>> failUnless isOp)      <+>
-         liftA1 ConstCall   (comp <+> compNode comp) <+>
+        (liftA1 ConstOpCall (comp >>> failUnless isOp) <+>
+         liftA1 ConstCall   (comp <+> compNode comp)   <+>
          compNode (liftA2 
                     OpFoldCall 
                     (comp >>> failUnless isOp)
-                    comp)                                         <+>
+                    comp)                              <+>
          compNode (liftA1 FunCall comp))
 
+instance Compilable (SexpParser Data) [Sexp] Data where
+    comp = macro "data" (liftA2 Data comp comp)
+
+instance Compilable (SexpParser Constructor) [Sexp] Constructor where
+    comp = liftA2 Constructor comp comp
+
+instance Compilable (SexpParser Class) [Sexp] Class where
+    comp = macro "class" (liftA3 Class comp comp comp)
+
 instance Compilable (SexpParser Instance) [Sexp] Instance where
-    comp = macro "instance" (liftA2 Instance (compNode comp) comp)
+    comp = macro "instance" (liftA3 Instance comp (compNode comp) comp)
+
+instance Compilable (SexpParser TypeDependancy) [Sexp] TypeDependancy where
+    comp = macro "dep" (liftA1 TypeDependancy comp)
