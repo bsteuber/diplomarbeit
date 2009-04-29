@@ -77,7 +77,7 @@ looseCompNode compInner = applyParser takeNode compInner
 compNode compInner = looseCompNode (compInner >>> empty)
 
 looseMacro name compInner = 
-    looseCompNode $ symbolMacro name >>> compInner
+    looseCompNode $ symbolMacro name >>> forceParser compInner
 
 macro name compInner = looseMacro name (compInner >>> empty)
 

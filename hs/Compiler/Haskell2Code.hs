@@ -90,18 +90,20 @@ instance Compilable (Call -> Code) Call Code where
     comp (OpFoldCall str exprs) = foldOp str (map comp exprs)
 
 instance Compilable (Data -> Code) Data Code where
-    comp (Data typ constrs) = indent2 $ lines $ words [text "data", comp typ, text "="] : map comp constrs
+    comp (Data typ constrs) =
+        indent2 $ lines [words [text "data", comp typ, text "="], 
+                         joinBy (append (text " |") newline) (map comp constrs)]
 
 instance Compilable (Constructor -> Code) Constructor Code where
     comp (Constructor name types) = words $ text name : map comp types
 
 instance Compilable (Class -> Code) Class Code where
-    comp (Class mayDep types whereClause) = 
-        withWhere (words $ text "class" : layoutMaybe comp mayDep : map comp types) whereClause                  
+    comp (Class mayDep typ whereClause) = 
+        withWhere (words [text "class", append (layoutMaybe comp mayDep) (comp typ)]) whereClause                  
 
 instance Compilable (Instance -> Code) Instance Code where
-    comp (Instance mayDep types whereClause) = 
-        withWhere (words $ text "instance" : layoutMaybe comp mayDep : map comp types) whereClause
+    comp (Instance mayDep typ whereClause) = 
+        withWhere (words [text "instance", append (layoutMaybe comp mayDep) (comp typ)]) whereClause
 
 instance Compilable (TypeDependancy -> Code) TypeDependancy Code where
     comp (TypeDependancy deps) = words [tuple (map comp deps), text "=> "]

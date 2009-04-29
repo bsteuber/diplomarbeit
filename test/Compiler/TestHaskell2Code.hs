@@ -63,23 +63,23 @@ typeDefCases = [ ( "(type x Int)"
             ]
 
 dataCases = [ ( "(data Blub (Blub String))"
-              , "data Blub = Blub String" )
-            , ( "(data (StrangeEither a b) (Left a) (Right b) Nada)"
-              , "data StrangeEither a b =\n  Left a |\n  Right b |\n  Nada" )
+              , "data Blub =\n  Blub String" )
+            , ( "(data (StrangeEither a b) (Left a) (Right b) (Nada))"
+              , "data (StrangeEither a b) =\n  Left a |\n  Right b |\n  Nada" )
             ]
 
 classCases = [ ( "(class (X a) (where (type bla Unit)))"
-               , "class X a\n  where\n    bla :: ()" )
+               , "class (X a)\n  where\n    bla :: ()" )
              , ( "(class (dep (Show a) (Eq b)) (MyClass a b) (where (type f (Fun a b)) (type g (Fun b a))))"
-               , "class (Show a, Eq b) => MyClass a b \n  where\n    f :: (a -> b)\n    g :: (b -> a)" )
+               , "class ((Show a), (Eq b)) => (MyClass a b)\n  where\n    f :: (a -> b)\n    g :: (b -> a)" )
              ]
 
 instanceCases = [ ( "(instance (X Y) (where (= bla blub)))"
-                  , "instance X Y\n  where\n    bla = blub" )
+                  , "instance (X Y)\n  where\n    bla = blub" )
                 , ( "(instance (A (Fun B c) D) (where (= (f x) (g x))))"
-                  , "instance A (B -> c) D\n  where\n    f x = (g x)" )
-                , ( "(instance (dep (Blub b)) (A (Fun b c) (where (= (f x) (g x)))))"
-                  , "instance (Blub b) => A (b -> c)\n  where\n    f x = (g x)" )
+                  , "instance (A (B -> c) D)\n  where\n    f x = (g x)" )
+                , ( "(instance (dep (Blub b)) (A (Fun b c)) (where (= (f x) (g x))))"
+                  , "instance ((Blub b)) => (A (b -> c))\n  where\n    f x = (g x)" )
                 ]
 
 defCases = [ ( "(= x 5)"

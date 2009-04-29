@@ -16,9 +16,9 @@ newtype ParseFunctor t ar a b = P {runP :: StateFunctor [t] (FailFunctor (FailFu
 
 type FunParser   t a b = ParseFunctor t (->) a b
 type IOParser    t a b = ParseFunctor t IOArrow a b
-type ExecParser ar a b = ParseFunctor a ar () b
-type ExecFunParser a b = ExecParser (->) a b
-type ExecIOParser  a b = ExecParser IOArrow a b
+type ExecParser ar t b = ParseFunctor t ar () b
+type ExecFunParser t b = ExecParser (->) t b
+type ExecIOParser  t b = ExecParser IOArrow t b
 
 instance (ArrowChoice ar) => Category (ParseFunctor t ar) where
     id = arr id
@@ -65,8 +65,8 @@ instance (Show t, ArrowFail ar, ArrowChoice ar,
 execParser :: (Show t, ArrowFail ar, ArrowChoice ar) => ParseFunctor t ar () a -> FailFunctor ar [t] a
 execParser p = (execFail . execState . runP) (p >>> empty) 
 
-forceParser :: (Show t, ArrowFail ar, ArrowChoice ar) => ParseFunctor t ar () a -> ar [t] a
-forceParser = execFail . execParser
+forceParser :: (ArrowFail ar, ArrowChoice ar) => ExecParser ar t a -> ExecParser ar t a
+forceParser = P . StateF . forceFail . runStateF . runP
 
 applyParser :: (ArrowChoice ar) => ParseFunctor t ar a [t] -> ParseFunctor t ar a b -> ParseFunctor t ar a b
 applyParser getInner (P parseInner) = (id &&& getInner) >>> P (withState parseInner)

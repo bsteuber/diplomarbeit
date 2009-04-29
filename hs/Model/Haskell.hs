@@ -57,8 +57,8 @@ data Data = Data Type [Constructor]
 
 data Constructor = Constructor String [Type]
 
-data Class = Class (Maybe TypeDependancy) [Type] Where
+data Class = Class (Maybe TypeDependancy) Type Where
 
-data Instance = Instance (Maybe TypeDependancy) [Type] Where
+data Instance = Instance (Maybe TypeDependancy) Type Where
 
 data TypeDependancy = TypeDependancy [Type]

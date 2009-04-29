@@ -13,6 +13,9 @@ type FailFun = FailFunctor (->)
 execFail :: (ArrowChoice ar, ArrowFail ar) => FailFunctor ar a b -> ar a b
 execFail (FailF f) = f >>> (fail ||| id)
 
+forceFail :: (ArrowChoice ar, ArrowFail ar) => FailFunctor ar a b -> FailFunctor ar a b
+forceFail = lift . execFail
+
 instance (Arrow ar) => Functor (FailFunctor ar) ar where
     lift f = FailF $ f >>^ Right
 

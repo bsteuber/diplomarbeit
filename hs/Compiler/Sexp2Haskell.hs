@@ -87,13 +87,13 @@ instance Compilable (SexpParser Data) [Sexp] Data where
     comp = macro "data" (liftA2 Data comp comp)
 
 instance Compilable (SexpParser Constructor) [Sexp] Constructor where
-    comp = liftA2 Constructor comp comp
+    comp = compNode (liftA2 Constructor comp comp)
 
 instance Compilable (SexpParser Class) [Sexp] Class where
     comp = macro "class" (liftA3 Class comp comp comp)
 
 instance Compilable (SexpParser Instance) [Sexp] Instance where
-    comp = macro "instance" (liftA3 Instance comp (compNode comp) comp)
+    comp = macro "instance" (liftA3 Instance comp comp comp)
 
 instance Compilable (SexpParser TypeDependancy) [Sexp] TypeDependancy where
     comp = macro "dep" (liftA1 TypeDependancy comp)
