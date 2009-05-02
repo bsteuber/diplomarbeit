@@ -1,1 +1,8 @@
-(model Latex
+(model
+   (Latex 
+     (Command String (Maybe OptArgs) (List Latex))
+     (Environment String (Maybe OptArgs) (List Latex) Latex)
+     (Text (List Latex))
+     (Symbol String)
+     (Newline))
+   (OptArgs (it (List Latex)))) 

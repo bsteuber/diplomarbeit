@@ -1,0 +1,83 @@
+(cmd documentclass (opt a4paper bibgerm) article)
+(cmd newcommand (cmd defaultscale) 0.5)
+(env document
+  (cmd author (txt Benjamin Teuber))
+  (env abstract (txt MagicL ist (cmd bold (txt toll).))))
+(nl)
+
+\documentclass[a4paper, bibgerm]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{ngerman}
+\usepackage{bibgerm}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\defaultscale}{0.5}
+
+\newcommand\code[1]{\texttt{#1}}
+
+\begin{document}
+
+\title{MagicL: Ein Arrow-basiertes Compilerbau-Framework}
+\author{Benjamin Teuber}
+% \date{16. Januar 2009}
+
+% \maketitle
+
+\begin{abstract}
+  MagicL ist der Versuch eines universellen Frameworks für den Entwurf
+  von Programmier- und Auszeichnungssprachen. Es soll dem
+  Meta-Programmierer praktische Werkzeuge für das Parsing und Übersetzen
+  neuer sowie für Generation von Code bestehender Sprachen an die Hand
+  geben, wobei insbesondere (jedoch nicht ausschließlich) aus
+  S-Expressions aufgebaute Sprachen unterstützt werden. Die Parser- und
+  Compilererstellung erfolgt nach einem kategorientheoretisch
+  motivierten Baukastenansatz, so dass beispielsweise Parser durch die
+  Kombination von Arrows erzeugt werden.
+\end{abstract}
+
+% \tableofcontents
+
+\section{Einleitung}
+\label{sec:intro}
+
+\subsection{Motivation}
+\label{sec:intro:motiv}
+
+-Modellgetriebene Softwareentwicklung sehr in Mode (Beispiele: Oslo,
+?)
+-Vorteile: DRY, Domänenexperten von Prog.Sprache unabhängig, ...
+-Probleme: Aufwand der Metaprogrammierung
+
+TODO: Einlesen in bestehende Frameworks
+
+\subsection{Lisp}
+\label{sec:into:lisp}
+
+-Code-Generation und Metaprogrammierung seit fast 50 Jahren
+-was können wir lernen?
+--Einheitliche Syntax macht vieles leichter
+--compilererweitungen durch makros
+
+diskussion: s-exp vs. xml
+
+diskussion: makros good or bad
+
+\subsection{Zielsetzung}
+\label{sec:intro:goal}
+
+\section{Erster Prototyp in Ruby}
+\label{sec:sexy}
+
+\section{Arrow-basierte Implementation in Haskell}
+\label{sec:magicl}
+
+\subsection{Kategorientheoretische Grundlagen}
+\label{sec:magicl:cats}
+
+
+
+\end{document}
