@@ -1,22 +1,33 @@
 (model Latex
    (compilers 
      (parser Sexp)
-     (funComp Code))
+     (fun Code))
    (Latex 
      (Command
-       (slots String (Maybe OptArgs) (List Latex))
-       (mac cmd it)        
-       )   
+       (slots 
+         (name String)
+         (optArgs (Maybe OptArgs))
+         (args (List Latex)))
+       (mac cmd it)       
+       (append
+         (text (++ (Str \) name)))
+         ...)   
      (Environment
-       (slots String (Maybe OptArgs) (List Latex) Latex)
+       (slots
+         (name String)
+         (optArgs (Maybe OptArgs))
+         (args EnvArgs)
+         (body Latex))
        (mac env it)
        )
      (Text
-       (slots (List Latex))
+       (slots 
+         (content (List Latex)))
        (mac txt it)
        )
      (Symbol
-       (slots String)
+       (slots 
+         (symbName String))
        it
        )
      (Newline
@@ -26,5 +37,10 @@
    (OptArgs 
      (OptArgs
        (slots (List Latex))
-       it
+       (mac opt it)
+       ))
+   (EnvArgs 
+     (EnvArgs
+       (slots (List Latex))
+       (mac args it)
        )))
