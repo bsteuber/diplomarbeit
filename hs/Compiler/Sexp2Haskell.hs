@@ -19,7 +19,7 @@ instance Compilable (SexpParser Module) [Sexp] Module where
     comp = macro "module" (liftA3 Module comp comp comp)
 
 instance Compilable (SexpParser Export) [Sexp] Export where
-    comp = liftA1 Export (macro "export" (many comp))
+    comp = macro "export" (liftA1 Export comp)
 
 instance Compilable (SexpParser Import) [Sexp] Import where
     comp  = (comp >>^ \ n -> Import n Simple) <+>

@@ -1,8 +1,30 @@
-(model
+(model Latex
+   (compilers 
+     (parser Sexp)
+     (funComp Code))
    (Latex 
-     (Command String (Maybe OptArgs) (List Latex))
-     (Environment String (Maybe OptArgs) (List Latex) Latex)
-     (Text (List Latex))
-     (Symbol String)
-     (Newline))
-   (OptArgs (it (List Latex)))) 
+     (Command
+       (slots String (Maybe OptArgs) (List Latex))
+       (mac cmd it)        
+       )   
+     (Environment
+       (slots String (Maybe OptArgs) (List Latex) Latex)
+       (mac env it)
+       )
+     (Text
+       (slots (List Latex))
+       (mac txt it)
+       )
+     (Symbol
+       (slots String)
+       it
+       )
+     (Newline
+       (slots) 
+       (mac nl it)
+       ))
+   (OptArgs 
+     (OptArgs
+       (slots (List Latex))
+       it
+       )))
