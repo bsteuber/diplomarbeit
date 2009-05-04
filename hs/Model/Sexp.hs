@@ -81,6 +81,8 @@ looseMacro name compInner =
 
 macro name compInner = looseMacro name (compInner >>> empty)
 
+optMacro name compInner = Macro name compInner <+> nilArrow
+
 testMacro name mac testCases = testCompiler name ((toIO mac >>> compile) :: IOArrow [Sexp] Code) testCases
 
 sexpCompiler mac = compiler ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
