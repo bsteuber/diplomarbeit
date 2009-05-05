@@ -1,4 +1,5 @@
 {-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE OverlappingInstances, UndecidableInstances #-}
 module Sexp where
 import Prelude hiding (id, (.), take, lines, fail, Functor)
 import Control.Category
@@ -21,6 +22,15 @@ data Sexp = Symbol { symbolName :: String }
 
 type SexpParser a = ExecFunParser Sexp a
 
+data GenSexp a = GenSexp { unGenSexp :: [Sexp] }
+data SexpGen a b = SexpGen { unSexpGen :: a -> GenSexp b }
+
+instance (Compilable x [Sexp] b) => Executable (SexpGen a b) a b where
+    toIO (SexpGen f) = toIO f >>> arr unGenSexp >>> compile 
+
+-- instance Executable (SexpGen a) a Sexp where
+--     toIO (SexpGen f) = toIO f
+
 sexp2either (Symbol s)   = Left s
 sexp2either (Node sexps) = Right sexps
 
@@ -37,6 +47,10 @@ isSymbol (Node _)   = False
 isSymbol (Symbol _) = True
 
 labelEq name = (name==) . label
+
+-- 
+
+
 
 -- Reader
 
@@ -81,7 +95,7 @@ looseMacro name compInner =
 
 macro name compInner = looseMacro name (compInner >>> empty)
 
-optMacro name compInner = Macro name compInner <+> nilArrow
+optMacro name compInner = macro name compInner <+> nilArrow
 
 testMacro name mac testCases = testCompiler name ((toIO mac >>> compile) :: IOArrow [Sexp] Code) testCases
 

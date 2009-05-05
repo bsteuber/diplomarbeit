@@ -6,7 +6,7 @@ import Sexp
 import Haskell
 import Sexp2Haskell
 import Haskell2Code
-
+import ModelLang
 
 importCases = [ ( "Mod1"
                 , "import Mod1" )
