@@ -6,6 +6,13 @@ import Control.Arrow
 import Util
 import Arrows
 
+data Gen a b = Gen { unGen :: a }
+
+data (Executable x a (Gen b c)) => GenComp x a b c = GenComp { unGenComp :: x }
+
+instance (Compilable x b c, Executable y a (Gen b c)) => Executable (GenComp y a b c) a c where
+    toIO (GenComp f) = toIO f >>> arr unGen >>> compile 
+
 compileStr :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IOFun String String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile
 

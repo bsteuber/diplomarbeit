@@ -1,0 +1,6 @@
+#!/bin/bash
+pdflatex "$@".tex
+pdflatex "$@".tex
+bibtex "$@"
+pdflatex "$@"
+

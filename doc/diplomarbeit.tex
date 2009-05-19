@@ -6,6 +6,8 @@
 \usepackage{bibgerm}
 \usepackage{color}
 \usepackage{graphicx}
+\usepackage{pstricks}
+\usepackage{pst-node}
 \usepackage{hyperref}
 
 \newcommand{\defaultscale}{0.5}
@@ -16,12 +18,12 @@
 
 \title{MagicL: Ein Arrow-basiertes Compilerbau-Framework}
 \author{Benjamin Teuber}
-% \date{16. Januar 2009}
+\date{\today}
 
 % \maketitle
 
 \begin{abstract}
-  MagicL ist der Versuch eines universellen Frameworks für den Entwurf
+  MagicL ist der Prototyp eines universellen Frameworks für den Entwurf
   von Programmier- und Auszeichnungssprachen. Es soll dem
   Meta-Programmierer praktische Werkzeuge für das Parsing und Übersetzen
   neuer sowie für Generation von Code bestehender Sprachen an die Hand
@@ -37,15 +39,63 @@
 \section{Einleitung}
 \label{sec:intro}
 
-\subsection{Motivation}
-\label{sec:intro:motiv}
+Modellgetriebene Softwareentwicklung ist in aller Munde: Während UML
+bald sein 20-Jähriges Jubiläum \footnote{Zumindest was die ersten
+  Entwürfe angeht - der Standardisierungsprozess war erst 1997
+  abgeschlossen.} feiert, verspricht Microsoft mit \textit{Oslo}
+\cite{TODO} einen ``Mainstream-Ansatz für Modellierung''. IBM vermarktet
+seit Jahren \textit{Rational Application Developer}, das wie auch das
+freie \textit{Eclipse Modelling Framework} oder auch \textit{Enterprise
+  Architect} Eclipse um modellbasierte Codegenerierung bereichern.
+Code-Generation fällt auch im World Wide Web eine immer größer werdende
+Rolle zu: Ob \textit{Ruby on Rails} oder \textit{Google Web Toolkit},
+praktisch alle Web Frameworks generieren zumindest ihre HTML-Dateien oder
+SQL-Strings für den Datenbankzugriff.
 
--Modellgetriebene Softwareentwicklung sehr in Mode (Beispiele: Oslo,
-?)
--Vorteile: DRY, Domänenexperten von Prog.Sprache unabhängig, ...
--Probleme: Aufwand der Metaprogrammierung
+Der ganze Bereich um Code-Generation ist also ein aktuelles Thema.
 
-TODO: Einlesen in bestehende Frameworks
+\subsection{Codegenerierung}
+\label{sec:intro:codegen}
+
+Allgemein ist jedermann klar, was Codegenerierung bedeutet:
+Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
+Unterschiede zwischen Codegenerierungswerkzeugen.
+
+So differenziert man zwischen aktiver und passiver
+Codegenerierung. Aktiv bedeutet, dass die Generierung wiederholt
+ausgeführt werden kann, wenn sich etwas am Modell oder Generator ändert,
+da die komplette Datei generiert wird. Passiv generierter Code dagegen
+wird anschließend vom Programmierer modifiziert bzw. erst mit sinnvollen
+Inhalten bestückt, so dass dieser nur normalerweise nur einmalig
+generiert werden kann, wenn die Anpassungen nicht überschrieben werden
+sollen. Zwischen aktiver und passiver Generierung liegen Dateien, in
+denen nur markierte Abschnitte generiert werden - so dass der Rest
+unverändert bleiben kann. Optimal wäre natürlich ein allgemeiner
+Merge-Mechanismus, der die Arbeit des Programmierers reibungslos in die
+neue Version übernimmt - dies ist aber leider schwierig zu
+implementieren.
+
+Zudem lässt sich nach Ein- und Ausgabe des Generators unterscheiden.
+
+Vorteile:
+\begin{itemize}
+\item Abstraktion - Modellarchitekten beötigen keine
+  Programmiersprachkenntnisse, Backend austauschbar
+``Ist die Sprache an die Problemdomäne angepasst, muss man das Problem
+nicht in die Sprache zwängen''
+\item Produktivität - DRY-Prinzip spart u.U. viel Zeit
+\item Qualität - ist der Generator fehlerfrei, gibt es keine Probleme
+  bei neuen Modellen
+\item Konsistenz - einheitliche Strukturen/Namen, minimiert Einarbeitungszeit
+\end{itemize}
+
+Nachteile:
+\begin{itemize}
+\item Dokumentation / Einarbeitung
+\item Fehlersuche
+\item Komplexität
+\item Entwicklungsaufwand
+\end{itemize}
 
 \subsection{Lisp}
 \label{sec:into:lisp}
@@ -55,7 +105,16 @@ TODO: Einlesen in bestehende Frameworks
 --Einheitliche Syntax macht vieles leichter
 --compilererweitungen durch makros
 
-diskussion: s-exp vs. xml
+\subsubsection{Vergleich mit XML}
+\label{sec:intro:lisp:xml}
+
+-gleiche Zielsetzung - Baumstruktur
+-syntax: ``</tag>'' vs. ``)''
+--nur vorteilhaft f texteditor ohne parent-matching!
+-XML komplexer, da Attribute
+--kann auch durch unterknoten ausgedrückt werden - wird es nur aufgrund
+von hässlicher syntax nicht
+--nicht mehr rekursiv, komplexe attribute gehen nicht (wirklich)
 
 diskussion: makros good or bad
 
@@ -71,6 +130,22 @@ diskussion: makros good or bad
 \subsection{Kategorientheoretische Grundlagen}
 \label{sec:magicl:cats}
 
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.4]{images/funs}
+  \caption{Ein simples Funktionensystem}
+  \label{fig:cat:funs}
+\end{figure}
 
+Kategorie: Abstraktion von Funktionstypen und -komposition
+Bild: Mathe-Kategorie
+
+Formal: Objekte, Morphismen (oder Arrows)
+Domäne, Codomäne : M -> O
+für jedes Objekt ex. $id_O$
+Komposition, Axiome mit id
+
+Funktor: Abbildung zwischen Kategorien
+Muss Konsistenz mit Dom und Cod sowie id und Komp. erfüllen
 
 \end{document}

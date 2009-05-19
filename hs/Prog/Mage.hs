@@ -42,7 +42,7 @@ runCompiler comp inFile outFile =
     (whenNewer
      inFile
      outFile
-     (sysList ["gen" </> "bin" </> comp, "<", "$" ++ inFile, "<", "$" ++ outFile] ))
+     (sysList ["gen" </> "bin" </> comp, "<", "$" ++ inFile, "<", "$" ++ outFile] )) -- not ">" for outfile???
 
 hs2c   = runCompiler "hs2c"
 cmp2hs = runCompiler "cmp2hs"
@@ -58,6 +58,22 @@ testCompilers = liftM maximum .  mapM testCompiler
 test = testCompilers ["Haskell2Code"]--, "Comp2Haskell"]
 
 mkDirs = mapM $ createDirectoryIfMissing True
+
+compLatex filename = (whenNewer 
+                      (filename ++ ".tex")
+                      (filename ++ ".pdf") 
+                      (sysList ["comp-latex", filename]))
+
+genDoc = do
+  setCurrentDirectory "doc/images"
+  system "find -name \"*.eps\" -exec epstopdf {} \\;"
+  setCurrentDirectory ".."
+  compLatex "diplomarbeit"
+  compLatex "slides"
+  setCurrentDirectory ".."
+  return ExitSuccess
+  
+  
 
 build = do
   -- system "rm -rf gen"
@@ -76,6 +92,7 @@ main = do args  <- getArgs
             ["test"]                -> test >> return ExitSuccess
 --            "repl" : _              -> system "rlwrap gen/bin/repl"
             [comp, inFile, outFile] -> runCompiler comp inFile outFile
+            ["doc"]                 -> genDoc
             [] -> do
               putStrLn "Building"
               buildRes <- build

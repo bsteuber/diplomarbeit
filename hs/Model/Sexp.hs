@@ -22,15 +22,6 @@ data Sexp = Symbol { symbolName :: String }
 
 type SexpParser a = ExecFunParser Sexp a
 
-data GenSexp a = GenSexp { unGenSexp :: [Sexp] }
-data SexpGen a b = SexpGen { unSexpGen :: a -> GenSexp b }
-
-instance (Compilable x [Sexp] b) => Executable (SexpGen a b) a b where
-    toIO (SexpGen f) = toIO f >>> arr unGenSexp >>> compile 
-
--- instance Executable (SexpGen a) a Sexp where
---     toIO (SexpGen f) = toIO f
-
 sexp2either (Symbol s)   = Left s
 sexp2either (Node sexps) = Right sexps
 
