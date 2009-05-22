@@ -11,9 +11,12 @@ semantic.cache
 *.toc
 *.nav
 *.snm
+*.bbl
+*.blg
 *.vrb
 *.pdf
 gen/*
 src/.deps
+doc/auto
 test/gen
 doc/quellen
