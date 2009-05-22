@@ -59,11 +59,12 @@
       \label{#1:fig:##2}
   \end{figure}}
 
-  \renewcommand{\figs}[2]{%
+  \renewcommand{\figs}[3]{%
     \begin{figure}[htp]
       \centering
-      ##2
-      \caption{##1}
+      ##3
+      \caption{##2}
+      \label{#1:fig:##1}
     \end{figure}
   }
 
@@ -214,7 +215,7 @@ diskussion: makros good or bad
 \label{sec:magicl}
 
 \subsection{Kategorientheoretische Grundlagen}
-\label{sec:magicl:cats}
+\label{sec:catbasics}
 
 Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
 aber auch ein universeller, denn fast alle wichtigen mathematischen
@@ -273,36 +274,16 @@ wobei folgende Axiome erfüllt sein müssen:
 \end{itemize}
 \end{defi}
 
-
-\begin{figs}{Kommutative Diagramme für die Kategorie-Axiome}
-  \subfig{cat_id}{Identität}
-  \subfig{cat_comp}{Assoziativität}
-\end{figs}
-
-% \begin{figure}
-%   \centering
-%   \subfloat[Identität]{
-%     \includegraphics[scale=0.3]{images/cat_id}
-%   }
-%   \subfloat[Assoziativität]{
-%     \includegraphics[scale=0.3]{images/cat_comp} 
-%   }
-%   \caption{Kommutative Diagramme für die Kategorie-Axiome}
-%   \label{magicl:fig:cat_axioms}
-% \end{figure}
-
 Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
-sie aus dem Kontext hervorgehen. Die Axiome lassen sich auch durch
-kommutative Diagramme ausdrücken. Ein Diagramm kommutiert, wenn jeder
-Pfad\footnote{Eine sinnvolle Definition des Begriffs "`Pfad"' und somit
-  auch kommutative Diagramme setzen bereits Assoziativität von $\circ$
-  voraus, weswegen die Diagramme hier ausschließlich der
-  Veranschaulichung dienen und nicht bereits selbst - wie häufig in der
-  Kategorientheorie - die Definition \textit{sind}.}  von $A$ nach $B$
-durch Komposition zum selben Morphismus aus $\mathrm{Mor}_{A,B}$
-verknüpft wird. Die Axiome bedeuten also, dass die Diagramme aus
-\abb{cat_axioms} kommutieren. Die grauen Morphismen sind nur der
-Vollständigkeit halber eingezeichnet.
+sie aus dem Kontext hervorgehen. Viele Definitionen der
+Kategorientheorie erfolgen über kommutative Diagramme:
+
+\begin{defi}[Kommutatives Diagramm]
+  Ein Diagramm kommutiert, wenn für je zwei eingezeichnete Pfade $f=f_1
+  \circ \cdots \circ f_n : A \rightarrow B$ und $g=g_1 \circ \cdots
+  \circ g_n : A \rightarrow B$ zwischen zwei Objekten $A$
+  und $B$ die Gleichung $f=g$ gilt.
+\end{defi}
 
 \fig[0.3]{cat_simple}{Eine einfache Kategorie}
 
@@ -313,8 +294,7 @@ Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
 dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{Set}}$ - denn
 jede Kategorie ist selbstverständlich unter Komposition geschlossen.
 
-Abbildungen zwischen Kategorien werden über Funktoren beschrieben, wobei
-gewisse Strukturerhaltungsaxiome gelten müssen:
+Strukturerhaltende Abbildungen zwischen Kategorien werden Funktoren genannt:
 
 \begin{defi}[Funktor]
 Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
