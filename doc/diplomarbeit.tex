@@ -5,12 +5,32 @@
 \usepackage{ngerman}
 \usepackage{bibgerm}
 \usepackage{color}
-\usepackage{amsfonts}
+\usepackage{amssymb,amsmath}
 \usepackage{graphicx}
 \usepackage{subfig}
-% \usepackage{pstricks}
-% \usepackage{pst-node}
 \usepackage{hyperref}
+\usepackage{listings}
+
+\lstloadlanguages{Haskell}
+\lstnewenvironment{code}
+  {\lstset{}%
+    \csname lst@SetFirstLabel\endcsname}
+  {\csname lst@SaveFirstLabel\endcsname}
+\lstset{
+  basicstyle=\small\ttfamily,
+  flexiblecolumns=false,
+  basewidth={0.5em,0.45em},
+  literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
+  {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+  {\\\\}{{\char`\\\char`\\}}1
+  {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
+  {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2 
+  {.}{{$\circ$}}2
+% {\ .\ }{{$\circ$}}2
+  {>>>}{{$\ggg$}}2
+%  {>>}{{>>}}2 {>>=}{{>>=}}2 %<<
+  {|}{{$\mid$}}1               
+}
 
 \newcommand{\defaultscale}{0.3}
 
@@ -96,10 +116,19 @@
 
 \project{magicl}
 
-\newcommand\code[1]{\texttt{#1}}
+\newcommand\icode[1]{\lstinline?#1?}
 \newcommand\ato{\rightarrow}
 
-\newtheorem{defi}{Definition}
+\newtheorem{defini}{Definition}
+
+\newcommand{\defi}[2]{%
+  \begin{defini}[#1]
+    \label{def:#1}
+    #2
+  \end{defini}
+}
+
+\newcommand{\dref}[1]{Def. \ref{def:#1}}
 
 \begin{document}
 
@@ -244,27 +273,27 @@ Funktionen vor:
   addiert zwei reelle Zahlen und bildet anschließend den Betrag.
 \end{itemize}
 
-Die Komposition $\mathrm{abs} \circ +$ lässt sich bilden, weil der
-Definitionsbereich von $\mathrm{abs}$ mit dem Zielbereich von $+$
-übereinstimmt (nämlich $\mathbb{R}$). Es lassen sich also zwei im
-Diagramm aufeinander folgende Pfeile zu einem direkten
+Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach} +"') lässt
+sich bilden, weil der Definitionsbereich von $\mathrm{abs}$ mit dem
+Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es lassen sich
+also zwei im Diagramm aufeinander folgende Pfeile zu einem direkten
 zusammenfassen. Die Kategorientheorie "`vergisst"' nun den Bezug zu
 Mengen und Funktionen und arbeitet statt dessen abstrakt mit Objekten
-und Morphismen. 
+und Morphismen.
 
-\begin{defi}[Kategorie]
+\defi{Kategorie}{
 Eine Kategorie $\mathbf{C} = (\mathrm{Ob}^\mathbf{C}, \mathrm{Mor}^\mathbf{C},
 \circ^\mathbf{C}, \mathrm{id}^\mathbf{C})$ ist gegeben durch 
 \begin{itemize}
 \item eine Klasse $\mathrm{Ob}^\mathbf{C}$ von Objekten\footnote{Da Objekte selbst Mengen
     sein können, wäre eine Definition von $\mathrm{Ob}^\mathbf{C}$ als Menge problematisch.}.
-\item eine Menge Morphismen $\mathrm{Mor}^\mathbf{C}_{A,B}\forall A,B \in
+\item eine Menge Morphismen $\mathrm{Mor}^\mathbf{C}_{A,B}$ für alle $ A,B \in
   \mathrm{Ob}^\mathbf{C}$, wobei $A$ und $B$ Domäne und Codomäne genannt werden,
-\item einen Kompositionsoperator $\circ^\mathbf{C}_{A,B,C}\forall
+\item einen Kompositionsoperator $\circ^\mathbf{C}_{A,B,C}$ für alle $
   A,B,C \in \mathrm{Ob}^\mathbf{C}$ mit \\
   $\circ^\mathbf{C}_{A,B,C} : \mathrm{Mor}^\mathbf{C}_{B,C} \times
   \mathrm{Mor}^\mathbf{C}_{A,B} \rightarrow \mathrm{Mor}^\mathbf{C}_{A,C}$,
-\item eine Identität $\mathrm{id}^\mathbf{C}_A \in \mathrm{Mor}^\mathbf{C}_{A,A}\forall A \in \mathrm{Ob}^\mathbf{C}$,
+\item eine Identität $\mathrm{id}^\mathbf{C}_A \in \mathrm{Mor}^\mathbf{C}_{A,A}$ für alle $ A \in \mathrm{Ob}^\mathbf{C}$,
 \end{itemize}
 wobei folgende Axiome erfüllt sein müssen:
 \begin{itemize}
@@ -272,20 +301,24 @@ wobei folgende Axiome erfüllt sein müssen:
 \item Assoziativität:
   $$f \circ_{A,C,D} (g \circ_{A,B,C} h) = (f \circ_{B,C,D} g) \circ_{A,B,D}h$$
 \end{itemize}
-\end{defi}
+}
+
+\fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
 
 Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
 sie aus dem Kontext hervorgehen. Viele Definitionen der
 Kategorientheorie erfolgen über kommutative Diagramme:
-
-\begin{defi}[Kommutatives Diagramm]
-  Ein Diagramm kommutiert, wenn für je zwei eingezeichnete Pfade $f=f_1
-  \circ \cdots \circ f_n : A \rightarrow B$ und $g=g_1 \circ \cdots
-  \circ g_n : A \rightarrow B$ zwischen zwei Objekten $A$
-  und $B$ die Gleichung $f=g$ gilt.
-\end{defi}
-
-\fig[0.3]{cat_simple}{Eine einfache Kategorie}
+\defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn für je zwei
+  eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A \rightarrow B$
+  und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$ zwischen zwei
+  Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  } 
+Beispielsweise zeigt \abb{cat_comp} das Assoziativitätsaxiom als
+kommutatives Diagramm. $g$ ist nur der Vollständigkeit halber
+eingezeichnet und spielt für das kommutative Diagramm selbst keine
+Rolle. Dieses Diagramm dient lediglich der Veranschaulichung, ist aber
+nicht selbst für die Definition der Assoziativität geeignet -
+schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
+von $\circ$ voraus. 
 
 Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
 Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
@@ -294,9 +327,11 @@ Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
 dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{Set}}$ - denn
 jede Kategorie ist selbstverständlich unter Komposition geschlossen.
 
+\fig[0.3]{cat_simple}{Eine einfache Kategorie}
+
 Strukturerhaltende Abbildungen zwischen Kategorien werden Funktoren genannt:
 
-\begin{defi}[Funktor]
+\defi{Funktor}{
 Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
 \rightarrow \mathbf{D}$ von Kategorie $C$ nach Kategorie $D$  
     \begin{itemize}
@@ -319,7 +354,7 @@ Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
       $$F_{\mathrm{Mor}}(\mathrm{id}^{\mathbf{C}}_A) =
       \mathrm{id}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A)}$$
     \end{itemize}
-\end{defi}
+}
 
 Die Kategorientheorie schafft es, Begriffe für Funktionseigenschaften
 wie Injektivität sowie Mengenoperationen wie das kartesische Produkt auf
@@ -329,7 +364,7 @@ oder Funktionen im speziellen Gebrauch machen. In der Kategorie
 $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
 überein. Dem kartesischen Produkt entspricht das Produkt von Objekten:
 
-\begin{defi}[Produkt]
+\defi{Produkt}{
   Ein Objekt $A \times B$ mit zwei Projektionsmorphismen $\pi_1
   \in \mathrm{Mor}_{A \times B,A}$ und $\pi_2 \in \mathrm{Mor}_{A \times
     B,B}$ ist ein Produkt von $A$ und $B$, wenn für jedes $X \in
@@ -337,7 +372,7 @@ $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
   \mathrm{Mor}_{X,B}$ genau ein Morphismus
   $\langle f,g \rangle \in \mathrm{Mor}_{X,A \times B}$ existiert, für den \abb{cat_product} kommutiert, d.h. 
   $\pi_1 \circ \langle f,g \rangle = f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.
-\end{defi}
+}
 
 \begin{figure}
   \centering
@@ -353,13 +388,16 @@ $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
 \end{figure}
 
 Man kann leicht nachvollziehen, dass das kartesische Produkt genau ein
-Produkt für die Kategorie $\mathbf{Set}$ ist. Dreht man im Diagramm alle
-Pfeile um, erhält man die Definition für das Coprodukt, ein zum Produkt
-dualer\footnote{Die zu einer Kategorie $\mathbf{C}$ duale Kategorie
-  $\mathbf{C}^{\mathrm{op}}$ entsteht nämlich durch das Umdrehen von
-  Pfeilen.} Operator:
+Produkt für die Kategorie $\mathbf{Set}$ ist. $\langle f,g \rangle$ ist
+hier die Funktion, die einem Tupel $(x,y)$ den Funktionswert $(f(x),
+g(y))$ zuordnet.
 
-\begin{defi}[Coprodukt]
+Dreht man im Diagramm alle Pfeile um, erhält man die Definition für das
+Coprodukt, ein zum Produkt dualer\footnote{Die zu einer Kategorie
+  $\mathbf{C}$ duale Kategorie $\mathbf{C}^{\mathrm{op}}$ entsteht
+  nämlich durch das Umdrehen von Pfeilen.} Operator:
+
+\defi{Coprodukt}{
   Ein Objekt $A + B$ mit zwei Injektionsmorphismen $\iota_1
   \in \mathrm{Mor}_{A,A + B}$ und $\iota_2 \in \mathrm{Mor}_{B,A +
     B}$ ist ein Coprodukt von $A$ und $B$, wenn für jedes $X \in
@@ -367,7 +405,97 @@ dualer\footnote{Die zu einer Kategorie $\mathbf{C}$ duale Kategorie
   \mathrm{Mor}_{B,X}$ genau ein Morphismus
   $[f,g] \in \mathrm{Mor}_{A + B,X}$ existiert, für den \abb{cat_coproduct} kommutiert, d.h. 
   $[f,g] \circ \iota_1 = f$ und $[f,g] \circ \iota_2 = g$ gelten.
-\end{defi}
+}
+
+Das Coprodukt entspricht einer disjunkten Vereinigung von Mengen, also
+einer Vereinigung von Mengen. die vorher explizit disjunkt gemacht
+werden (sofern sie es nicht bereits sind). Dies kann beispielsweise durch
+die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
+\{1_L,2_L,3_L,2_R,3_R,4_R\}$. Der Morphismus $[f,g]$ entspricht einer
+Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
+aus $B$ entsprechend $g$.
+
+(Optional: Natürliche Transformationen, Monaden, Kleisli-Kategorie)
+
+\subsection{Kategorien in Haskell}
+\label{sec:cats_haskell}
+
+Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
+die allerdings immer bestimmten Einschränkungen
+unterliegen. Beispielsweise sind die Objekte einer Kategorie hier immer
+Haskell-Typen. Die Typklasse \icode{Category} ist wie folgt definiert:
+\begin{code}
+class Category cat where
+  id   :: cat a a
+  (.) :: cat b c -> cat a b -> cat a c
+\end{code}
+Ein Typ \icode{cat}, der selbst zwei Typparameter benötigt, ist also eine
+Instanz von \icode{Category}, wenn es generische Identitäts- und
+Kompositionsoperatoren gibt, die für beliebige Typen $a,b,c$ benutzt
+werden können. Genau genommen bestimmt \icode{Category} also keine
+Kategorien, sondern vielmehr die Morphismen bestimmter Kategorien. Auch
+die Axiome werden hier nicht gefordert - vielmehr liegt es am
+Programmierer, dies für eine "`vernünftige"' Programmsemamtik selbst zu
+verifizieren. Man sieht hier schon, dass die Haskell-Begriffe nur sehr
+vage mit den mathematischen übereinstimmen - dies wird auch bei den
+weiteren Definitionen so bleiben. Die einfachste Instanz von
+\icode{Category} ist \icode{(->)}, also die Kategorie der
+Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
+
+Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
+benutzt mit \icode{f>>>g=g.f} %<<
+
+
+\subsubsection{Arrows}
+\label{sec:arrows}
+
+Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
+für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
+also jeder Haskell-Funktion vom Typ \icode{a -> b} einen Morphismus vom
+Typ \icode{cat a b} zuordnen kann. Dies ist deshalb sinnvoll, da viele
+(Haskell-)Kategorien "`mehr"' können als die Funktionen, formal eine zu
+$\mathbf{Hask}$ isomorphe Unterkategorie besitzen. Beispielsweise
+benutzt MagicL "`Funktionen, die fehlschlagen können"' oder "`Funktionen
+mit Nebeneffekten"' als Kategorien, die jeweils auch normale Funktionen
+enthalten. Zusätzlich wird eine Operation auf Tupeln gefordert, aus der
+sich ein Produkt zusammensetzen lässt\footnote{Dieses stimmt ebenfalls
+  nicht mit dem mathematischen Produkt überein, da z.B. keine
+  Assoziativität gegeben ist, denn in Haskell gilt $(A, (B, C)) \neq
+  ((A, B), C)$} - ein Coprodukt wird zunächst nicht gefordert:
+\begin{code}
+class (Category ar) => Arrow ar where
+  arr   :: (a -> b) -> ar a b
+  first :: ar a b  -> ar (a, c) (b, c)
+\end{code}
+\icode{arr} ist der Funktor, der jede Funktion auf einen Arrow
+abbildet\footnote{Die Typen werden auf sich selbst abgebildet}.
+\icode{first} ist eine Funktion, die aus einem Arrow einen Arrow auf
+Tupeln macht, der nur auf dem ersten Element arbeitet, das zweite
+dagegen unverändert durchschleift. Somit lassen sich zusätzliche Werte
+weiterreichen, außerdem lassen sich aus \icode{first} sinnvolle
+Operationen ableiten:
+
+\begin{code}
+  second :: ar a b -> ar (c, a) (c, b)
+  second = arr swap >>> first >>> arr swap
+    where swap (x, y) = (y, x)
+
+  (***) :: ar a b -> ar a' b' -> ar (a, a') (b, b')
+  f *** g = first f >>> second g
+
+  (&&&) :: ar a b -> ar a b' -> ar a (b, b')
+  f &&& g = arr (\ x -> (x,x)) >>> (f *** g)
+\end{code}
+
+\icode{second} ist analog zu \icode{first}, reicht allerdings das erste
+Element unverändert weiter. \icode{f *** g} wendet \icode{f} auf das
+erste Element, danach \icode{g} auf das zweite Element eines Tupels
+an. \icode{f &&& g} ist nun die Haskell-Entsprechung von $\langle f,g
+\rangle$ in \dref{Produkt}. \icode{f} und \icode{g} werden also beide
+auf die Eingabe angewendet und deren Ergebnisse zu einem Tupel
+zusammengesetzt.
+
+
 
 % \begin{frame}{Kategorien in dieser Arbeit}
 %   \begin{itemize}
