@@ -19,17 +19,26 @@
 \lstset{
   basicstyle=\small\ttfamily,
   flexiblecolumns=false,
-  basewidth={0.5em,0.45em},
-  literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
-  {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
-  {\\\\}{{\char`\\\char`\\}}1
-  {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
-  {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2 
-  {.}{{$\circ$}}2
-% {\ .\ }{{$\circ$}}2
-  {>>>}{{$\ggg$}}2
-%  {>>}{{>>}}2 {>>=}{{>>=}}2 %<<
-  {|}{{$\mid$}}1               
+  basewidth={0.5em,0.45em}
+% ,
+%   literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
+%   {>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
+%   {\\\\}{{\char`\\\char`\\}}1
+%   {->}{{$\rightarrow$}}2 {>=}{{$\geq$}}2 {<-}{{$\leftarrow$}}2
+%   {<=}{{$\leq$}}2 {=>}{{$\Rightarrow$}}2 
+%   {.}{{$\circ$}}2
+%   {...}{{$\ldots$}}2
+% % {\ .\ }{{$\circ$}}2
+%   {>>>}{{$\ggg$}}2
+% %  {>>}{{>>}}2 {>>=}{{>>=}}2 %<<
+%   {|}{{$\mid$}}1               
+}
+
+\newcommand\icode[1]{\lstinline?#1?}
+
+
+\newcommand{\todo}[1]{
+  \textcolor{red}{TODO: #1}
 }
 
 \newcommand{\defaultscale}{0.3}
@@ -68,6 +77,7 @@
     \label{#1:sec:##1}%
   }  
   \renewcommand\sref[1]{%
+%    Abschnitt~\ref{sec:##1}
     Abschnitt~\ref{#1:sec:##1}
   }%
   \renewcommand{\abb}[1]{Abb.\ref{#1:fig:##1}}
@@ -116,7 +126,6 @@
 
 \project{magicl}
 
-\newcommand\icode[1]{\lstinline?#1?}
 \newcommand\ato{\rightarrow}
 
 \newtheorem{defini}{Definition}
@@ -132,28 +141,22 @@
 
 \begin{document}
 
-\title{MagicL: Ein Arrow-basiertes Compilerbau-Framework}
+\begin{titlepage}
+\title{Ein Arrow-basiertes Compilerbau-Framework}
 \author{Benjamin Teuber}
 \date{\today}
 
-% \maketitle
+\maketitle  
+\end{titlepage}
 
-\begin{abstract}
-  MagicL ist der Prototyp eines universellen Frameworks für den Entwurf
-  von Programmier- und Auszeichnungssprachen. Es soll dem
-  Meta-Programmierer praktische Werkzeuge für das Parsing und Übersetzen
-  neuer sowie für Generation von Code bestehender Sprachen an die Hand
-  geben, wobei insbesondere (jedoch nicht ausschließlich) aus
-  S-Expressions aufgebaute Sprachen unterstützt werden. Die Parser- und
-  Compilererstellung erfolgt nach einem kategorientheoretisch
-  motivierten Baukastenansatz, so dass beispielsweise Parser durch die
-  Kombination von Arrows erzeugt werden.
-\end{abstract}
+\tableofcontents
 
-% \tableofcontents
+% \setlength{\parindent}{0pt}
+% \setlength{\parskip}{2ex}
 
-\section{Einleitung}
-\label{sec:intro}
+\lsection[intro]{Einleitung}
+
+\lsubsection[intro:motiv]{Motivation}
 
 Modellgetriebene Softwareentwicklung ist in aller Munde: Während UML
 bald sein 20-Jähriges Jubiläum \footnote{Zumindest was die ersten
@@ -168,10 +171,47 @@ Rolle zu: Ob \textit{Ruby on Rails} oder \textit{Google Web Toolkit},
 praktisch alle Web Frameworks generieren zumindest ihre HTML-Dateien oder
 SQL-Strings für den Datenbankzugriff.
 
-Der ganze Bereich um Code-Generation ist also ein aktuelles Thema.
+Code-Generierung ist also ein aktuelles Thema, 
+viele Werkzeuge
+dennoch geringe abstraktion <- textbasiert
+lisp seit xy jahren strukturell
 
-\subsection{Codegenerierung}
-\label{sec:intro:codegen}
+\lsubsection[intro:goal]{Fragestellungen und Zielsetzung}
+
+
+Lisp-Ansatz (Sexp, inkrem. Compiler) für beliebige Domänen /
+Backend-Sprachen verallgemeinern
+
+elegante Repräsentation für Sexp-Compiler oder -Parser finden
+
+typisierte vs. untypisierte repr.
+
+\lsubsection[intro:outline]{Aufbau dieser Arbeit}
+
+\sref{basic}
+\sref{basic:codegen}
+\sref{basic:parser}
+\sref{basic:lisp}
+\sref{basic:ruby}
+\sref{basic:haskell}
+\sref{basic:cats}
+
+\sref{sexy}
+\sref{sexy:arch}
+\sref{sexy:macros}
+\sref{sexy:examples}
+
+\sref{magicl}
+\sref{magicl:haskats}
+\sref{magicl:parser}
+\sref{magicl:sexp}
+\sref{magicl:arch}
+\sref{magicl:examples}
+
+
+\lsection[basic]{Grundlagen}
+
+\lsubsection[basic:codegen]{Codegenerierung}
 
 Allgemein ist jedermann klar, was Codegenerierung bedeutet:
 Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
@@ -213,16 +253,16 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\subsection{Lisp}
-\label{sec:into:lisp}
+\lsubsection[basic:parser]{Parser-Generatoren}
+
+\lsubsection[basic:lisp]{Lisp und S-Expressions}
 
 -Code-Generation und Metaprogrammierung seit fast 50 Jahren
 -was können wir lernen?
 --Einheitliche Syntax macht vieles leichter
 --compilererweitungen durch makros
 
-\subsubsection{Vergleich mit XML}
-\label{sec:intro:lisp:xml}
+Vergleich mit XML
 
 -gleiche Zielsetzung - Baumstruktur
 -syntax: ``</tag>'' vs. ``)''
@@ -234,17 +274,19 @@ von hässlicher syntax nicht
 
 diskussion: makros good or bad
 
-\subsection{Zielsetzung}
-\label{sec:intro:goal}
+\lsubsection[basic:ruby]{Ruby}
 
-\section{Erster Prototyp in Ruby}
-\label{sec:sexy}
+\lsubsection[basic:haskell]{Haskell}
 
-\section{Arrow-basierte Implementation in Haskell}
-\label{sec:magicl}
+Pur, Funktional
+Infix ()
+Typinferenz
+Currying
+Datentypen, newtype, type (Typvariablen)
 
-\subsection{Kategorientheoretische Grundlagen}
-\label{sec:catbasics}
+Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
+
+\lsubsection[basic:cats]{Kategorientheorie}
 
 Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
 aber auch ein universeller, denn fast alle wichtigen mathematischen
@@ -306,19 +348,21 @@ wobei folgende Axiome erfüllt sein müssen:
 \fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
 
 Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
-sie aus dem Kontext hervorgehen. Viele Definitionen der
-Kategorientheorie erfolgen über kommutative Diagramme:
-\defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn für je zwei
-  eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A \rightarrow B$
-  und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$ zwischen zwei
-  Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  } 
+sie aus dem Kontext hervorgehen. Wie von Funktionen gewohnt, lässt sich
+$f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$.
+
+Viele Definitionen der Kategorientheorie erfolgen über kommutative
+Diagramme: \defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn
+  für je zwei eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A
+  \rightarrow B$ und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$
+  zwischen zwei Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  }
 Beispielsweise zeigt \abb{cat_comp} das Assoziativitätsaxiom als
 kommutatives Diagramm. $g$ ist nur der Vollständigkeit halber
 eingezeichnet und spielt für das kommutative Diagramm selbst keine
 Rolle. Dieses Diagramm dient lediglich der Veranschaulichung, ist aber
 nicht selbst für die Definition der Assoziativität geeignet -
 schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
-von $\circ$ voraus. 
+von $\circ$ voraus.
 
 Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
 Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
@@ -364,15 +408,13 @@ oder Funktionen im speziellen Gebrauch machen. In der Kategorie
 $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
 überein. Dem kartesischen Produkt entspricht das Produkt von Objekten:
 
-\defi{Produkt}{
-  Ein Objekt $A \times B$ mit zwei Projektionsmorphismen $\pi_1
-  \in \mathrm{Mor}_{A \times B,A}$ und $\pi_2 \in \mathrm{Mor}_{A \times
-    B,B}$ ist ein Produkt von $A$ und $B$, wenn für jedes $X \in
-  \mathrm{Ob}$ und alle $f \in \mathrm{Mor}_{X,A},g \in
-  \mathrm{Mor}_{X,B}$ genau ein Morphismus
-  $\langle f,g \rangle \in \mathrm{Mor}_{X,A \times B}$ existiert, für den \abb{cat_product} kommutiert, d.h. 
-  $\pi_1 \circ \langle f,g \rangle = f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.
-}
+\defi{Produkt}{ Ein Objekt $A \times B$ mit zwei Projektionsmorphismen
+  $\pi_1 : A \times B \ato A$ und $\pi_2 : A \times B \ato B$ ist ein
+  Produkt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie für
+  alle $f : X \ato A$ und alle $g : X \ato B$ genau ein Morphismus
+  $\langle f,g \rangle : X \ato A \times B$ existiert, für den
+  \abb{cat_product} kommutiert, d.h.  $\pi_1 \circ \langle f,g \rangle =
+  f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.  }
 
 \begin{figure}
   \centering
@@ -389,23 +431,20 @@ $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
 
 Man kann leicht nachvollziehen, dass das kartesische Produkt genau ein
 Produkt für die Kategorie $\mathbf{Set}$ ist. $\langle f,g \rangle$ ist
-hier die Funktion, die einem Tupel $(x,y)$ den Funktionswert $(f(x),
-g(y))$ zuordnet.
+hier die Funktion, die $x$ auf das Tupel $(f(x), g(x))$ abbildet.
 
 Dreht man im Diagramm alle Pfeile um, erhält man die Definition für das
 Coprodukt, ein zum Produkt dualer\footnote{Die zu einer Kategorie
   $\mathbf{C}$ duale Kategorie $\mathbf{C}^{\mathrm{op}}$ entsteht
   nämlich durch das Umdrehen von Pfeilen.} Operator:
 
-\defi{Coprodukt}{
-  Ein Objekt $A + B$ mit zwei Injektionsmorphismen $\iota_1
-  \in \mathrm{Mor}_{A,A + B}$ und $\iota_2 \in \mathrm{Mor}_{B,A +
-    B}$ ist ein Coprodukt von $A$ und $B$, wenn für jedes $X \in
-  \mathrm{Ob}$ und alle $f \in \mathrm{Mor}_{A,X},g \in
-  \mathrm{Mor}_{B,X}$ genau ein Morphismus
-  $[f,g] \in \mathrm{Mor}_{A + B,X}$ existiert, für den \abb{cat_coproduct} kommutiert, d.h. 
-  $[f,g] \circ \iota_1 = f$ und $[f,g] \circ \iota_2 = g$ gelten.
-}
+\defi{Coprodukt}{ Ein Objekt $A + B$ mit zwei Injektionsmorphismen
+  $\iota_1 : A \ato A + B$ und $\iota_2 : B \ato A + B$ ist ein
+  Coprodukt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie
+  alle $f : A \ato X$ und alle $g : B \ato X$ genau ein Morphismus
+  $[f,g] : A + B \ato X$ existiert, für den \abb{cat_coproduct}
+  kommutiert, d.h.  $[f,g] \circ \iota_1 = f$ und $[f,g] \circ \iota_2 =
+  g$ gelten.  }
 
 Das Coprodukt entspricht einer disjunkten Vereinigung von Mengen, also
 einer Vereinigung von Mengen. die vorher explizit disjunkt gemacht
@@ -415,10 +454,19 @@ die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
 Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
 aus $B$ entsprechend $g$.
 
-(Optional: Natürliche Transformationen, Monaden, Kleisli-Kategorie)
+\todo{Eventuell: Natürliche Transformationen, Monaden, Kleisli-Kategorie}
 
-\subsection{Kategorien in Haskell}
-\label{sec:cats_haskell}
+\lsection[sexy]{Erster Prototyp}
+
+\lsubsection[sexy:arch]{Architektur}
+
+\lsubsection[sexy:macros]{Makros}
+
+\lsubsection[sexy:examples]{Beispiele}
+
+\lsection[magicl]{Arrow-basierte Implementation in Haskell}
+
+\lsubsection[magicl:haskats]{Kategorien in Haskell}
 
 Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
 die allerdings immer bestimmten Einschränkungen
@@ -441,13 +489,11 @@ vage mit den mathematischen übereinstimmen - dies wird auch bei den
 weiteren Definitionen so bleiben. Die einfachste Instanz von
 \icode{Category} ist \icode{(->)}, also die Kategorie der
 Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
-
 Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
-benutzt mit \icode{f>>>g=g.f} %<<
+benutzt mit \icode{f >>> g = g . f} %<<
 
 
-\subsubsection{Arrows}
-\label{sec:arrows}
+\lsubsubsection[magicl:haskats:arrows]{Arrows}
 
 Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
@@ -477,143 +523,278 @@ Operationen ableiten:
 
 \begin{code}
   second :: ar a b -> ar (c, a) (c, b)
-  second = arr swap >>> first >>> arr swap
+  second = arr swap >>> first f >>> arr swap
     where swap (x, y) = (y, x)
 
   (***) :: ar a b -> ar a' b' -> ar (a, a') (b, b')
   f *** g = first f >>> second g
 
   (&&&) :: ar a b -> ar a b' -> ar a (b, b')
-  f &&& g = arr (\ x -> (x,x)) >>> (f *** g)
+  f &&& g = arr diag >>> (f *** g)
+    where diag x = (x,x)
 \end{code}
 
-\icode{second} ist analog zu \icode{first}, reicht allerdings das erste
-Element unverändert weiter. \icode{f *** g} wendet \icode{f} auf das
+\begin{itemize}
+\item \icode{second} ist analog zu \icode{first}, reicht allerdings das erste
+Element unverändert weiter.
+\item \icode{f *** g} wendet \icode{f} auf das
 erste Element, danach \icode{g} auf das zweite Element eines Tupels
-an. \icode{f &&& g} ist nun die Haskell-Entsprechung von $\langle f,g
+an.
+\item \icode{f &&& g} ist nun die Haskell-Entsprechung von $\langle f,g
 \rangle$ in \dref{Produkt}. \icode{f} und \icode{g} werden also beide
 auf die Eingabe angewendet und deren Ergebnisse zu einem Tupel
 zusammengesetzt.
+\end{itemize}
 
+\lsubsubsection[magic:haskats:coproducts]{Coprodukte: Die Klasse \icode{ArrowChoice}}
 
+Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
+\icode{Either}-Datentyp, der folgendermaßen definiert ist:
+\begin{code}
+data Either a b = Left a | Right b
+\end{code}
+Coprodukte für Arrows werden durch die Klasse \icode{ArrowChoice} beschrieben\footnote{Auch hier
+  wird nicht exakt das mathematische Coprodukt gebildet, da z.B. wie
+  beim Produkt die Assoziativität fehlt.}:
+\begin{code}
+class Arrow ar => ArrowChoice ar where
+  left :: ar a b -> ar (Either a c) (Either b c)
+\end{code}
+Auch hier wird mit \icode{left} nur eine einfache Operation gefordert,
+aus der sich anschließend alles weitere konstruieren lässt. Diese
+Funktion wandelt einen Arrow von \icode{a} nach \icode{b} um in
+einen Arrow von \icode{Either a c} nach \icode{Either b c}. Bei einem
+\icode{Left}-Wert wird also der ursprüngliche Arrow angewendet, ein
+\icode{Right}-Wert wird dagegen unverändert weitergereicht.
+\begin{code}
+  right :: ar a b -> ar (Either c a) (Either c b)
+  right f = arr swap >>> left f >>> arr swap
+    where swap (Left x)  = Right x
+          swap (Right x) = Left x
 
-% \begin{frame}{Kategorien in dieser Arbeit}
-%   \begin{itemize}
-%   \item Hier immer: Haskell-Datentypen als Objekte
-%   \item Arrows variieren:
-%     \begin{itemize}
-%     \item pure Funktionen (Kategorie $Hask$)
-%     \item Funktionen mit Side-Effects
-%     \item Bestehende Arrows mit versteckten Ein- und Ausgaben
-%     \end{itemize}
-%   \end{itemize}
-% \end{frame}
+  (+++) :: ar a b -> ar a' b' -> ar (Either a a') (Either b b')
+  f +++ g = left f >>> right g
 
-% \begin{frame}{Ziel: Eine Parser-Kategorie}
-%   \begin{itemize}
-%   \item Eigenschaften von Parsern:
-%     \begin{itemize}
-%     \item Können fehlschlagen und Alternativen ausdrücken
-%     \item Besitzen einen Zustand (Position im Eingabestream)
-%     \end{itemize}
-%   \item Plan: Bestehende Kategorien um Fehlschlagen / Zustände erweitern \\
-%   $\Rightarrow$ Funktoren
-%   \end{itemize}
-% \end{frame}
+  (|||) :: ar a c -> ar b c -> ar (Either a b) c  
+  f ||| g = (f +++ g) >>> arr dropEither
+    where dropEither (Left x)  = x
+          dropEither (Right x) = x
 
-% \begin{frame}{Der Funktor Fail}
-%   \begin{itemize}
-%   \item Nun zwei Möglichkeiten für Rückgabe:
-%     \begin{itemize}
-%     \item Scheitern (Rückgabe einer Fehler-Nachricht)
-%     \item Erfolg (normaler Rückgabewert)
-%     \end{itemize}
-%   \item Verstecken der Veränderung: Neue Kategorie $C_{f}$
-%   \item $f_{f} : A \rightarrow B$ wird abgebildet auf
-%     $f : A \rightarrow String + B$
-%   \item Der Arrow $fail_{f} : String \rightarrow a$ in $C_{f}$ schlägt immer
-%     fehl und entspricht $fail : String \rightarrow String + a$ in $C$
-%   \item Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B} \rightarrow
-%     Mor_{A,B} $ bietet Alternativen
-%   \end{itemize}
-% \end{frame}
+\end{code}
+Die Definitionen sind weitgehend analog zu den entsprechenden
+Produkt-Operationen:
+\begin{itemize}
+\item \icode{right} bearbeitet nur \icode{Right}-Werte, während
+  \icode{Left}-Werte unverändert bleiben.
+\item \icode{f +++ g} wendet auf \icode{Left}-Werte \icode{f} an, auf
+  die anderen \icode{g}.
+\item Haben \icode{f} und \icode{g} den selben Rückgabetyp, kann
+  \icode{f ||| g} verwendet werden, welches das in diesem Fall unnötige
+  \icode{Either} verschwinden lässt. Dies entspricht $[f,g]$ in
+  \dref{Coprodukt}
+\end{itemize}
 
-% \begin{frame}{Der Funktor Fail (2)}
-%   \begin{itemize}
-%   \item Komposition in $C_{f}$:  $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$ 
-%   \end{itemize}
-%   \begin{figure}
-%     \centering
-%     \includegraphics[scale=0.3]{images/cat_fail}
-%     \caption{Komposition beim Fail-Funktor}
-%   \end{figure}
-% \end{frame}
+\lsubsubsection[magicl:haskats:functors]{Funktoren}
 
-% \begin{frame}{Der Funktor State}
-%   \begin{itemize}
-%   \item Nun sollen Zustände vom Typ S weitergereicht werden
-%   \item Wieder verstecken, neue Kategorie $C_{s}$ mit Funktor
-%     $State : C_{s} \rightarrow C$
-%   \item $f_{s} : A \rightarrow B$ wird abgebildet auf
-%     $f = A \times S \rightarrow B \times S$
-%   \item Komposition in $C_{s}$ einfach
-%     \begin{figure}
-%       \centering
-%       \includegraphics[scale=0.2]{images/cat_state}
-%       \caption{Komposition beim State-Funktor}
-%     \end{figure}
-%   \end{itemize}
-% \end{frame}
+Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
+allerdings nur Endofunktoren - das sind Funktoren von einer Kategorie in
+sich selbst - über der Kategorie $\mathbf{Hask}$ repräsentieren:
+\begin{code}
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b 
+\end{code}
+Ein Datenkonstruktor \icode{f} ist also Instanz von \icode{Functor},
+wenn die Operation \icode{fmap} Funktionen von \icode{a} nach \icode{b}
+auf Funktionen von \icode{f a} nach \icode{f b} abbildet. Der
+mathematische Funktor besteht hier also aus \icode{(f,fmap)}.
 
-% \begin{frame}{Der Funktor State (2)}
-%   \begin{itemize}
-%   \item Etwas Tricky: Produkte in $C_{s}$
-%   \item Arbeiten mit Zuständen: Lesen \& Schreiben:
-%   \item Lesen: $get_s : \forall a : a \rightarrow S$
-%   \item Schreiben: $put_s : S \rightarrow *$
-%   \item Zum Parsen: $S = List$ $of$ $T$ mit Token-Typ $T$
-%   \end{itemize}
-% \end{frame}
+Diese Arbeit benutzt statt dessen eine eigene \icode{Functor}-Klasse,
+die Verschiedene Kategorien zulässt:
+\begin{code}
+class Functor f ar | f -> ar where
+  lift :: ar a b -> f a b
+\end{code}
+Die Arrows\footnote{Es ist in Haskell üblich, Vorbedingungen wie hier
+  \icode{(Arrow ar, Arrow f)} nur dort zu verwenden, wo tatsächlich
+  Gebrauch von den speziellen Klasseneigenschaften gemacht wird -
+  deshalb wird beides noch nicht in dieser Klassendefinition gefordert.}
+\icode{f} und \icode{ar} bilden eine Instanz von \icode{Functor}, wenn
+eine \icode{lift}-Operation \icode{ar}-Arrows auf \icode{f}-Arrows
+zwischen den gleichen Typen abbildet - wobei der Typ \icode{f} den Typ
+\icode{ar} determiniert. Der mathematische Funktor hier ist also
+\icode{(id,lift)}. Im Vergleicht zu Haskell's Standard-\icode{Functor}
+ist diese Version also in den Kategorien allgemeiner, aber dafür
+spezieller in der Abbildung der Objekte, da hier die Identität
+vorgeschrieben ist. Man könnte auch dies allgemein formulieren - aber im
+Rahmen von MagicL reicht die spezielle Version bisher aus. 
 
-% \begin{frame}{Der Parse-Funktor}
-%   \begin{itemize}
-%   \item Kombination von Fail und State zu einem Funktor Parse
-%   \item $C_p = C_{ffs}$
-%   \item Zwei Fail-Funktoren für bessere Fehlermeldungen
-%   \item Beispiel:
-%     \begin{itemize}
-%     \item Grammatik: \texttt{\{.*\} $\bigvee$ [.*]}
-%     \item Eingabewort: \texttt{\{ABC}
-%     \item Schlecht: \texttt{"'Expected [, got \{"'}
-%     \item Gut: \texttt{"'Expected \}, got end of stream"'}
-%     \item Scheitern nach \texttt{\{} soll Backtracking aushebeln \\
-%       $\Rightarrow$ \textit{innerer Fail}
-%     \end{itemize}
-%   \end{itemize}
-% \end{frame}
+Alle hier verwendeten \icode{Functor}-Instanzen konstruieren aus einem
+\icode{Arrow}-Typ einen zweiten mit zusätzlichen Eigenschaften,
+z.B. erweitert der \icode{FailFunctor} einen Arrow-Typ um mögliches
+Scheitern. Die Instanz-Deklaration dafür sieht im Gerüst folgendermaßen
+aus (die Details werden in \sref{magicl:parser:fail} erläutert):
+\begin{code}
+newtype FailFunctor ar a b = ...
 
-% \begin{frame}{Der Parse-Funktor (2)}
-%   \begin{itemize}
-%   \item Flexible Parser-Anwendungen dank Funktor
-%     \begin{itemize}
-%     \item Funktionale Parser: $Hask_p$
-%     \item Parser mit Side-Effects: $IO_p$
-%     \item Parser mit anderen Extras: Weitere Funktoren möglich
-%     \end{itemize}
-%   \item Token-Typ Variabel:
-%     \begin{itemize}
-%     \item \texttt{Char} für Textdateien
-%     \item \texttt{Bool} für Bytestreams
-%     \item \texttt{Sexp} für S-Expressions
-%     \end{itemize}
-%   \item Parser-Bibliothek enthält dazu:
-%     \begin{itemize}
-%     \item Praktische Funktionen zum Parser-Erzeugen (Blick in \texttt{Parser.hs})
-%     \item Möglichkeiten zum Aufruf von inneren Parsern
-%     \item Konzepte zum Verschalten von Parsern und Compilern
-%     \end{itemize}
-%   \end{itemize}
-% \end{frame}
+instance (Arrow ar) => Functor (FailFunctor ar) ar where
+  lift f = ...
+\end{code}
+Die Typabhängigkeit \icode{f -> ar} bedeutet hier, dass der Typ
+\icode{ar} durch den Typ \icode{FailFunctor ar} bereits vollständig
+festgelegt ist.
+
+\lsubsection[magicl:parser]{Parser als Arrows}
+
+Das Herzstück von MagicL ist ein Arrow-basiertes Framework für Parser.
+
+\todo{Einleitung, parsec-vergleich, Hughes, andere Arrow-Libs}\\
+Dieser Abschnitt entwickelt schrittweise einen Arrow-basierten
+Parser-Datentyp. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
+\begin{itemize}
+\item Sie können fehlschlagen sowie Alternativmöglichkeiten im Falle des
+  Scheiterns besitzen.
+\item Sie bearbeiten einen Zustand, der die Position im Eingabestream
+  beschreibt.
+\end{itemize}
+Diese beiden Eigenschaften lassen gut sich einzeln mittels Funktoren auf
+bestehenden Kategorien ausdrücken.
+
+\lsubsubsection[magicl:parser:fail]{Fehlschlagende Arrows}
+
+Berechnungen, die fehlschlagen können, sollen zwei mögliche Resultate
+haben. Im Erfolgsfall wird ein normaler Rückgabewert geliefert, während
+im Falle eines Scheiterns eine Fehlermeldung zurückgegeben wird. Der
+Rückgabetyp einer solchen Berechnungkann man gut durch den parametrisierten \icode{Failable}-Typ
+repräsentieren:
+
+\begin{code}
+type Failable a = Either String a
+\end{code}
+
+Statt eines Arrows von \icode{a} nach \icode{b} haben wir nun einen
+Arrow von \icode{a} nach \icode{Failable b}. Um den aufrufenden Code
+nicht komplizierter zu machen, empfiehlt es sich, diese Änderung in
+einer neuen Kategorie $\mathbf{C}_f$ zu verstecken. $f_{f} : A
+\rightarrow B$ wird abgebildet auf $f : A \rightarrow String + B$
+Der Arrow $fail_{f} : String \rightarrow a$ in $C_{f}$ schlägt immer
+fehl und entspricht $fail : String \rightarrow String + a$ in $C$
+Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B} \rightarrow
+Mor_{A,B} $ bietet Alternativen
+Monoid
+
+\begin{frame}{Der Funktor Fail (2)}
+  \begin{itemize}
+  \item Komposition in $C_{f}$:  $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$ 
+  \end{itemize}
+  \begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{images/cat_fail}
+    \caption{Komposition beim Fail-Funktor}
+  \end{figure}
+\end{frame}
+
+\lsubsubsection[magicl:parser:state]{Arrows mit Nebeneffekten}
+
+  \begin{itemize}
+  \item Nun sollen Zustände vom Typ S weitergereicht werden
+  \item Wieder verstecken, neue Kategorie $C_{s}$ mit Funktor
+    $State : C_{s} \rightarrow C$
+  \item $f_{s} : A \rightarrow B$ wird abgebildet auf
+    $f = A \times S \rightarrow B \times S$
+  \item Komposition in $C_{s}$ einfach
+    \begin{figure}
+      \centering
+      \includegraphics[scale=0.2]{images/cat_state}
+      \caption{Komposition beim State-Funktor}
+    \end{figure}
+  \end{itemize}
+
+  \begin{itemize}
+  \item Etwas Tricky: Produkte in $C_{s}$
+  \item Arbeiten mit Zuständen: Lesen \& Schreiben:
+  \item Lesen: $get_s : \forall a : a \rightarrow S$
+  \item Schreiben: $put_s : S \rightarrow *$
+  \item Zum Parsen: $S = List$ $of$ $T$ mit Token-Typ $T$
+  \end{itemize}
+
+\lsubsubsection[magicl:parser:parse]{Der Parse-Funktor}
+
+  \begin{itemize}
+  \item Kombination von Fail und State zu einem Funktor Parse
+  \item $C_p = C_{ffs}$
+  \item Zwei Fail-Funktoren für bessere Fehlermeldungen
+  \item Beispiel:
+    \begin{itemize}
+    \item Grammatik: \texttt{\{.*\} $\bigvee$ [.*]}
+    \item Eingabewort: \texttt{\{ABC}
+    \item Schlecht: \texttt{"'Expected [, got \{"'}
+    \item Gut: \texttt{"'Expected \}, got end of stream"'}
+    \item Scheitern nach \texttt{\{} soll Backtracking aushebeln \\
+      $\Rightarrow$ \textit{innerer Fail}
+    \end{itemize}
+  \end{itemize}
+
+  \begin{itemize}
+  \item Flexible Parser-Anwendungen dank Funktor
+    \begin{itemize}
+    \item Funktionale Parser: $Hask_p$
+    \item Parser mit Side-Effects: $IO_p$
+    \item Parser mit anderen Extras: Weitere Funktoren möglich
+    \end{itemize}
+  \item Token-Typ Variabel:
+    \begin{itemize}
+    \item \texttt{Char} für Textdateien
+    \item \texttt{Bool} für Bytestreams
+    \item \texttt{Sexp} für S-Expressions
+    \end{itemize}
+  \item Parser-Bibliothek enthält dazu:
+    \begin{itemize}
+    \item Praktische Funktionen zum Parser-Erzeugen (Blick in \texttt{Parser.hs})
+    \item Möglichkeiten zum Aufruf von inneren Parsern
+    \item Konzepte zum Verschalten von Parsern und Compilern
+    \end{itemize}
+  \end{itemize}
+
+\lsubsection[magicl:sexp]{Parsen von S-Expressions}
+  \begin{itemize}
+  \item Besonderheit: Token können selbst Listen sein
+  \item Lösung: Als Stream behandeln, \texttt{compNode} wendet Parser
+    auf inneren Stream an
+    \begin{itemize}
+    \item Beispiel: Lesen von \texttt{(hallo welt)}
+    \item \texttt{compNode (symeq "'hallo"' >>> symeq "'welt"') } % <<
+    \end{itemize}
+  \item Makros: \texttt{compNode mit Prüfung des ersten Symbols}
+    \begin{itemize}
+    \item obiges Beispiel: \texttt{macro "'hallo"' (symeq "'welt"')}
+    \item Stimmt das erste Symbol überein, wird das Backtracking aufgehoben
+    \end{itemize}
+  \end{itemize}
+
+\lsubsection[magicl:arch]{Architektur}
+
+\lsubsection[magicl:examples]{Beispiele}
+
+\lsection[end]{Schluss}
+
+\lsubsection[end:summary]{Zusammenfassung}
+
+MagicL ist der Prototyp eines
+universellen Frameworks für den Entwurf von Programmier- und
+Auszeichnungssprachen. Es soll dem Meta-Programmierer praktische
+Werkzeuge für das Parsing und Übersetzen neuer sowie für Generation von
+Code bestehender Sprachen an die Hand geben, wobei insbesondere (jedoch
+nicht ausschließlich) aus S-Expressions aufgebaute Sprachen unterstützt
+werden. Die Parser- und Compilererstellung erfolgt nach einem
+kategorientheoretisch motivierten Baukastenansatz, so dass
+beispielsweise Parser durch die Kombination von Arrows erzeugt werden.
+
+\lsubsection[end:future]{Ausblick}
+
+Modellsprache
+Sexp-IDE
+Versionierung
+
 
 % \begin{frame}{Parsen von S-Expressions}
 %   \begin{itemize}

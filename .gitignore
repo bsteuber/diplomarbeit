@@ -15,6 +15,7 @@ semantic.cache
 *.blg
 *.vrb
 *.pdf
+_region_.tex
 gen/*
 src/.deps
 doc/auto
