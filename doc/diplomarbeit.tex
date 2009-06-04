@@ -47,6 +47,7 @@
 \newcommand\lsubsection{}
 \newcommand\lsubsubsection{}
 \newcommand\lparagraph{}
+\newcommand\cref{}
 \newcommand\sref{}
 \newcommand\abb{}
 \newcommand\fig{}
@@ -76,8 +77,10 @@
     \paragraph{##2}
     \label{#1:sec:##1}%
   }  
+  \renewcommand\cref[1]{%
+    Kapitel~\ref{#1:sec:##1}
+  }%
   \renewcommand\sref[1]{%
-%    Abschnitt~\ref{sec:##1}
     Abschnitt~\ref{#1:sec:##1}
   }%
   \renewcommand{\abb}[1]{Abb.\ref{#1:fig:##1}}
@@ -142,7 +145,8 @@
 \begin{document}
 
 \begin{titlepage}
-\title{Ein Arrow-basiertes Compilerbau-Framework}
+\title{Prototyp eines kategorientheoretisch motivierten Frameworks
+  für die Übersetzung von S-Expression-Sprachen}
 \author{Benjamin Teuber}
 \date{\today}
 
@@ -172,42 +176,61 @@ praktisch alle Web Frameworks generieren zumindest ihre HTML-Dateien oder
 SQL-Strings für den Datenbankzugriff.
 
 Code-Generierung ist also ein aktuelles Thema, 
-viele Werkzeuge
-dennoch geringe abstraktion <- textbasiert
-lisp seit xy jahren strukturell
+
+\begin{itemize}
+\item viele Werkzeuge
+\item dennoch geringe abstraktion da textbasiert
+\item lisp seit xy jahren strukturell
+\end{itemize}
 
 \lsubsection[intro:goal]{Fragestellungen und Zielsetzung}
 
-
-Lisp-Ansatz (Sexp, inkrem. Compiler) für beliebige Domänen /
+\begin{itemize}
+\item Lisp-Ansatz (Sexp, inkrem. Compiler) für beliebige Domänen /
 Backend-Sprachen verallgemeinern
-
-elegante Repräsentation für Sexp-Compiler oder -Parser finden
-
-typisierte vs. untypisierte repr.
+\item elegante Repräsentation für Sexp-Compiler oder -Parser finden
+\item typisierte vs. untypisierte Repräsentation
+\end{itemize}
 
 \lsubsection[intro:outline]{Aufbau dieser Arbeit}
 
-\sref{basic}
-\sref{basic:codegen}
-\sref{basic:parser}
-\sref{basic:lisp}
-\sref{basic:ruby}
-\sref{basic:haskell}
-\sref{basic:cats}
+Zunächst liefert \cref{basic} die Grundlagen für die späteren Kapitel.
+\sref{basic:codegen} erläutert verschiedene Arten der
+Codegenerierung. In \sref{basic:parser} werden bestehende Werkzeuge für
+die Generation von Parsern beschrieben. \sref{basic:lisp},
+\sref{basic:ruby} und \sref{basic:haskell} stellen die
+Programmiersprachen Lisp, Ruby und Haskell und deren für diese Arbeit
+relevanten Eigenschaften vor. Eine besondere Rolle spielen dabei die
+S-Expressions aus \sref {basic:lisp}, die hier als grundlegende
+Datenstruktur zur Repräsentation strukturierter Daten verwendet
+werden. Zuletzt erklärt \sref{basic:cats} die Konzepte der
+Kategorientheorie, an denen sich MagicL orentiert.
 
-\sref{sexy}
-\sref{sexy:arch}
-\sref{sexy:macros}
-\sref{sexy:examples}
+In \cref{sexy} wird ein erster, in Ruby geschriebener Prototyp eines
+universellen Frameworks für S-Expression-Compiler
+geschildert. \sref{sexy:arch} erläutert die objektorientierte
+Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
+\sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
+Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
+dienen die Definitionen der Sprachen, in denen das System selbst
+geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
+Ansatzes und liefert die Motivation für eine neue Version.
 
-\sref{magicl}
-\sref{magicl:haskats}
-\sref{magicl:parser}
-\sref{magicl:sexp}
-\sref{magicl:arch}
-\sref{magicl:examples}
+\cref{magicl} widmet sich MagicL, dem Kern dieser Arbeit. Diese
+Neuimplementation basiert auf einer Haskell-Umsetzung
+kategorientheoretischer Konzepte, welche in \sref{magicl:haskats}
+beschrieben wird. In \sref{magicl:parser} werden dann spezielle
+Kategorien entwickelt, mit deren Hilfe auf elegante Weise Parser
+beschrieben werden können. In \sref{magicl:sexp} geht es um das Parsen
+von S-Expressions und die hierfür bereitgestellten
+Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
+Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
+werden. \sref{magicl:examples} zeigt Beispiele für verschiedene Modelle,
+Parser und Compiler, die Teil von MagicL sind.
 
+\cref{end} fasst zum Schluss die Ergebnisse zusammen und gibt
+einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
+Rahmen dieser Arbeit behandelt werden können.
 
 \lsection[basic]{Grundlagen}
 
@@ -256,35 +279,39 @@ Nachteile:
 \lsubsection[basic:parser]{Parser-Generatoren}
 
 \lsubsection[basic:lisp]{Lisp und S-Expressions}
+\begin{itemize}
+\item Code-Generation und Metaprogrammierung seit fast 50 Jahren
+\item was können wir lernen?
+\item lisp: homoikonisch
+\item Einheitliche Syntax macht vieles leichter
+\item compilererweitungen durch makros
+\end{itemize}
 
--Code-Generation und Metaprogrammierung seit fast 50 Jahren
--was können wir lernen?
---Einheitliche Syntax macht vieles leichter
---compilererweitungen durch makros
+\lsubsubsection[basic:lisp:xml]{Vergleich mit XML}
 
-Vergleich mit XML
-
--gleiche Zielsetzung - Baumstruktur
--syntax: ``</tag>'' vs. ``)''
---nur vorteilhaft f texteditor ohne parent-matching!
--XML komplexer, da Attribute
---kann auch durch unterknoten ausgedrückt werden - wird es nur aufgrund
-von hässlicher syntax nicht
---nicht mehr rekursiv, komplexe attribute gehen nicht (wirklich)
-
-diskussion: makros good or bad
+\begin{itemize}
+\item gleiche Zielsetzung - Baumstruktur
+\item syntax: ``</tag>'' vs. ``)''
+\item nur vorteilhaft f texteditor ohne parent-matching!
+\item XML komplexer, da Attribute
+\item kann auch durch unterknoten ausgedrückt werden - wird es nur aufgrund
+unständlicher syntax nicht
+\item nicht mehr rekursiv, komplexe attribute gehen nicht (wirklich)
+\item diskussion: makros good or bad
+\end{itemize}
 
 \lsubsection[basic:ruby]{Ruby}
 
 \lsubsection[basic:haskell]{Haskell}
 
-Pur, Funktional
-Infix ()
-Typinferenz
-Currying
-Datentypen, newtype, type (Typvariablen)
-
-Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
+\begin{itemize}
+\item Pur, Funktional
+\item Infix-Operatoren in Klammern
+\item Typinferenz
+\item Currying
+\item Datentypen, newtype, type (Typvariablen)
+\item Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
+\end{itemize}
 
 \lsubsection[basic:cats]{Kategorientheorie}
 
@@ -460,9 +487,13 @@ aus $B$ entsprechend $g$.
 
 \lsubsection[sexy:arch]{Architektur}
 
+metazirkulär
+
 \lsubsection[sexy:macros]{Makros}
 
 \lsubsection[sexy:examples]{Beispiele}
+
+\lsubsection[sexy:limits]{Einschränkungen und Probleme}
 
 \lsection[magicl]{Arrow-basierte Implementation in Haskell}
 
@@ -679,10 +710,8 @@ einer neuen Kategorie $\mathbf{C}_f$ zu verstecken. $f_{f} : A
 Der Arrow $fail_{f} : String \rightarrow a$ in $C_{f}$ schlägt immer
 fehl und entspricht $fail : String \rightarrow String + a$ in $C$
 Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B} \rightarrow
-Mor_{A,B} $ bietet Alternativen
-Monoid
+Mor_{A,B} $ bietet Alternativen. \todo{Monoid}
 
-\begin{frame}{Der Funktor Fail (2)}
   \begin{itemize}
   \item Komposition in $C_{f}$:  $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$ 
   \end{itemize}
@@ -691,7 +720,6 @@ Monoid
     \includegraphics[scale=0.3]{images/cat_fail}
     \caption{Komposition beim Fail-Funktor}
   \end{figure}
-\end{frame}
 
 \lsubsubsection[magicl:parser:state]{Arrows mit Nebeneffekten}
 
@@ -790,27 +818,10 @@ kategorientheoretisch motivierten Baukastenansatz, so dass
 beispielsweise Parser durch die Kombination von Arrows erzeugt werden.
 
 \lsubsection[end:future]{Ausblick}
-
-Modellsprache
-Sexp-IDE
-Versionierung
-
-
-% \begin{frame}{Parsen von S-Expressions}
-%   \begin{itemize}
-%   \item Besonderheit: Token können selbst Listen sein
-%   \item Lösung: Als Stream behandeln, \texttt{compNode} wendet Parser
-%     auf inneren Stream an
-%     \begin{itemize}
-%     \item Beispiel: Lesen von \texttt{(hallo welt)}
-%     \item \texttt{compNode (symeq "'hallo"' >>> symeq "'welt"') } % <<
-%     \end{itemize}
-%   \item Makros: \texttt{compNode mit Prüfung des ersten Symbols}
-%     \begin{itemize}
-%     \item obiges Beispiel: \texttt{macro "'hallo"' (symeq "'welt"')}
-%     \item Stimmt das erste Symbol überein, wird das Backtracking aufgehoben
-%     \end{itemize}
-%   \end{itemize}
-% \end{frame}
+\begin{itemize}
+\item Modellsprache
+\item Sexp-IDE
+\item Versionierung
+\end{itemize}
 
 \end{document}
