@@ -175,22 +175,64 @@ Rolle zu: Ob \textit{Ruby on Rails} oder \textit{Google Web Toolkit},
 praktisch alle Web Frameworks generieren zumindest ihre HTML-Dateien oder
 SQL-Strings für den Datenbankzugriff.
 
-Code-Generierung ist also ein aktuelles Thema, 
+Abstraktion durch Code-Generierung ist also beliebter denn je, und
+Werkzeuge die diese anbieten oder nutzen gibt es wie Sand am
+Meer. Dennoch liegen die meisten verwendeten Methoden meiner Meinung
+nach technologisch einen großen Schritt hinter dem, was
+Lisp-Programmierer bereits vor 40 Jahren mit S-Expressions und Makros
+praktiziert haben. Denn im Gegensatz zu den vielen aktuellen Werkzeugen,
+die auf Zeichenketten arbeiten, wird Lisp-Code mittels S-Expressions in
+einer Baumstruktur repräsentiert, wodurch das Verarbeiten und Generieren
+von Code deutlich vereinfacht und darüber hinaus viele Fehlerquellen
+vermieden werden. Makros ermöglichen zudem eine inkrementelle, modulare
+Compiler-Entwicklung.
 
-\begin{itemize}
-\item viele Werkzeuge
-\item dennoch geringe abstraktion da textbasiert
-\item lisp seit xy jahren strukturell
-\end{itemize}
+Lisp-Programmierer, auf der anderen Seite, haben sich immer nur im die
+Erzeugung von Lisp-Code selbst gekümmert und bis auf wenige Ausnahmen
+(siehe z.B. ..., welches JavaScript aus S-Expressions generiert) andere
+Sprachen ignoriert. Zudem wird Lisp allgemein totgeschrieben, was teils
+an veraltetem Sprachdesign, hauptsächlich aber an der geringen Anzahl
+verfügbarer Bibliotheken im Vergleich zu Mainstream-Sprachen
+liegt. Während viele andere Lisp-Schätze wie Garbage Collection oder der
+REPL, eine Lisp-Kommandozeile zum interaktiven Programmieren und Testen,
+bereits von modernen Sprachen nachgeahmt wurden, stehen Makros nur noch
+der kleinen Lisp-Community zur Verfügung.
+Es wäre also wünschenswert, diese oder etwas vergleichbares im Rahmen
+moderner Sprachen für Code-Generierung und -Verarbeitung nutzen zu
+können.
 
 \lsubsection[intro:goal]{Fragestellungen und Zielsetzung}
 
-\begin{itemize}
-\item Lisp-Ansatz (Sexp, inkrem. Compiler) für beliebige Domänen /
-Backend-Sprachen verallgemeinern
-\item elegante Repräsentation für Sexp-Compiler oder -Parser finden
-\item typisierte vs. untypisierte Repräsentation
-\end{itemize}
+Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
+Lisp-Ansätze für Code-Generierung derart zu verallgemeinern, dass sich
+beliebige durch S-Expressions repräsentierte Sprachen damit komfortabel
+kompilierien und möglichst auch interpretieren lassen können? Es soll
+allerdings nicht zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros
+erfolgen, sondern vielmehr geprüft werden, welche Möglichkeiten es noch
+gibt und welche davon eventuell noch besser geeignet für den neuen,
+breiteren Kontext beliebiger Sprachen sind. Insbesondere soll die
+Implementation selbst nicht in Lisp erfolgen, um eine gewisse
+Unabhängigkeit und einen freien Kopf für neue Ideen zu gewährleisten.
+
+\todo{Sexp-Parser}
+
+Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
+für S-Expressions und dann eine Architektur für S-Expression-Compiler
+angelegt werden, die einen inkrementellen und modularen Compiler-Entwurf
+ähnlich Lisp unterstützt. Damit soll eine S-Expression-Version von X
+entstehen, welche sich nach X-Quelltext übersetzen lässt, so dass
+Werkzeuge, die X generieren wollen, nur noch deren simplere
+S-Exp-Variante erzeugen müssen. In dem Moment ist das Bootstrapping
+abgeschlossen, so dass man von nun an ausschließlich mit S-Exp-Sprachen
+programmiert werden könnte. Auch bestehender Quelltext kann nun durch aus
+S-Expressions genererierten Versionen ersetzt werden, wodurch ein
+Metazirkulärer Compiler entsteht.
+
+Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
+(S-Exp-basierte) DSL für Compilerdefinition gestaltet werden kann, in
+der sich die Übersetzung einfacher beschreiben lässt als in X
+oder deren S-Exp-Schwester. Diese Sprache kann beispielsweise die
+Definition von Lisp-Makros ermöglichen.
 
 \lsubsection[intro:outline]{Aufbau dieser Arbeit}
 
@@ -207,8 +249,9 @@ werden. Zuletzt erklärt \sref{basic:cats} die Konzepte der
 Kategorientheorie, an denen sich MagicL orentiert.
 
 In \cref{sexy} wird ein erster, in Ruby geschriebener Prototyp eines
-universellen Frameworks für S-Expression-Compiler
-geschildert. \sref{sexy:arch} erläutert die objektorientierte
+universellen Frameworks für S-Expression-Compiler geschildert, welcher
+sich sehr dicht an den ursprünglichen Lisp-Makros
+orientiert. \sref{sexy:arch} erläutert die objektorientierte
 Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
 \sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
 Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
@@ -218,10 +261,9 @@ Ansatzes und liefert die Motivation für eine neue Version.
 
 \cref{magicl} widmet sich MagicL, dem Kern dieser Arbeit. Diese
 Neuimplementation basiert auf einer Haskell-Umsetzung
-kategorientheoretischer Konzepte, welche in \sref{magicl:haskats}
-beschrieben wird. In \sref{magicl:parser} werden dann spezielle
-Kategorien entwickelt, mit deren Hilfe auf elegante Weise Parser
-beschrieben werden können. In \sref{magicl:sexp} geht es um das Parsen
+kategorientheoretischer Konzepte (in \sref{magicl:haskats} beschrieben),
+mit deren Hilfe in \sref{magicl:parser} sehr allgemeine und elegante
+S-Expression-Parser konstruiert werden. In \sref{magicl:sexp} geht es um das Parsen
 von S-Expressions und die hierfür bereitgestellten
 Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
 Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
