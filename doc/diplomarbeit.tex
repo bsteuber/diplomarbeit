@@ -849,21 +849,48 @@ Mor_{A,B} $ bietet Alternativen. \todo{Monoid}
 
 \lsubsection[end:summary]{Zusammenfassung}
 
+\begin{itemize}
+\item Übertragung von Makros
+\item Erster Prototyp
+\end{itemize}
+
 MagicL ist der Prototyp eines
 universellen Frameworks für den Entwurf von Programmier- und
-Auszeichnungssprachen. Es soll dem Meta-Programmierer praktische
+Auszeichnungssprachen. Es gibt dem Meta-Programmierer praktische
 Werkzeuge für das Parsing und Übersetzen neuer sowie für Generation von
-Code bestehender Sprachen an die Hand geben, wobei insbesondere (jedoch
+Code bestehender Sprachen an die Hand, wobei insbesondere (jedoch
 nicht ausschließlich) aus S-Expressions aufgebaute Sprachen unterstützt
 werden. Die Parser- und Compilererstellung erfolgt nach einem
 kategorientheoretisch motivierten Baukastenansatz, so dass
-beispielsweise Parser durch die Kombination von Arrows erzeugt werden.
+unter anderem Parser durch die Kombination von Arrows erzeugt werden.
+
+...
+
+\begin{itemize}
+\item Fazit
+\end{itemize}
 
 \lsubsection[end:future]{Ausblick}
 \begin{itemize}
-\item Modellsprache
-\item Sexp-IDE
+\item DSL für Modell- und Compilerdefinition
+\item Verschiedene DSL's
+  \begin{itemize}
+  \item Text (Latex)
+  \item Graphen und Petrinetze
+  \item Test-Framework (Haskell)
+  \item Make-Tool (Haskell)
+  \item andere Programmier- und Auszeichnungssprachen
+  \end{itemize}
+\item S-Exp-IDE
+  \begin{itemize}
+  \item Struktureller Editor
+  \item Modellspezifische GUI-Plugins
+  \item Netzwerktransparenz und synchrone Bearbeitung
+  \end{itemize}
 \item Versionierung
+  \begin{itemize}
+  \item Diff (evtl. über IDE-Protokoll)
+  \item Merge für Teamarbeit und passive Code-Generierung
+  \end{itemize}
 \end{itemize}
-
 \end{document}
