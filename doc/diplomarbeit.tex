@@ -337,7 +337,9 @@ wäre \todo{kriterien} natürlich ein allgemeiner Merge-Mechanismus, der die Arb
 Programmierers reibungslos in die neue Version übernimmt - dies ist
 aber leider schwierig zu implementieren.
 
-Zudem lässt sich nach Ein- und Ausgabe des Generators unterscheiden.
+Zudem lässt sich nach Ein- und Ausgabe des Generators unterscheiden:
+Diese können flache Strings, strukturierte (zunächst) ungetypte Daten wie \sexps{}
+und XML oder aber getypte Modelle einer Programmiersprache sein.
 
 Vorteile:
 \begin{itemize}
@@ -406,12 +408,51 @@ unständlicher syntax nicht
 
 \lsection[basic:ruby]{Ruby}
 
-\begin{itemize}
-\item ``Objektfunktional''
-\item Interpretiert, dynamisch getypt
-\item $\rightarrow$ Laufzeitevaluation
-\item Fehler erst beim Laufen auffindbar
-\end{itemize}
+Ruby ist eine dynamisch getypte, interpretierte Programmiersprache, die
+sowohl funktional als auch objektorientiert ist und eine relativ
+einfache Syntax benutzt\footnote{Die Ruby-Syntax ist einfach im
+  Vergleich zu Sprachen wie C - aber natürlich noch immer um ein
+  Vielfaches komplexer als Lisp-Syntax}, mit der viele
+Schleifenkonstrukte durch die Übergabe von sogenannten Blöcken an
+Funktionen realisiert werden können.  Unter Anderem aufgrund des
+erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
+auch außerhalb seines Herkunftslandes Japan recht beliebt.
+
+\lsubsection[basic:ruby:runtime]{Laufzeiteigenschaften} 
+
+Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
+  interpretierten Sprache ist das Bereitstellen einer
+  \icode{eval}-Funktion deutlich leichter - schließlich gibt es diese im
+Interpreter bereits, so dass im Wesentlichen nur noch die Schnittstelle
+erstellt werden muss.} hat Ruby wie Lisp die
+Möglichkeit, über eine \icode{eval}-Funktion Code zur Laufzeit zu
+evaluieren, was viele interessante Möglichkeiten mit sich bringt:
+Beispielsweise lassen sich so Anwendungen erstellen, die durch eine
+mitgelieferte Skriptsprache (Ruby selbst) erweitert werden können.
+
+Das Wegfallen der Kompilationsphase hat sowohl Vor- als auch Nachteile:
+Eine Übersetzung in Maschinensprache kostet Zeit, andererseits Laufen
+kompilierte Programme meist schneller und sind sparender mit
+Resourcen. In \textit{Ruby on Rails} beispielsweise muss eine Programm-
+oder Template-Datei nur gespeichert werden, damit beim nächsten Aufruf
+der Webseite bereits die neue Version in Kraft tritt, was sehr praktisch
+zum Entwickeln ist. Allerdings haben Rails-Anwendungen einen hohen
+Speicherverbrauch und sind vergleichsweise langsam\footnote{Die
+  vergleichsweise schlechte Performance liegt allerdings nicht nur an
+  der interpretierten Sprache, sondern auch an der Komplexität des
+  Frameworks. Beispielsweise sind php-Anwendungen meist schneller,
+  obwohl die Sprache ebenfalls interpretiert ist}.
+
+Ähnllich verhält es sich mit der dynamischen Typisierung: Das Wegfallen
+von Variablen-Deklarationen beschleunigt den Entwicklungsvorgang -
+Stichwort "`Rapid Prototyping"' - und vereinfacht Refactorings. Im
+Gegenzug fällt die nützliche statische Prüfung weg, so dass viele Fehler
+erst unerwartet zur Laufzeit auftreten, wenn das 
+
+
+\lsubsection[basic:ruby:classes]{Klassen und Methoden}
+
+\lsubsection[basic:ruby:blocks]{Blöcke}
 
 \lsection[basic:haskell]{Haskell}
 
@@ -733,7 +774,7 @@ f >>^ func = f >>> arr func
 \end{code}% <<
 noch etwas syntaktischen Zucker.
 
-\lsubsection[magic:haskats:coproducts]{Coprodukte: Die Klasse \icode{ArrowChoice}}
+\lsubsection[magic:haskats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
 
 Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
 \icode{Either}-Datentyp, der folgendermaßen definiert ist:
@@ -1163,20 +1204,84 @@ ausgegeben, z.B.
 \end{code}
 
 \lsection[magicl:sexp]{Parsen von \sexps{}}
-  \begin{itemize}
-  \item Besonderheit: Token können selbst Listen sein
-  \item Lösung: Als Stream behandeln, \texttt{compNode} wendet Parser
-    auf inneren Stream an
-    \begin{itemize}
-    \item Beispiel: Lesen von \texttt{(hallo welt)}
-    \item \texttt{compNode (symeq "'hallo"' >>> symeq "'welt"') } % <<
-    \end{itemize}
-  \item Makros: \texttt{compNode mit Prüfung des ersten Symbols}
-    \begin{itemize}
-    \item obiges Beispiel: \texttt{macro "'hallo"' (symeq "'welt"')}
-    \item Stimmt das erste Symbol überein, wird das Backtracking aufgehoben
-    \end{itemize}
-  \end{itemize}
+
+Die Parser-Bibliothek an sich ist bereits nützlich, um Textdateien
+einlesen zu können. Das eigentliche Ziel aber ist die Verarbeitung von
+\sexps{}. Es lassen sich zwar bereits Streams von \sexps{} verarbeiten,
+es gibt aber bisher keine komfortablen Operationen, um das Innere einer
+\sexp{} zu testen oder zu verarbeiten. Da ein \sexp{} selbst wieder eine
+Liste und damit ein Stream ist, bietet es sich an, diesen ebenfalls über
+einen "`inneren Parser"' zu verarbeiten.
+
+Beispielsweise könnte eine Liste von Personen folgenderweise
+repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
+  sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)} ersetzt
+  werden - aber es handelt sich ja nur um ein einfaches Beispiel.}:
+\begin{code}
+(person Franz)
+(person Walter)  
+(person Heinz)
+\end{code}
+
+Ein Parser, der eine Liste von Namensstrings produzieren soll, würde mit
+der bisherigen Bibliothek so aussehen:
+
+\begin{code}
+parsePerson = take >>^ proc >>> (fail ||| id)
+  where proc (Node (Symbol "person", Symbol x)) = Right x
+        pred _ = Left ("Not a person: " ++ show x)
+parsePersons = many parsePerson
+\end{code} % <<
+
+Die Verarbeitung von Hand mittels \icode{Node} und \icode{Symbol} im
+Pattern-Matching ist relativ umständlich. Deswegen gibt es eine Reihe
+nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
+
+\begin{itemize}
+\item \icode{takeSexp} liest eine \sexp{} vom Stream und wandelt diese
+  für die Unterscheidung zwischen Symbolen und Knoten mittels
+  \icode{|||} in das Coprodukt \icode{Either String [Sexp]} um.
+\item \icode{takeSymbol} erwartet ein Symbol und gibt dieses als String
+  zurück - ansonsten wird eine Fehlermeldung ausgegeben.
+\item \icode{symbolMacro name = skip (eq (Symbol name))} akzeptiert nur
+  das Symbol mit Namen \icode{name}.
+\item \icode{takeNode} erwartet einen Knoten und gibt diesen als Liste
+  von \sexps{} zurück.
+\item \icode{compNode innerComp} verarbeitet einen Knoten, indem der
+  übergebene Parser \icode{innerComp} auf das Knoteninnere angewendet
+  wird. Da Parser in MagicL immer als Compiler definiert werden (siehe
+  \sref{magicl:arch:compiler}), heißt diese Funktion nicht \icode{parseNode}
+\item \icode{macro name innerComp} % <<
+  konsturiert nun einen Parser, der wie ein Macro das erste Element des
+  Knotens mit dem Symbol \icode{name} vergleicht und im Erfolgsfall die
+  restlichen Elemente mit \icode{innerComp} verarbeitet. Danach wird
+  sichergestellt, dass der Knoten auch wirklich vollständig gelesen
+  wurde - will man dies nicht, da man den Rest ignoriert, gibt es die
+  Funktion \icode{looseMacro} mit identischer Signatur.
+\end{itemize} 
+Das obige Beispiel lässt sich nun umschreiben:
+\begin{code}
+parsePerson  = macro "person" takeSymbol  
+parsePersons = many parsePerson
+\end{code}
+
+\icode{macro} benutzt \icode{forceParser} aus
+\sref{magicl:parser:parse}, um das Backtracking auszuhebeln, sobald das
+Symbol übereinstimmt, was wieder für bessere Fehlermeldungen
+sorgt. Allerdings bedeutet dies, dass Code wie
+\begin{code}
+macro "foo" (symbolMacro "bar") <+> macro "foo" (symbolMacro "baz")
+\end{code}
+nicht erwartungsgemäß funktioniert:
+\begin{code}
+(foo bar)   => ()  d.h. Erfolg, kein Ergebnis
+(foo baz)   => Symbol bar expected: baz
+\end{code}
+Es sollte deshalb immer nur ein \icode{macro} für jeden Begriff benutzt
+werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
+\begin{code}
+macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
+\end{code}
 
 \lsection[magicl:arch]{Rahmenarchitektur}
 
