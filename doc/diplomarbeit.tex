@@ -136,7 +136,8 @@
 
 \project{magicl}
 
-\newcommand\ato{\rightarrow}
+\newcommand\ato{\rightarrow} %Morphismen
+\newcommand\nto{\Rightarrow} %Natürliche Transformationen
 
 \newtheorem{defini}{Definition}
 
@@ -447,8 +448,10 @@ Speicherverbrauch und sind vergleichsweise langsam\footnote{Die
 von Variablen-Deklarationen beschleunigt den Entwicklungsvorgang -
 Stichwort "`Rapid Prototyping"' - und vereinfacht Refactorings. Im
 Gegenzug fällt die nützliche statische Prüfung weg, so dass viele Fehler
-erst unerwartet zur Laufzeit auftreten, wenn das 
-
+erst unerwartet zur Laufzeit auftreten und deren Ursache möglicherweise
+schwerer zu lokalisieren ist. Größere Ruby-Projekte verwenden deshalb meist
+besonders viele \textit{Unit Tests} - welche natürlich auch bei statisch
+typisierten Sprachen nützlich sind.
 
 \lsubsection[basic:ruby:classes]{Klassen und Methoden}
 
@@ -459,7 +462,15 @@ erst unerwartet zur Laufzeit auftreten, wenn das
 \begin{itemize}
 \item Pur, Funktional
 \item Infix-Operatoren in Klammern
-\item Unit-Typ, Maybe-Typ
+\item Unit-Typ
+Der parametrisierte Datentyp \icode{Maybe} beschreibt optionale Werte,
+die nicht vorhanden sein müssen:
+
+\begin{code}
+data Maybe a = Nothing | Just a
+\end{code}
+
+\icode{Nothing} entspricht \icode{null} in anderen Sprachen.
 \item Typinferenz
 \item Currying
 \item Datentypen, newtype (Abstraktion f. Typklassen), type (Typvariablen)
@@ -531,14 +542,26 @@ wobei folgende Axiome erfüllt sein müssen:
 \end{itemize}
 }
 
-\fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
-
 Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
 sie aus dem Kontext hervorgehen. Wie von Funktionen gewohnt, lässt sich
-$f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$.
+$f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$. Sind $A$
+und $B$ identisch, bezeichnet man f auch als Endomorphismus.
 
-Viele Definitionen der Kategorientheorie erfolgen über kommutative
-Diagramme: \defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn
+\fig{cat_simple}{Eine einfache Kategorie}
+
+Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
+Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
+andere simple Beispielkategorie, die aus den Objekten $A, B$ und den
+Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
+dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{Set}}$ - denn
+jede Kategorie ist selbstverständlich unter Komposition geschlossen.
+
+\fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
+
+Viele Definitionen der Kategorientheorie erfolgen über sogenannte
+kommutative Diagramme:
+
+\defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn
   für je zwei eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A
   \rightarrow B$ und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$
   zwischen zwei Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  }
@@ -549,47 +572,6 @@ Rolle. Dieses Diagramm dient lediglich der Veranschaulichung, ist aber
 nicht selbst für die Definition der Assoziativität geeignet -
 schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
 von $\circ$ voraus.
-
-Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
-Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
-andere simple Beispielkategorie, die aus den Objekten $A, B$ und den
-Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
-dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{Set}}$ - denn
-jede Kategorie ist selbstverständlich unter Komposition geschlossen.
-
-\fig{cat_simple}{Eine einfache Kategorie}
-
-\lsubsection[basic:cats:func]{Funktoren}
-
-Strukturerhaltende Abbildungen zwischen Kategorien werden Funktoren genannt:
-
-\defi{Funktor}{
-Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
-\rightarrow \mathbf{D}$ von Kategorie $C$ nach Kategorie $D$
-    \begin{itemize}
-    \item bildet jedes Objekt $A \in \mathrm{Ob}^{\mathbf{C}}$ auf $F_{\mathrm{Ob}}(A) \in
-      \mathrm{Ob}^{\mathbf{D}}$ ab,
-    \item bildet jeden Morphismus $f \in
-      \mathrm{Mor}^{\mathbf{C}}_{A,B}$ auf $F_{\mathrm{Mor}}(f) \in
-      \mathrm{Mor}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A),F_{\mathrm{Ob}}(B)}$
-      ab,
-    \end{itemize}
-    wobei für alle $A,B,C \in \mathrm{Ob}^{\mathbf{C}}$ und alle $f \in
-    \mathrm{Mor^{\mathbf{C}}_{B,C}},g \in
-    \mathrm{Mor^{\mathbf{C}}_{A,B}}$ folgende Axiome erfüllt sein
-    müssen:
-    \begin{itemize}
-    \item Erhaltung der Komposition:
-      $$F_{\mathrm{Mor}}(f \circ^{\mathbf{C}} g) =
-      F_{\mathrm{Mor}}(f) \circ^{\mathbf{D}} F_{\mathrm{Mor}}(g)$$
-    \item Erhaltung der Identität:
-      $$F_{\mathrm{Mor}}(\mathrm{id}^{\mathbf{C}}_A) =
-      \mathrm{id}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A)}$$
-    \end{itemize}
-}
-
-Kategorien als Objekte und Funktoren als Morphismen ergeben selbst
-wieder eine Kategorie.
 
 \lsubsection[basic:cats:prod]{Produkte und Coprodukte}
 
@@ -647,9 +629,137 @@ die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
 Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
 aus $B$ entsprechend $g$.
 
+\lsubsection[basic:cats:func]{Funktoren}
+
+Strukturerhaltende Abbildungen zwischen Objekten und Morphismen zweier
+Kategorien werden Funktoren genannt:
+
+\defi{Funktor}{
+Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
+\rightarrow \mathbf{D}$ von Kategorie $C$ nach Kategorie $D$
+    \begin{itemize}
+    \item bildet jedes Objekt $A \in \mathrm{Ob}^{\mathbf{C}}$ auf $F_{\mathrm{Ob}}(A) \in
+      \mathrm{Ob}^{\mathbf{D}}$ ab,
+    \item bildet jeden Morphismus $f \in
+      \mathrm{Mor}^{\mathbf{C}}_{A,B}$ auf $F_{\mathrm{Mor}}(f) \in
+      \mathrm{Mor}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A),F_{\mathrm{Ob}}(B)}$
+      ab,
+    \end{itemize}
+    wobei für alle $A,B,C \in \mathrm{Ob}^{\mathbf{C}}$ und alle $f \in
+    \mathrm{Mor^{\mathbf{C}}_{B,C}},g \in
+    \mathrm{Mor^{\mathbf{C}}_{A,B}}$ folgende Axiome erfüllt sein
+    müssen:
+    \begin{itemize}
+    \item Erhaltung der Komposition:
+      $$F_{\mathrm{Mor}}(f \circ^{\mathbf{C}} g) =
+      F_{\mathrm{Mor}}(f) \circ^{\mathbf{D}} F_{\mathrm{Mor}}(g)$$
+    \item Erhaltung der Identität:
+      $$F_{\mathrm{Mor}}(\mathrm{id}^{\mathbf{C}}_A) =
+      \mathrm{id}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A)}$$
+    \end{itemize}
+}
+
+Statt $F_{\mathrm{Ob}}$ und $F_{\mathrm{Mor}}$ kann einfach $F$
+geschrieben werden, wenn aus dem Kontext hervorgeht welche Abbildung
+gemeint ist.
+
+Kategorien als Objekte und Funktoren als Morphismen ergeben selbst
+wieder eine Kategorie, die Kategorie der kleinen Kategorien - kleine
+Kategorien sind Kategorien, deren Klasse von Objekten eine Menge
+ist. Diese Einschränkung ist nötig, da Klassen von Klassen in der
+Mathematik ähnlich problematisch sind wie Mengen von Mengen.
+
+\lsubsection[basic:cats:nats]{Natürliche Transformationen}
+
+Eine andere Möglichkeit, aus Funktoren eine Kategorien zu bilden,
+besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
+\ato \mathbf{D}$ als Objekte bilden die sogenannte Funktorkategorie über
+$\mathbf{C}$ und $\mathbf{D}$, deren Morphismen natürliche
+Transformationen heißen. 
+
+\defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha:F \nto
+G$ ordnet jedem Objekt $A$ aus $\mathbf{C}$ einen Morphismus
+$\alpha_A:F(A) \ato G(A)$ aus $\mathbf{D}$ zu, wobei für alle Objekte
+$A,B$ und alle Morphismen $f:A \ato B$ aus $\mathbf{C}$ die
+Gleichung
+$$\alpha_B \circ F(f) = G(f) \circ \alpha_A $$
+gelten muss, was dem kommutativen Diagramm in \abb{cat_nat}
+entspricht.
+}
+
+Obwohl natürliche Transformationen in der Funktorkategorie Morphismen
+sind, werden sie für die bessere Unterscheidung mit $\nto$ statt
+$\ato$ notiert.
+
+\fig{cat_nat}{Kommutatives Diagramm in Kategorie $\mathbf{D}$ für die Definition von
+  natürlichen Transformationen}
+
+\lsubsection[basic:cats:monads]{Monaden}
+
+Monaden setzen sich aus einem Endofunktor und zwei natürlichen
+Transformationen zusammen:
+\defi{Monade}{Eine Monade $(T,\eta,\mu)$ über der Kategorie $\mathbf{C}$ besteht aus
+  \begin{itemize}
+  \item einem Endofunktor $T:\mathbf{C} \ato \mathbf{C}$,
+  \item einer natürlichen Transformation $\eta:\mathrm{id}_{\mathbf{C}} \nto T$,
+  \item einer natürlichen Transformation $\mu:T^2 \nto T$,
+  \end{itemize}
+wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
+\begin{itemize}
+\item Assoziativität: $$\mu_A \circ T(\mu_A) = \mu_A \circ \mu_{T(A)}$$
+\item Neutrales Element: $$\mu_A \circ T(\eta_A) = \mu_A \circ \eta_{T(A)} = \mathrm{id}_{T(A)}$$
+\end{itemize}
+}
+$\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier den Identitätsfunktor,
+$\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den Identitätsmorphismus. Auch diese Gleichungen ließen sich
+als kommutative Diagramme darstellen.  
+
+Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
+$T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
+auf der linken Seite behält das äußere $T$ bei und verwendet $\mu$, um
+das innen stehende $T(T(A))$ in $T(A)$ zu überführen. Rechts reduziert
+$\mu_{T(x)}:T(T(T(A))) \ato T(T(A))$ dagegen von außen und lässt das
+innere $T(A)$ unangerührt. Wird das Ergebnis dann in $\mu$ gesteckt,
+sind innere und äußere Reduktion ununterscheidbar. Die Gleichung lässt
+sich auch kurz als $\mu \circ T \mu = \mu \circ \mu T$ schreiben.
+
+Das zweite Axiom funktioniert ähnlich, nur beschreiben diesmal beide
+Seiten eine Art, den Identitätsmorphismus für das Objekt $T(A)$ zu
+bilden. $T(\eta_A):T(A) \ato T(T(A)$ fügt das neue $T$ innen ein,
+$\eta_{T(A)}:T(A) \ato T(T(A))$ hingegen außen.
+
+Zu jeder Monade lässt sich eine neue Kategorie bilden, die Kleisli-Kategorie:
+\defi{Kleisli-Kategorie}{
+Die Kleisli-Kategorie $\mathbf{C}_K$ zur Kategorie $C$ und der
+Monade $(T,\eta,\mu)$ besteht aus
+\begin{itemize}
+\item den Objekten von $\mathbf{C}$,
+\item den Morphismen $f^{\mathbf{C}} \in
+  \mathrm{Mor}^{\mathbf{C}}_{A,T(B)}$ aus $C$, die in $f \in
+  \mathrm{Mor}^{\mathbf{C}_K}_{A,B}$ umbenannt werden,
+\item der Identität $\mathrm{id}_A = \eta_A$,
+\item der Komposition $f \circ^{\mathbf{C}_K}_{A,B,C} g = \mu_C
+  \circ^{\mathbf{C}} T(f) \circ^{\mathbf{C}} g$.
+\end{itemize}
+}
+Die Erfüllung der Kategorieaxiome wird hier nicht gezeigt, folgt aber
+aus den Axiomen für Funktoren, natürliche Transformationen und Monaden.
+
+Monaden sind in der Programmierung nützlich, da sie generisch das
+Rechnen mit "`eingepackten"' Werten beschreiben. Beispielsweise könnte
+$A$ für den Typ \icode{Int} und $T(A)$ für \icode{List of Int}
+stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
+$\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
+Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
+Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
+Verknüpfen. Haskell (siehe \sref{basic:haskell}) benutzt Monaden unter
+anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
+einzubauen, wie \sref{magicl:cats:monads} erklärt.
+
 \lchapter[sexy]{Objektorientierte Ruby-Implementation}
 
-\sexy{} ist das erste im Rahmen dieser Arbeit entworfene \sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
+\sexy{} ist das erste im Rahmen dieser Arbeit entworfene
+\sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
 
 \sref{sexy:arch} erläutert die objektorientierte
 Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
@@ -677,7 +787,7 @@ metazirkulär
 MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
 als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
 Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{magicl:haskats} beschrieben), mit deren Hilfe
+Konzepte (in \sref{magicl:cats} beschrieben), mit deren Hilfe
 beispielsweise in \sref{magicl:parser} sehr allgemeine und elegante
 \sexp{}-Parser konstruiert werden. In \sref{magicl:sexp} geht es um
 das Parsen von \sexps{} und die hierfür bereitgestellten
@@ -690,7 +800,7 @@ Modelle, Parser und Compiler, die Teil von MagicL sind.
 
 \todo{Sexp-Typ diskutieren}
 
-\lsection[magicl:haskats]{Kategorien in Haskell}
+\lsection[magicl:cats]{Kategorien in Haskell}
 
 Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
 die allerdings immer bestimmten Einschränkungen
@@ -699,7 +809,7 @@ Haskell-Typen. Die Typklasse \icode{Category} ist wie folgt definiert:
 \begin{code}
 class Category cat where
   id   :: cat a a
-  (.) :: cat b c -> cat a b -> cat a c
+  (.)  :: cat b c -> cat a b -> cat a c
 \end{code}
 Ein Typ \icode{cat}, der selbst zwei Typparameter benötigt, ist also eine
 Instanz von \icode{Category}, wenn es generische Identitäts- und
@@ -716,9 +826,7 @@ Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
 Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
 benutzt mit \icode{f >>> g = g . f}. %<<
 
-\todo{IO-Kategorie als Kleisli IO}
-
-\lsubsection[magicl:haskats:arrows]{Arrows}
+\lsubsection[magicl:cats:arrows]{Arrows}
 
 Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
@@ -774,7 +882,7 @@ f >>^ func = f >>> arr func
 \end{code}% <<
 noch etwas syntaktischen Zucker.
 
-\lsubsection[magic:haskats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
+\lsubsection[magic:cats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
 
 Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
 \icode{Either}-Datentyp, der folgendermaßen definiert ist:
@@ -820,11 +928,10 @@ Produkt-Operationen:
   \dref{Coprodukt}
 \end{itemize}
 
-\lsubsection[magicl:haskats:functors]{Funktoren}
+\lsubsection[magicl:cats:functors]{Funktoren}
 
 Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
-allerdings nur Endofunktoren - das sind Funktoren von einer Kategorie in
-sich selbst - über der Kategorie $\mathbf{Hask}$ repräsentieren:
+allerdings nur Endofunktoren über der Kategorie $\mathbf{Hask}$ repräsentieren:
 \begin{code}
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
@@ -866,9 +973,151 @@ instance (Arrow ar) => Functor (FailFunctor ar) ar where
   lift f = ...
 \end{code}
 
+\lsubsection[magicl:cats:monads]{Monaden}
+
+Die Typklasse \icode{Monad} aus den Haskell-Bibliotheken beschreibt
+Monaden über der Kategorie $\mathbf{Hask}$. $\eta$ aus
+\sref{basic:cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
+Operator \icode{>>=} %<<
+mit anderer Signator gefordert:
+\begin{code}
+class Monad m where
+  return :: a -> m a
+  (>>=)  :: m a -> (a -> m b) -> m b
+\end{code} % <<
+Es gibt auch eine genaue Entsprechung von $\mu$, die hier \icode{join}
+heißt:
+\begin{code}
+join :: (Monad m) => m (m a) -> m a
+join x = x >>= id
+\end{code} % <<
+
+Zu jeder Haskell-Monade \icode{m} lässt sich wieder die
+Kleisli-Kategorie bilden, die die Datentypen als Objekte sowie die
+Funktionen \icode{a -> m b} als Morphismen enthält. Die
+Haskell-Bibliotheken stellen hierfür den Datentyp \icode{Kleisli}
+bereit:
+\begin{code}
+newtype Kleisli m a b = Kleisli (a -> m b)
+
+instance (Monad m) => Category (Kleisli m) 
+  where id = Kleisli return
+        Kleisli f . Kleisli g = Kleisli composed
+          where composed x = g x >>= f
+
+instance (Monad m) => Arrow (Kleisli m) 
+  where arr fun = Kleisli (return . fun)
+        first (Kleisli f) = Kleisli tupleF
+          where tupleF (x, z) = f x >>= (\ y -> return (y, z))
+\end{code} %<<
+
+Arrows und Monaden werden beide verwendet, um abstrakt Verknüpfungen von
+speziellen Operationen zu beschreiben. Arrows sind allgemeiner, denn
+jede Monade lässt sich beispielsweise mittels \icode{Kleisli} auf einen
+entsprechenden Arrow abbilden. Auf der anderen Seite entspricht aber
+nicht jedem Arrow eine Monade, denn aus den Arrow-Operationen allein
+lässt sich \icode{>>=} % <<
+nicht konstruieren (siehe \cite[S. 18f]{Hughes}). Dies wirft die Frage
+auf, weshalb Haskell überhaupt Monaden benutzt und nicht alles über
+Arrows realisiert. Zum einen gibt es dafür historische Gründe: Monaden
+waren bereits 1993 in Haskell präsent \cite[S.23ff]{HaskellHistory},
+während Arrows erst 1998 von John Hughes vorgeschlagen wurden, da sich
+spezielle Parser mit statischen Komponenten nicht durch Monaden
+ausdrücken lassen \cite{Hughes}. Zum anderen bieten Monaden aber auch
+Vorzüge: Die Definition einer Monade ist etwas kürzer, da keine
+\icode{first}-Funktion für Produkte bereitgestellt werden muss - wie
+obiger Code zeigt lässt sich dies bereits mittels \icode{>>=} % <<
+ausdrücken. Zudem gibt es für Monaden in Haskell die praktische
+\icode{do}-Notation:
+\begin{code}
+do x <- foo
+   y <- bar x
+   return (x, y)
+\end{code}
+ist syntaktischer Zucker für
+\begin{code}
+foo >>= (\ x ->
+  bar x >>= (\ y ->
+    return y))          
+\end{code} % <<
+und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt -
+dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
+zuständig ist (siehe \sref{magicl:cats:monads:examples:io}). Diese
+Verwendung erklärt auch nachträglich den Namen \icode{return}, wobei es
+sich noch immer um die $\eta$-Transformation handelt und nicht etwa ein
+syntaktisches \icode{return}-Statement wie in imperativen Sprachen
+üblich.
+
+\lsubsubsection[magicl:cats:monads:examples]{Beispiele für Monaden}
+
+\lparagraph[magicl:cats:monads:examples:maybe]{\icode{Maybe}}
+
+Funktionen, die fehlschlagen können, lassen sich in der Form \icode{a
+  -> Maybe b} darstellen. Möchte man mehrerer solcher Funktionen
+verketten, werden normalerweise viele Fallunterscheidungen benötigt, da
+bei jeder Funktion die Rückgabe geprüft und nur im Erfolgsfall die
+nächste aufgerufen muss. Haskell vereinfacht dies, indem \icode{Maybe}
+zur Monade erklärt wird:
+\begin{code}
+instance Monad Maybe 
+  where return = Just
+        (Nothing >>= _) = Nothing
+        (Just x  >>= f) = f x
+\end{code} % <<
+Obiges Codebeispiel
+\begin{code}
+do x <- foo
+   y <- bar x
+   return (x, y)
+\end{code}
+würde in der Maybe-Monade so interpretiert werden: Wenn \icode{foo}
+erfolgreich ist, wird das Ergebnis (lokal) in \icode{x} gespeichert. Ist
+daraufhin \icode{bar x} ebenfalls erfolgreich, wird dieses in \icode{y}
+gespeichert und als Ergebnis \icode{Just (x, y)} zurückgegeben. Schlägt
+eine der Funktionen fehl, ist das ergebnis \icode{Nothing}.
+
+\lparagraph[magicl:cats:monads:examples:io]{\icode{IO}}
+
+Jede Programmiersprache benötigt für die reale Welt Möglichkeiten,
+Operationen mit Nebeneffekten wie das Schreiben oder solche, die von
+externen Nebeneffekten abhängen, wie das Lesen von Dateien,
+auszuführen. Dies lässt sich zunächst schwer in eine puren Sprache wie
+Haskell integrieren. Die \icode{IO}-Monade bietet hier eine Lösung: Man
+stelle sich einen fiktiven Datentyp \icode{World} vor, der den gesamten
+Zustand der externen Welt enthält. \icode{IO a} ist nun eine Funktion,
+die die Welt liest und eine andere Welt sowie ein a zurückgibt:
+\begin{code}
+newtype IO a = World -> (World, a)
+\end{code}
+Zum Verketten zweier \icode{IO}-Operationen wird die von der ersten
+zurückgegebene Welt an die zweite übergeben. Damit dies nicht von Hand
+geschehen muss, wird \icode{IO} wieder als Monade deklariert. Nun gibt
+es aber natürlich keinen wirklichen \icode{World}-Typen - in
+Wirklichkeit wird also der Haskell-Compiler alles, was mit \icode{IO}
+verpackt ist, in imperativen Code übersetzen. Dennoch gelingt dadurch
+die saubere Trennung von puren Code und solchem, der Nebeneffekte
+enthalten kann. Da ist nicht möglich ist, eine "`Auspack-Funktion"'
+\icode{IO a -> a} zu definieren\footnote{Es gibt eine solche Funktion in
+  Haskell, die aber normalerweise nicht verwendet werden sollte.}, das
+Gegenteil aber mit \icode{return} möglich ist, kann imperativer Code
+immer funktionalen, funktionaler Code aber niemals imperativen
+enthalten. Die äußerste Funktion jedes Haskell-Programms, \icode{main},
+wird deshalb immer in der \icode{IO}-Monade ausgeführt.
+
 \lsection[magicl:parser]{Parser als Arrows}
 
-Das Herzstück von MagicL ist ein Arrow-basiertes Framework für Parser.
+Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
+Konstruktion von Parsern. Die obersten Ziele sind Allgemeinheit sowie
+sinnvolle Ausgaben im Fehlerfall. Mit Allgemeinheit sind zwei
+Anforderungen gemeint: Zum einen sollen beliebige Streams gelesen
+werden können und nicht etwa nur Zeichenketten, damit auch \sexps{}
+verarbeitet werden können und so eine Art alternativer Makroprozessor
+erstellt wird. Zum anderen soll das Interface so allgemein sein, dass
+später beliebige andere Parser-Architekturen integriert werden können.
+
+Haskell besitzt mit \icode{Parsec}\cite{Parsec} bereits eine sehr
+performante und praktische Parser-Kombinator-Bibliothek.
+
 
 \todo{Einleitung, parsec-vergleich, Hughes, andere Arrow-Libs}\\
 Dieser Abschnitt entwickelt schrittweise einen Arrow-basierten
@@ -1006,7 +1255,7 @@ instance (Arrow ar) => Functor (StateFunctor s ar) ar where
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
 unverändert weitergeben - dies entspricht genau der
-\icode{first}-Funktion aus \sref{magicl:haskats:arrows}.
+\icode{first}-Funktion aus \sref{magicl:cats:arrows}.
 
 Das Lesen und Schreiben von Zuständen wird von den Funktionen \icode{get} und
 \icode{put} bereitgestellt, welche in der Typklasse \icode{ArrowState}
@@ -1284,6 +1533,10 @@ macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}
 
 \lsection[magicl:arch]{Rahmenarchitektur}
+
+Ein Compiler von \icode{a} nach \icode{b} ist in MagicL etwas, was sich
+in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
+überführen lässt. 
 
 \lsection[magicl:examples]{Beispiele}
 
