@@ -159,7 +159,8 @@
 \begin{document}
 
 \begin{titlepage}
-\title{Prototypische Frameworks für die inkrementelle Übersetzung von \sexp{}-basierten Sprachen}
+\title{Prototypen universeller Frameworks für
+  \sexp{}-basierte Code-Generierung}
 \author{Benjamin Teuber}
 \date{\today}
 
@@ -226,7 +227,7 @@ Garbage Collection oder Konstrukte wie der REPL, eine
 Lisp-Kommandozeile zum interaktiven Programmieren und Testen, bereits
 von modernen Sprachen nachgeahmt wurden, stehen Makros\footnote{Der
   C-Preprozessor bietet ebenfalls Makros an - diese sind allerdings
-  weniger mächtig als Lisp-Makros \sees{basic:lisp:cprep}.} nur noch
+  weniger mächtig als Lisp-Makros \sees{related:lisp:cprep}.} nur noch
 der kleinen Lisp-Community zur Verfügung. Es wäre also wünschenswert,
 diese oder etwas Vergleichbares im Rahmen moderner Sprachen für
 Code-Generierung und -Verarbeitung nutzen zu können.
@@ -251,30 +252,32 @@ Gebiete:
 
 \lsection[intro:goal]{Fragestellungen und Zielsetzung}
 
-Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich,
-die Lisp-Ansätze für Code-Generierung derart zu verallgemeinern, dass
-sich beliebige durch \sexps{} repräsentierte Sprachen damit
-komfortabel kompilierien und möglichst auch interpretieren lassen
-können? Es soll allerdings nicht zwangsläufig eine Eins-zu-Eins-Kopie
-der Lisp-Makros erfolgen, sondern vielmehr geprüft werden, welche
-Möglichkeiten es noch gibt und welche davon eventuell noch besser
-geeignet für den neuen, breiteren Kontext beliebiger Sprachen
-sind. Insbesondere soll die Implementation selbst nicht in Lisp
-erfolgen, um eine gewisse Unabhängigkeit zu gewährleisten und die
-Entwicklung neuer Ideen zu ermutigen.
+Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
+Lisp-Ansätze für Code-Generierung derart zu verallgemeinern, dass sich
+beliebige durch \sexps{} repräsentierte Sprachen damit komfortabel
+kompilierien und möglichst auch interpretieren lassen können? Es soll
+allerdings nicht zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros
+erfolgen, sondern vielmehr geprüft werden, welche Möglichkeiten es noch
+gibt und welche davon eventuell noch besser geeignet für den neuen,
+breiteren Kontext beliebiger Sprachen sind. Insbesondere soll die
+Implementation selbst nicht in Lisp, sondern einer modernen Sprache
+erfolgen. Dies hat eine gewisse Unabhängigkeit vom exakten Lisp-Ansatz
+und seinen Schwächen oder veralteten Designs zur Folge -
+beispielsweise die nicht vorhandene Unterscheidung von Groß- und
+Kleinschreibung in \sexps{}. Auch die Entwicklung von neuen Ideen wird
+so ermutigt.
 
-Konkret soll in einer Programmiersprache X zunächst eine
-Repräsentation für \sexps{} sowie ein \sexp{}-Parser erstellt werden,
-woraufhin eine Architektur für \sexp{}-Compiler angelegt werden soll,
-die einen inkrementellen und modularen Compiler-Entwurf ähnlich Lisp
-unterstützt. Damit soll eine \sexp{}-Version von X entstehen, welche
-sich nach X-Quelltext übersetzen lässt, so dass Werkzeuge, die X
-generieren wollen, nur noch deren simplere \sexp{}-Variante erzeugen
-müssen. In dem Moment ist das Bootstrapping abgeschlossen, so dass von
-nun an ausschließlich mit \sexp{}-Sprachen programmiert werden
-könnte. Auch bestehender Quelltext kann nun durch aus \sexps{}
-genererierten Versionen ersetzt werden, wodurch ein metazirkulärer
-Compiler entsteht.
+Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
+für \sexps{} sowie ein \sexp{}-Parser erstellt werden, woraufhin eine
+Architektur für \sexp{}-Compiler angelegt wird, die einen inkrementellen
+und modularen Compiler-Entwurf ähnlich Lisp unterstützt. Damit soll eine
+\sexp{}-Version von X entstehen, welche sich nach X-Quelltext übersetzen
+lässt, so dass Werkzeuge, die X generieren wollen, nur noch deren
+syntaktisch einfachere \sexp{}-Variante erzeugen müssen. In dem Moment ist
+das Bootstrapping abgeschlossen, so dass von nun an ausschließlich mit
+\sexp{}-Sprachen programmiert werden könnte. Auch bestehender Quelltext
+kann nun durch aus \sexps{} genererierten Versionen ersetzt werden,
+wodurch ein metazirkulärer Compiler entsteht.
 
 Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
 (\sexp{}-basierte) \ac{DSL} für Compilerdefinition gestaltet werden kann, in
@@ -284,9 +287,8 @@ Definition von Lisp-Makros ermöglichen.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
-\cref{basic} liefert zunächst alle Grundlagen für die späteren
-Kapitel, indem benutzte Programmiersprachen, Verfahren und
-mathematische Definitionen erläutert und verglichen werden.
+\cref{related} versucht, einen Überblick über den Stand der Technik in
+Sachen Code-Generierung zu geben.
 
 In \cref{sexy} wird mit \sexy{} ein erster, in Ruby geschriebener Prototyp eines
 universellen Frameworks für \sexp{}-Compiler geschildert, welcher
@@ -303,29 +305,25 @@ können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
 einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
 Rahmen dieser Arbeit behandelt werden können.
 
-\lchapter[basic]{Grundlagen}
+\lchapter[related]{Vorhandene Ansätze}
 
-Dieses Kapitel soll alle Voraussetzungen für die späteren Kapitel liefern.
-\sref{basic:codegen} erläutert verschiedene Arten der
-Codegenerierung. In \sref{basic:parser} werden bestehende Werkzeuge
-für die Generierung von Parsern beschrieben. \sref{basic:lisp} stellt
-die Programmiersprache Lisp und insbesondere \sexps{}, die universelle
+Diese Kapitel soll einen Überblick über vorhandene Technologien zur
+Code-Generierung liefern.  \sref{related:codegen} erläutert verschiedene
+Arten der Code-Generierung. In \sref{related:parser} werden Werkzeuge für
+die Generierung von Parsern beschrieben. \sref{related:lisp} stellt die
+Programmiersprache Lisp und insbesondere \sexps{}, die universelle
 Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
-\sref{basic:xml} mit der \ac{XML} verglichen, außerdem werden dort
-XML-Werkzeuge vorgestellt. \sref{basic:ruby} und \sref{basic:haskell}
-behandeln die Sprachen Ruby und Haskell, in denen die in dieser Arbeit
-vorgestellten Frameworks implementiert sind. Zuletzt erklärt
-\sref{basic:cats} die Konzepte der Kategorientheorie, an denen sich
-das zweite Framework MagicL orentieren wird.
+\sref{related:xml} mit der \ac{XML} verglichen, außerdem werden dort
+XML-Werkzeuge vorgestellt. 
 
-\lsection[basic:codegen]{Codegenerierung}
+\lsection[related:codegen]{Code-Generierung}
 
-\todo{Definition} was Codegenerierung bedeutet:
+\todo{Definition} was Code-Generierung bedeutet:
 Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
-Unterschiede zwischen Codegenerierungswerkzeugen. \todo{quelle}
+Unterschiede zwischen Code-Generierungswerkzeugen. \todo{quelle}
 
 So differenziert man zwischen aktiver und passiver
-Codegenerierung. Aktiv bedeutet, dass die Generierung wiederholt
+Code-Generierung. Aktiv bedeutet, dass die Generierung wiederholt
 ausgeführt werden kann, wenn sich etwas am Modell oder Generator
 ändert, da die komplette Datei generiert wird. Passiv generierter Code
 dagegen wird anschließend vom Programmierer modifiziert bzw. erst mit
@@ -362,9 +360,9 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\lsection[basic:parser]{Parser-Generatoren}
+\lsection[related:parser]{Parser-Generatoren}
 
-\lsection[basic:lisp]{Lisp und \sexps{}}
+\lsection[related:lisp]{Lisp und \sexps{}}
 
 \begin{itemize}
 \item Code-Generierung und Metaprogrammierung seit fast 50 Jahren
@@ -374,14 +372,14 @@ Nachteile:
 \item compilererweitungen durch makros
 \end{itemize}
 
-\lsubsection[basic:lisp:cprep]{Vergleich mit dem C-Präprozessor}
+\lsubsection[related:lisp:cprep]{Vergleich mit dem C-Präprozessor}
 \begin{itemize}
 \item C-Makros seit ca. 1975
 \item Keine komplette Programmiersprache (if, define, aber nicht goto, funktionen)
 \item gensym fehlt
 \end{itemize}
 
-\lsection[basic:xml]{XML}
+\lsection[related:xml]{XML}
 
 \begin{itemize}
 \item gleiche Zielsetzung - Baumstruktur
@@ -407,7 +405,28 @@ unständlicher syntax nicht
   \end{itemize}
 \end{itemize}
 
-\lsection[basic:ruby]{Ruby}
+\lchapter[sexy]{Objektorientierte Ruby-Implementation}
+
+\todo{überarbeiten}
+
+\sexy{} ist das erste im Rahmen dieser Arbeit entworfene
+\sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
+
+\sref{sexy:arch} erläutert die objektorientierte
+Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
+\sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
+Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
+dienen die Definitionen der Sprachen, in denen das System selbst
+geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
+Ansatzes und liefert die Motivation für eine neue Version.
+
+\lsection[sexy:reqs]{Anforderungen}
+
+\begin{itemize}
+\item 
+\end{itemize}
+
+\lsection[sexy:ruby]{Ruby}
 
 Ruby ist eine dynamisch getypte, interpretierte Programmiersprache, die
 sowohl funktional als auch objektorientiert ist und eine relativ
@@ -419,7 +438,7 @@ Funktionen realisiert werden können.  Unter Anderem aufgrund des
 erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
 auch außerhalb seines Herkunftslandes Japan recht beliebt.
 
-\lsubsection[basic:ruby:runtime]{Laufzeiteigenschaften} 
+\lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften} 
 
 Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
   interpretierten Sprache ist das Bereitstellen einer
@@ -453,11 +472,102 @@ schwerer zu lokalisieren ist. Größere Ruby-Projekte verwenden deshalb meist
 besonders viele \textit{Unit Tests} - welche natürlich auch bei statisch
 typisierten Sprachen nützlich sind.
 
-\lsubsection[basic:ruby:classes]{Klassen und Methoden}
+\lsubsection[sexy:ruby:classes]{Klassen und Methoden}
 
-\lsubsection[basic:ruby:blocks]{Blöcke}
+\lsubsection[sexy:ruby:blocks]{Blöcke}
 
-\lsection[basic:haskell]{Haskell}
+\lsection[sexy:arch]{Architektur}
+
+\begin{itemize}
+\item Sexp
+  \begin{itemize}
+  \item als Liste
+  \item \icode{<>} Notation für Kommentare, Strings usw.
+  \item Parser mit Treetop
+  \end{itemize}
+\item Compiler als Klasse, Vererbung
+\item 3 Stufen: Base, Ruby, Comp
+\item metazirkulär
+\item Formatierung: Fremder Ruby Formatter
+\end{itemize}
+
+\lsection[sexy:macros]{Makros}
+
+\begin{itemize}
+\item Rekursive Expansion
+\item Implementation als Funktion, unterscheidung von Compiler-Funktionen
+\item Laufzeitevaluation (\icode{compiler_eval_return})
+\item backquote (besserer Ansatz mit Zahlen)
+\item \icode{default_macro}
+\end{itemize}
+\lsection[sexy:examples]{Beispiele}
+
+\lsection[sexy:disc]{Diskussion}
+
+\begin{itemize}
+\item Operatoren, Sonderzeichen $\Rightarrow$ Andere
+  Repräsentation oder Codierung
+\item Scheme vs CL defun/defmacro - Scheme kanonischer (siehe ...)
+\item \icode{<>} unnötig
+\item Parser versagt bei fehlerhaften Input
+\item Genereller Pretty-Printer für andere Sprachen nötig
+\end{itemize}
+
+\lchapter[magicl]{Arrow-basierte Implementation in Haskell}
+
+\todo{überarbeiten}
+
+MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
+als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
+Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
+Konzepte (in \sref{magicl:cats_hask} beschrieben), mit deren Hilfe
+beispielsweise in \sref{magicl:parser} sehr allgemeine und elegante
+\sexp{}-Parser konstruiert werden. In \sref{magicl:sexp} geht es um
+das Parsen von \sexps{} und die hierfür bereitgestellten
+Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
+Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
+werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
+Modelle, Parser und Compiler, die Teil von MagicL sind.
+
+\lsection[magicl:reqs]{Anforderungen}
+
+\todo{Begriffsklärung \sexp{}-Parser}
+
+\begin{itemize}
+\item Schachtelung von Makros
+\item EBNF wünschenswert
+\item Generischer Pretty-Printer
+\item Robusterer \sexp-{Parser} 
+\item Typisiert vs untypisierte Zwischenmodelle
+\item Vorteile Typisiert
+  \begin{itemize}
+  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
+  \item simpler als bq-code
+  \item Selbstdokumentation des Modells
+  \end{itemize}
+\item Vorteile untypisiert
+  \begin{itemize}
+  \item Kommunikation (externe Anwendungen, Netzwerk)
+  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
+  \item Redundanzen können in \sexp{}-Version herausgenommen werden
+  \end{itemize}
+\item MagicL:
+  \begin{itemize}
+  \item Untypisierte Eingabe (Sexp)
+  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
+  \end{itemize}
+\item Repräsentation von \sexps{}
+  \begin{itemize}
+  \item Sexp-Strachen sollten immer besonderen Head haben (klare
+    Semantik, vgl. XML, Pretty-Print)
+  \item Gesondert repräsentieren zum erzwingen?
+  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
+    wird komplizierter
+  \item Definition
+  \end{itemize}
+\end{itemize}
+
+\lsection[magicl:haskell]{Haskell}
 
 \begin{itemize}
 \item Pur, Funktional
@@ -475,9 +585,10 @@ data Maybe a = Nothing | Just a
 \item Currying
 \item Datentypen, newtype (Abstraktion f. Typklassen), type (Typvariablen)
 \item Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
+\item Hier: (...) => als auslassung
 \end{itemize}
 
-\lsection[basic:cats]{Kategorientheorie}
+\lsection[magicl:cats]{Kategorientheorie}
 
 Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
 aber auch ein universeller, denn fast alle wichtigen mathematischen
@@ -489,7 +600,7 @@ zusammengesetzte Funktoren konstruiert. Dieser Abschnitt führt in die
 Kategorientheorie ein und stellt alle später verwendeten Konzepte
 vor. Die Definitionen sind weitgehend aus \cite{Grundlagen} übernommen.
 
-\lsubsection[basic:cats:intro]{Einführung}
+\lsubsection[magicl:cats:intro]{Einführung}
 
 \fig{cat_funs}{Ein simples Funktionensystem}
 
@@ -518,7 +629,7 @@ zusammenfassen. Die Kategorientheorie "`vergisst"' nun den Bezug zu
 Mengen und Funktionen und arbeitet statt dessen abstrakt mit Objekten
 und Morphismen.
 
-\lsubsection[basic:cats:cat]{Kategorien}
+\lsubsection[magicl:cats:cat]{Kategorien}
 
 \defi{Kategorie}{
 Eine Kategorie $\mathbf{C} = (\mathrm{Ob}^\mathbf{C}, \mathrm{Mor}^\mathbf{C},
@@ -573,7 +684,7 @@ nicht selbst für die Definition der Assoziativität geeignet -
 schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
 von $\circ$ voraus.
 
-\lsubsection[basic:cats:prod]{Produkte und Coprodukte}
+\lsubsection[magicl:cats:prod]{Produkte und Coprodukte}
 
 Die Kategorientheorie schafft es, Begriffe für Funktionseigenschaften
 wie Injektivität sowie Mengenoperationen wie das kartesische Produkt auf
@@ -629,7 +740,7 @@ die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
 Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
 aus $B$ entsprechend $g$.
 
-\lsubsection[basic:cats:func]{Funktoren}
+\lsubsection[magicl:cats:func]{Funktoren}
 
 Strukturerhaltende Abbildungen zwischen Objekten und Morphismen zweier
 Kategorien werden Funktoren genannt:
@@ -669,7 +780,7 @@ Kategorien sind Kategorien, deren Klasse von Objekten eine Menge
 ist. Diese Einschränkung ist nötig, da Klassen von Klassen in der
 Mathematik ähnlich problematisch sind wie Mengen von Mengen.
 
-\lsubsection[basic:cats:nats]{Natürliche Transformationen}
+\lsubsection[magicl:cats:nats]{Natürliche Transformationen}
 
 Eine andere Möglichkeit, aus Funktoren eine Kategorien zu bilden,
 besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
@@ -694,7 +805,7 @@ $\ato$ notiert.
 \fig{cat_nat}{Kommutatives Diagramm in Kategorie $\mathbf{D}$ für die Definition von
   natürlichen Transformationen}
 
-\lsubsection[basic:cats:monads]{Monaden}
+\lsubsection[magicl:cats:monads]{Monaden}
 
 Monaden setzen sich aus einem Endofunktor und zwei natürlichen
 Transformationen zusammen:
@@ -752,55 +863,11 @@ stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
 $\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
 Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
 Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
-Verknüpfen. Haskell (siehe \sref{basic:haskell}) benutzt Monaden unter
+Verknüpfen. Haskell (siehe \sref{magicl:haskell}) benutzt Monaden unter
 anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
-einzubauen, wie \sref{magicl:cats:monads} erklärt.
+einzubauen, wie \sref{magicl:cats_hask:monads} erklärt.
 
-\lchapter[sexy]{Objektorientierte Ruby-Implementation}
-
-\sexy{} ist das erste im Rahmen dieser Arbeit entworfene
-\sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
-
-\sref{sexy:arch} erläutert die objektorientierte
-Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
-\sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
-Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
-dienen die Definitionen der Sprachen, in denen das System selbst
-geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
-Ansatzes und liefert die Motivation für eine neue Version.
-
-
-\lsection[sexy:reqs]{Anforderungen}
-
-\lsection[sexy:arch]{Architektur}
-
-metazirkulär
-
-\lsection[sexy:macros]{Makros}
-
-\lsection[sexy:examples]{Beispiele}
-
-\lsection[sexy:disc]{Diskussion}
-
-\lchapter[magicl]{Arrow-basierte Implementation in Haskell}
-
-MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
-als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
-Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{magicl:cats} beschrieben), mit deren Hilfe
-beispielsweise in \sref{magicl:parser} sehr allgemeine und elegante
-\sexp{}-Parser konstruiert werden. In \sref{magicl:sexp} geht es um
-das Parsen von \sexps{} und die hierfür bereitgestellten
-Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
-Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
-werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
-Modelle, Parser und Compiler, die Teil von MagicL sind.
-
-\lsection[magicl:reqs]{Anforderungen}
-
-\todo{Sexp-Typ diskutieren}
-
-\lsection[magicl:cats]{Kategorien in Haskell}
+\lsection[magicl:cats_hask]{Kategorien in Haskell}
 
 Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
 die allerdings immer bestimmten Einschränkungen
@@ -826,7 +893,7 @@ Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
 Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
 benutzt mit \icode{f >>> g = g . f}. %<<
 
-\lsubsection[magicl:cats:arrows]{Arrows}
+\lsubsection[magicl:cats_hask:arrows]{Arrows}
 
 Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
@@ -891,7 +958,7 @@ data Either a b = Left a | Right b
 \end{code}
 Coprodukte für Arrows werden durch die Klasse \icode{ArrowChoice} beschrieben:
 \begin{code}
-class Arrow ar => ArrowChoice ar where
+class (Arrow ar) => ArrowChoice ar where
   left :: ar a b -> ar (Either a c) (Either b c)
 \end{code}
 Auch hier wird mit \icode{left} nur eine einfache Operation gefordert,
@@ -928,7 +995,7 @@ Produkt-Operationen:
   \dref{Coprodukt}
 \end{itemize}
 
-\lsubsection[magicl:cats:functors]{Funktoren}
+\lsubsection[magicl:cats_hask:functors]{Funktoren}
 
 Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
 allerdings nur Endofunktoren über der Kategorie $\mathbf{Hask}$ repräsentieren:
@@ -947,19 +1014,16 @@ die Verschiedene Kategorien zulässt:
 class Functor f ar | f -> ar where
   lift :: ar a b -> f a b
 \end{code}
-Die Arrows\footnote{Es ist in Haskell üblich, Vorbedingungen wie hier
-  \icode{(Arrow ar, Arrow f)} nur dort zu verwenden, wo tatsächlich
-  Gebrauch von den speziellen Klasseneigenschaften gemacht wird -
-  deshalb wird beides noch nicht in dieser Klassendefinition gefordert.}
-\icode{f} und \icode{ar} bilden eine Instanz von \icode{Functor}, wenn
-eine \icode{lift}-Operation \icode{ar}-Arrows auf \icode{f}-Arrows
-zwischen den gleichen Typen abbildet - wobei der Typ \icode{f} den Typ
-\icode{ar} determiniert. Der mathematische Funktor hier ist also
-\icode{(id,lift)}. Im Vergleicht zu Haskell's Standard-\icode{Functor}
-ist diese Version also in den Kategorien allgemeiner, aber dafür
-spezieller in der Abbildung der Objekte, da hier die Identität
-vorgeschrieben ist. Man könnte auch dies allgemein formulieren - aber im
-Rahmen von MagicL reicht die spezielle Version bisher aus.
+Die Arrows \icode{f} und \icode{ar} bilden eine Instanz von
+\icode{Functor}, wenn eine \icode{lift}-Operation \icode{ar}-Arrows auf
+\icode{f}-Arrows zwischen den gleichen Typen abbildet - wobei der Typ
+\icode{f} den Typ \icode{ar} determiniert. Der mathematische Funktor
+hier ist also \icode{(id,lift)}. Im Vergleicht zu Haskell's
+Standard-\icode{Functor} ist diese Version also in den Kategorien
+allgemeiner, aber dafür spezieller in der Abbildung der Objekte, da hier
+die Identität vorgeschrieben ist. Man könnte auch dies allgemein
+formulieren - aber im Rahmen von MagicL reicht die spezielle Version
+bisher aus.
 
 Alle hier verwendeten \icode{Functor}-Instanzen konstruieren aus einem
 \icode{Arrow}-Typ einen zweiten mit zusätzlichen Eigenschaften,
@@ -973,11 +1037,11 @@ instance (Arrow ar) => Functor (FailFunctor ar) ar where
   lift f = ...
 \end{code}
 
-\lsubsection[magicl:cats:monads]{Monaden}
+\lsubsection[magicl:cats_hask:monads]{Monaden}
 
 Die Typklasse \icode{Monad} aus den Haskell-Bibliotheken beschreibt
 Monaden über der Kategorie $\mathbf{Hask}$. $\eta$ aus
-\sref{basic:cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
+\sref{magicl:cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
 Operator \icode{>>=} %<<
 mit anderer Signator gefordert:
 \begin{code}
@@ -1042,15 +1106,24 @@ foo >>= (\ x ->
 \end{code} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt -
 dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
-zuständig ist (siehe \sref{magicl:cats:monads:examples:io}). Diese
+zuständig ist (siehe \sref{magicl:cats_hask:monads:examples:io}). Diese
 Verwendung erklärt auch nachträglich den Namen \icode{return}, wobei es
 sich noch immer um die $\eta$-Transformation handelt und nicht etwa ein
 syntaktisches \icode{return}-Statement wie in imperativen Sprachen
 üblich.
 
-\lsubsubsection[magicl:cats:monads:examples]{Beispiele für Monaden}
+Für Arrows gibt es mit \icode{proc} auch eine Notation, mit der
+Zwischenergebnisse benannt werden können. Diese ist aber weniger simpel
+und elegant als das Monadenäquivalent. Auf der anderen Seite eignen sich
+Arrows besser als Monaden für eine punktfreie Schreibweise, d.h. einer
+Schreibweise ohne Zwischenvariablen, bei der ausschließlich auf
+Komposition zurückgegriffen wird. Punktfreie Notation wird auch bei
+Definitionen von Funktionen oft verwendet und ist für viele
+Haskell-Programmierer natürlicher und eleganter.
 
-\lparagraph[magicl:cats:monads:examples:maybe]{\icode{Maybe}}
+\lsubsubsection[magicl:cats_hask:monads:examples]{Beispiele für Monaden}
+
+\lparagraph[magicl:cats_hask:monads:examples:maybe]{\icode{Maybe}}
 
 Funktionen, die fehlschlagen können, lassen sich in der Form \icode{a
   -> Maybe b} darstellen. Möchte man mehrerer solcher Funktionen
@@ -1076,7 +1149,7 @@ daraufhin \icode{bar x} ebenfalls erfolgreich, wird dieses in \icode{y}
 gespeichert und als Ergebnis \icode{Just (x, y)} zurückgegeben. Schlägt
 eine der Funktionen fehl, ist das ergebnis \icode{Nothing}.
 
-\lparagraph[magicl:cats:monads:examples:io]{\icode{IO}}
+\lparagraph[magicl:cats_hask:monads:examples:io]{\icode{IO}}
 
 Jede Programmiersprache benötigt für die reale Welt Möglichkeiten,
 Operationen mit Nebeneffekten wie das Schreiben oder solche, die von
@@ -1104,6 +1177,12 @@ immer funktionalen, funktionaler Code aber niemals imperativen
 enthalten. Die äußerste Funktion jedes Haskell-Programms, \icode{main},
 wird deshalb immer in der \icode{IO}-Monade ausgeführt.
 
+Dank der Kleisli-Kategorie lassen sich mittels \icode{IO} auch Arrows
+bereitstellen, die Nebeneffekte enthalten:
+\begin{code}
+type IOArrow = Kleisli IO
+\end{code}
+
 \lsection[magicl:parser]{Parser als Arrows}
 
 Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
@@ -1115,20 +1194,29 @@ verarbeitet werden können und so eine Art alternativer Makroprozessor
 erstellt wird. Zum anderen soll das Interface so allgemein sein, dass
 später beliebige andere Parser-Architekturen integriert werden können.
 
-Haskell besitzt mit \icode{Parsec}\cite{Parsec} bereits eine sehr
-performante und praktische Parser-Kombinator-Bibliothek.
+Haskell besitzt mit Parsec\cite{Parsec} bereits eine sehr
+performante und praktische Parser-Kombinator-Bibliothek, die auf Monaden
+basiert. Diese ist allerdings auf die Verarbeitung von Zeichenketten
+beschränkt, weshalb sie in MagicL keine Verwendung findet. 
 
+MagicL benutzt Arrows und Funktoren, um möglichst allgemein zu
+sein. Alles, was im Rahmen dieser Arbeit implementiert wurde, hätte zwar
+auch über Monaden und Monaden-Transformatoren konstruiert werden
+können. Dennoch besteht die Möglichkeit, dass später Ergänzungen
+vorgenommen werden sollen, die sich nicht mittels Monaden ausdrücken
+lassen - beispielsweise ein effizienterer Parsing-Algorithmus, der
+sowohl statische als auch dynamische Komponenten enthält, wie ihn
+Swierstra und Duponcheel entworfen haben (siehe \cite[S. 8ff]{Hughes}).
 
-\todo{Einleitung, parsec-vergleich, Hughes, andere Arrow-Libs}\\
-Dieser Abschnitt entwickelt schrittweise einen Arrow-basierten
-Parser-Datentyp. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
+Dieser Abschnitt entwickelt nun schrittweise einen Parser-Datentyp aus
+Arrows. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
 \begin{itemize}
 \item Sie können fehlschlagen sowie Alternativmöglichkeiten im Falle des
   Scheiterns besitzen.
 \item Sie bearbeiten einen Zustand, der die Position im Eingabestream
   beschreibt.
 \end{itemize}
-Diese beiden Eigenschaften lassen gut sich einzeln mittels Funktoren auf
+Diese beiden Eigenschaften lassen sich einzeln mittels Funktoren auf
 bestehenden Kategorien ausdrücken.
 
 \lsubsection[magicl:parser:fail]{Fehlschlagende Arrows}
@@ -1136,15 +1224,17 @@ bestehenden Kategorien ausdrücken.
 Berechnungen von $A$ nach $B$, die fehlschlagen können, sollen zwei
 mögliche Resultate haben. Im Erfolgsfall wird ein normaler Rückgabewert
 aus $B$ geliefert, während im Falle eines Scheiterns eine Fehlermeldung
-als String zurückgegeben wird. Der Rückgabetyp ist deshalb das Coprodukt
-$\mathrm{String}+B$. Statt Morphismen von $A$ nach $B$ wollen wir also
-nun Morphismen von $A$ nach $\mathrm{String}+B$. Um den aufrufenden Code
-nicht komplizierter zu machen, empfiehlt es sich, diese Änderung in
-einer neuen Kategorie $\mathbf{C}_f$ zu verstecken. $f_{f} : A
-\rightarrow B$ aus der neuen Kategorie wird abgebildet auf $f : A
-\rightarrow \mathrm{String} + B$ Der Arrow $\mathrm{fail}_{f} : \mathrm{String}
-\rightarrow a$ in $C_{f}$ schlägt immer fehl und entspricht $fail :
-\mathrm{String} \rightarrow \mathrm{String} + a$ in $C$.
+als String zurückgegeben wird - im Gegensatz zur \icode{Maybe}-Monade,
+die im Fehlerfall nur ein \icode{Nothing} liefert. Der Rückgabetyp ist
+deshalb das Coprodukt $\mathrm{String}+B$. Statt Morphismen von $A$ nach
+$B$ wollen wir also nun Morphismen von $A$ nach $\mathrm{String}+B$. Um
+den aufrufenden Code nicht komplizierter zu machen, empfiehlt es sich,
+diese Änderung in einer neuen Kategorie $\mathbf{C}_f$ zu
+verstecken. $f_{f} : A \rightarrow B$ aus der neuen Kategorie wird
+abgebildet auf $f : A \rightarrow \mathrm{String} + B$ Der Arrow
+$\mathrm{fail}_{f} : \mathrm{String} \rightarrow a$ in $C_{f}$ schlägt
+immer fehl und entspricht $fail : \mathrm{String} \rightarrow
+\mathrm{String} + a$ in $C$.
 
 Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B}
 \rightarrow Mor_{A,B} $ bietet Alternativen. Um Morphismen aus
@@ -1208,7 +1298,7 @@ das Ergebnis von \icode{f}.
 
 \fig{cat_fail}{Komposition beim Fail-Funktor}
 
-Die Typabhängigkeiten von \icode{ArrowChoice} ist nötig, weil
+Die Typabhängigkeit von \icode{ArrowChoice} ist nötig, weil
 \icode{FailFunctor ar} nur dann ein \icode{Arrow} ist, wenn \icode{ar}
 ein Coprodukt anbietet. Denn die Komposition in $C_{f}$ ist definiert
 durch $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$, was in Haskell
@@ -1255,7 +1345,7 @@ instance (Arrow ar) => Functor (StateFunctor s ar) ar where
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
 unverändert weitergeben - dies entspricht genau der
-\icode{first}-Funktion aus \sref{magicl:cats:arrows}.
+\icode{first}-Funktion aus \sref{magicl:cats_hask:arrows}.
 
 Das Lesen und Schreiben von Zuständen wird von den Funktionen \icode{get} und
 \icode{put} bereitgestellt, welche in der Typklasse \icode{ArrowState}
@@ -1331,7 +1421,13 @@ Dank der Implementation als Funktor ist die Kategorie, in der der Parser
 ausgeführt wird, frei wählbar. So können rein funktionale Parser in
 $Hask_p$ konstruiert werden. Benötigt man aber Debug Outputs (z.B. bei
 der Suche einer Endlosschleife) oder andere Seiteneffekte, kann
-$\mathbf{IO}_p$ benutzt werden. Eine geeignete innere Kategorie könnte
+$\mathbf{IO}_p$ benutzt werden. In MagicL werden diese Kategorien durch
+die Typaliase FunParser wowie IOParser bereitgestellt:
+\begin{code}
+type FunParser t a b = ParseFunctor t (->) a b
+type IOParser  t a b = ParseFunctor t IOArrow a b
+\end{code}
+Eine geeignete innere Kategorie könnte
 sogar interaktive Debugger, Netzwerktransparenz oder sonstige Features
 anbieten. Auch der variable Token-Typ erzeugt viele Möglichkeiten:
 Textdateien können mit \icode{Char}, Bitstreams mit \icode{Bool} oder
@@ -1363,28 +1459,29 @@ Alle diese Funktionen (und deren Negationen) geben Parser mit nützlichen
 Fehlermeldungen zurück.
 
 Weiterhin gibt es viele Arrow-Kombinatoren, mit denen Parser,
-vergleichbar mit den Operationen der Erweiterten Backus-Naur-Form (EBNF) \cite{TODO}, verschaltet werden können. Mit den bisher eingeführten
+vergleichbar mit den Operationen der Erweiterten Backus-Naur-Form (EBNF)
+\cite{TODO}, verschaltet werden können. Mit den bisher eingeführten
 Operatoren sind bereits Konkatenation (\icode{>>>}) %<<
 und Alternative (\icode{<+>}) abgedeckt, darüber hinaus gibt es für
 Instanzen von \icode{ArrowPlus} unter anderem folgende Funktionen:
 
 \begin{code}
-optional :: ar a b -> ar a (Maybe b)
+optional :: (...) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
   where constArrow x = arr (\ _ -> x) 
 
-many :: ar a b -> ar a [b]
+many :: (...) => ar a b -> ar a [b]
 many f = many1 f <+> constArrow []
 
-many1 :: (ArrowPlus ar) => ar a b -> ar a [b]
+many1 :: (...) => ar a b -> ar a [b]
 many1 f = consArrow f (many f)
   where consArrow :: ar a b -> ar a [b] -> ar a [b]
         consArrow f g = (f &&& g) >>^ (\ (x,xs) -> x : xs)
 
-skip :: ar a b -> ar a a
+skip :: (...) => ar a b -> ar a a
 skip f = (f &&& id) >>^ snd
 
-sepBy :: ar a c -> ar a b -> ar a [b]
+sepBy :: (...) => ar a c -> ar a b -> ar a [b]
 sepBy sep item = 
   optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
     where
@@ -1534,14 +1631,195 @@ macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 
 \lsection[magicl:arch]{Rahmenarchitektur}
 
+Um das Parser-Framework herum soll ein wieder möglichst allgemeines
+Interface für die beschreibung von Compilern bestehen. Ziel ist die
+selbstständige Suche nach einem passenden Compiler, wenn nur Ein- und
+Ausgabetyp spezifiziert sind. Compiler sollen unter anderem als pure
+Funktionen oder als Parser spezifiziert werden können.
+
 Ein Compiler von \icode{a} nach \icode{b} ist in MagicL etwas, was sich
 in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
-überführen lässt. 
+überführen lässt. Diese Operation kann im allgemeinen Nebeneffekte
+enthalten, weshalb IOArrow verwendet wird. Typen, mit denen sich
+Compiler repräsentieren lassen, implementieren die Typklasse
+\icode{Executable}:
+\begin{code}
+class Executable x a b | x -> a b where
+  toIO :: x -> IOArrow a b
+\end{code}
+\icode{x} ist selbst ein parametrisierter Typ, der die Ein- und
+Ausgabetypen \icode{a} und \icode{b} bereits determiniert. Die einfachsten
+Instanzen von \icode{Executable} werden durch IOArrows selbst sowie pure
+Funktionen gebildet:
+\begin{code}
+instance Executable (IOArrow a b) a b where
+  toIO = id
 
-\lsection[magicl:examples]{Beispiele}
+instance Executable (a -> b) a b where
+  toIO f = Kleisli (return . f)
+\end{code}
+Auch Parser sind ausführbar, sofern der zugrundeliegende Arrow-Typ es
+ist:
+\begin{code}
+instance (...) => Executable (ParseFunctor t ar () a) [t] a where
+  toIO = toIO . execParser
+\end{code}
+
+Nun soll es möglich sein, einen ausführbaren Typen zu benutzen, um einen
+eindeutigen Compiler von \icode{a} nach {b} einzurichten. Dies geschieht
+über die Typklasse \icode{Compilable}:
+\begin{code}
+class (Executable x a b) => Compilable x a b | a b -> x where
+  comp :: x
+\end{code}
+Da es nur einen ausgezeichneten Compiler von \icode{a} nach \icode{b}
+geben kann, determinieren \icode{a} und \icode{b} gemeinsam \icode{x},
+wobei die umgekehrte Abhängigkeit ebenfalls - von \icode{Executable}
+geerbt - besteht. Es handelt sich also um eine 1:1-Beziehung. Die
+spezifikation eines simplen funktionalen Compilers würde so aussehen:
+\begin{code}
+instance Compilable (A -> B) A B where
+  comp x = ...
+\end{code}
+Der Parser, der Strings in Listen von \sexp{} einliest, wird auch als
+Compiler spezifiziert:
+\begin{code}
+instance Compilable (FunParser Char () [Sexp]) String [Sexp] where
+  comp = many parseSexp
+\end{code}
+Die Typklasse \icode{Compiler} "`vergisst"' nun den zur Definition
+verwendeten Typen:
+\begin{code}
+class Compiler a b where
+  compile :: IOArrow a b
+  
+instance (Compilable x a b) => Compiler a b where
+  compile = toIO comp
+\end{code}
+Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
+\icode{compile}-Aufruf, wie etwa \icode{compile :: IOArrow String
+  [Sexp]}, gefunden
+
+MagicL enthält zudem ein minimalistisches Testframework, um Compiler
+oder im speziellen Macros inkrementell zu testen.
+
+\lsection[magicl:code]{Code-Generierung}
+
+Um komfortabel korrekt eingerückten Code in einer Zielsprache generieren
+zu können, stellt MagicL einen Datentyp \icode{Code} zur Verfügung,
+sowie einen Compiler von \icode{Code} nach \icode{String}, welcher ein
+Nachbau des von Philip Wadler in \cite[S.223ff]{FunOfProgramming}
+vorgestellten Pretty-Printers ist. Die elementaren
+Konstruktor-Funktionen sind:
+\begin{code}
+newline :: Code
+text    :: String -> Code
+append  :: Code   -> Code -> Code
+group   :: Code   -> Code
+indent  :: Int    -> Code -> Code
+\end{code}
+
+\icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
+sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
+zu bekommen, indem es alle Zeilenumbrüche durch Leerzeichen
+ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
+Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
+Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
+\icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
+\begin{code} 
+indent 2 (conc [text "hallo", newline, text welt])
+\end{code}
+den Text
+\begin{code}
+hallo
+  welt  
+\end{code}
+ergeben - dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
+mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
+Funktionen wie 
+\begin{code}
+  joinBy :: Code -> [Code]
+\end{code}
+- welche einen Seperator benutzt, um eine Liste zusammenzufügen.
+\begin{code}
+joinBy "; " [text "foo", text "bar", text "baz"]  
+\end{code}
+würde also
+\begin{code}
+foo; bar; baz
+\end{code}
+ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
+syntaktische Programmiersprachenelemente abgeleitet, wie
+\icode{commaSep} für eine komma-separierte Liste oder \icode{parens},
+\icode{braces} und \icode{brackets} für die drei gängigen Arten der
+Klammerung.
+
+\lsection[magicl:code:example]{Beispiel: Ein Pretty-Printer für \sexps{}}
+
+\sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
+noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
+\begin{code}
+(a b (c d) e)  
+\end{code}
+Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
+auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
+Zeichen eingerückt werden:
+\begin{code}
+(a
+  b 
+  (c d)
+  e)  
+\end{code}
+Dies lässt sich mit dieser rekursiven Funktion erreichen:
+\begin{code}
+layoutSexp :: Sexp -> Code
+layoutSexp (Symbol sym)    = text sym
+layoutSexp (Node children) = format (map layoutSexp children)
+  where format = parens . group . indent2 . lines
+\end{code} %<<
+Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
+spezifiziert werden.
+
+\lsection[magicl:sexphs]{Haskell in \sexps{}}
+
+Wie auch \sexy{} besitzt auch MagicL eine \sexp{}-basierte und damit für
+Code-Generierung geeignete Version seiner Implementationssprache, hier
+also Haskell. Diese ist zwar nicht vollständig, enthält aber die
+wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
+
+\begin{itemize}
+\item Typisiertes \icode{Haskell}-Modell vs. direkt Sexp -> Code
+\item Funktionsaufrufe simpel
+\item Operatoren
+\item Typen
+\item Syntaktische Konstrukte (where, do, Klassen, ...)
+\end{itemize}
 
 \lsection[magicl:disc]{Diskussion}
 
+  \begin{itemize}
+  \item MagicL sauberer und klarer als \sexy{}
+    \begin{itemize}
+    \item Getypte Modelle
+    \item Praktische und flexible Parser-Konstruktion dank Kategorientheorie
+    \item[$\Rightarrow$] "`Makros a la EBNF"'
+    \item Allgemeines Compiler-Interface
+    \item Typisierte Codegeneration mit erweiterbarer Bibliothek
+    \end{itemize}
+  \item Manches wirkt etwas umständilch und redundant
+  \item[$\Rightarrow$] Hier könnte Code-Generierung helfen
+    \begin{itemize}
+    \item Modellsprache
+    \item Kleine DSL für \icode{code}-Konstruktion (kein \icode{text}
+      mehr nötig) - würde auch wieder bei Generierung aus anderen
+      Srpachen helfen
+    \end{itemize}
+  \item Brauchen wir ein \icode{backquote}?
+    \begin{itemize}
+    \item Typisierte Modelle normalerweise besser
+    \item Evtl. Kommunikation mit anderen Programmiersprachen / über Streams
+    \end{itemize}
+  \end{itemize}
 \lchapter[end]{Schluss}
 
 \lsection[end:summary]{Zusammenfassung}
@@ -1590,4 +1868,9 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
   \item Merge für Teamarbeit und passive Code-Generierung
   \end{itemize}
 \end{itemize}
+
+\bibliographystyle{gerplain}
+\bibliography{diplomarbeit} 
+
 \end{document}
+

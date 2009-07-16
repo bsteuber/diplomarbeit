@@ -6,23 +6,16 @@ import Control.Arrow
 import Util
 import Arrows
 
-data Gen a b = Gen { unGen :: a }
-
-data (Executable x a (Gen b c)) => GenComp x a b c = GenComp { unGenComp :: x }
-
-instance (Compilable x b c, Executable y a (Gen b c)) => Executable (GenComp y a b c) a c where
-    toIO (GenComp f) = toIO f >>> arr unGen >>> compile 
-
-compileStr :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IOFun String String
+compileStr :: (Compiler String a, Executable x a b, Compiler b String) => x -> IOFun String String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile
 
-compiler :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => x2 -> IO ()
+compiler :: (Compiler String a, Executable x a b, Compiler b String) => x -> IO ()
 compiler f = do
   input <- getContents
   output <- compileStr f input
   putStr output
 
-testCompiler :: (Compilable x1 String a, Executable x2 a b, Compilable x3 b String) => String -> x2 -> [(String, String)] -> IO ()
+testCompiler :: (Compiler String a, Executable x a b, Compiler b String) => String -> x -> [(String, String)] -> IO ()
 testCompiler name comp testCases = do
     putStrLn $ "Testing macro " ++ name
     recTest testCases False

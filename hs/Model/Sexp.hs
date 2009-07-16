@@ -61,6 +61,10 @@ parseSexps = many parseSexp
 instance Compilable (ExecFunParser Char [Sexp]) String [Sexp] where
     comp = parseSexps 
 
+readSexps :: IOArrow String [Sexp]
+readSexps = compile  
+
+
 -- Utils for parsing sexps
 
 takeSexp = take >>^ sexp2either

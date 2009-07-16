@@ -1,4 +1,4 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# OPTIONS -fglasgow-exts -XUndecidableInstances #-}
 module Arrows where
 import Prelude hiding (id, (.), fail, Functor)
 import Data.List
@@ -25,10 +25,13 @@ class Executable x a b | x -> a b where
     toIO :: x -> IOArrow a b
 
 class (Executable x a b) => Compilable x a b | a b -> x where
-    comp :: x
+  comp :: x
 
-compile :: (Compilable x a b) => IOArrow a b
-compile = toIO comp
+class Compiler a b where
+    compile :: IOArrow a b
+  
+instance (Compilable x a b) => Compiler a b where
+    compile = toIO comp
 
 instance ArrowFail (->) where
     fail = magicError
