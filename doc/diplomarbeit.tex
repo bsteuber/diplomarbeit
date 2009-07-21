@@ -153,14 +153,15 @@
 \newcommand{\sees}[1]{(siehe \sref{#1})}
 
 \newcommand{\sexy}{S-Exy}
-\newcommand{\sexp}{S-Expression}
-\newcommand{\sexps}{S-Expressions}
+\newcommand{\sexp}{S"=Expression}
+\newcommand{\sexps}{S"=Expressions}
+\newcommand{\cgen}{Code"=Generierung}
 
 \begin{document}
 
 \begin{titlepage}
 \title{Prototypen universeller Frameworks für
-  \sexp{}-basierte Code-Generierung}
+  \sexp{}-basierte \cgen{}}
 \author{Benjamin Teuber}
 \date{\today}
 
@@ -196,15 +197,15 @@ feiert bald ihr 15-Jähriges bestehen \footnote{Der
   begannen. \cite{TODO}}, IBM vermarktet seit Jahren das Produkt
 \textit{Rational Application Developer} (\cite{TODO}), das, wie auch das freie
 \textit{Eclipse Modelling Framework} oder auch \textit{Enterprise
-  Architect}, Eclipse um modellbasierte Code-Generierung
+  Architect}, Eclipse um modellbasierte \cgen{}
 bereichert. Seit neuestem zeigt auch Microsoft Interesse und
 verspricht mit \textit{Oslo} \cite{TODO} einen ``Mainstream"=Ansatz
-für Modellierung''. Code-Generierung fällt auch im World Wide Web eine
+für Modellierung''. \cgen{} fällt auch im World Wide Web eine
 immer größer werdende Rolle zu: Ob \textit{Ruby on Rails} oder
 \textit{Google Web Toolkit}, praktisch alle Web Frameworks generieren
 zumindest ihre HTML-Dateien oder SQL-Strings für den Datenbankzugriff.
 
-Abstraktion durch Code-Generierung ist also beliebter denn je, und
+Abstraktion durch \cgen{} ist also beliebter denn je, und
 Werkzeuge, die diese anbieten oder nutzen, gibt es in großen
 Mengen. Dennoch arbeiten die meisten Werkzeuge mit Templates oder
 String-Manipulation und damit auf Zeichenketten, womit sie
@@ -230,30 +231,12 @@ von modernen Sprachen nachgeahmt wurden, stehen Makros\footnote{Der
   weniger mächtig als Lisp-Makros \sees{related:lisp:cprep}.} nur noch
 der kleinen Lisp-Community zur Verfügung. Es wäre also wünschenswert,
 diese oder etwas Vergleichbares im Rahmen moderner Sprachen für
-Code-Generierung und -Verarbeitung nutzen zu können.
-
-Gebiete:
-\begin{itemize}
-\item Makros
-\item Baumtransformationen
-\item Rountrip
-\item UML
-\item XML-Verarbeitung
-\item Präprozessoren
-\item StringTemplate etc.
-\item XML Parser Generator
-  \begin{itemize}
-  \item Gibt es, vgl. mit Haskell-Modellsprache
-  \item Wenn 1:1 Haskell:Sexp "`genausogut"' wie MagicL
-  \item Wann ist 1:1 schlecht?
-  \end{itemize}
-
-\end{itemize}
+\cgen{} und -Verarbeitung nutzen zu können.
 
 \lsection[intro:goal]{Fragestellungen und Zielsetzung}
 
 Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
-Lisp-Ansätze für Code-Generierung derart zu verallgemeinern, dass sich
+Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich
 beliebige durch \sexps{} repräsentierte Sprachen damit komfortabel
 kompilierien und möglichst auch interpretieren lassen können? Es soll
 allerdings nicht zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros
@@ -288,7 +271,7 @@ Definition von Lisp-Makros ermöglichen.
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
 \cref{related} versucht, einen Überblick über den Stand der Technik in
-Sachen Code-Generierung zu geben.
+Sachen \cgen{} zu geben.
 
 In \cref{sexy} wird mit \sexy{} ein erster, in Ruby geschriebener Prototyp eines
 universellen Frameworks für \sexp{}-Compiler geschildert, welcher
@@ -305,25 +288,45 @@ können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
 einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
 Rahmen dieser Arbeit behandelt werden können.
 
-\lchapter[related]{Vorhandene Ansätze}
+\lchapter[related]{Konzepte der generativen Programmierung}
+
+\todo{
+\begin{itemize}
+\item Marc Oliver Stehr Diss
+\item OOPSLA, POPL
+\item Baumtransformationen
+\item Kategorientheorie
+\item JDEX
+\item Metaprogrammierung
+\item Metamodellierung
+\item XML-Editor (Eclipse?)
+\item Eclipse Codegen, Transformationen, UML, ...
+\item UML
+\item Rountrip
+\end{itemize}
+}
 
 Diese Kapitel soll einen Überblick über vorhandene Technologien zur
-Code-Generierung liefern.  \sref{related:codegen} erläutert verschiedene
-Arten der Code-Generierung. In \sref{related:parser} werden Werkzeuge für
+\cgen{} liefern.  \sref{related:codegen} erläutert verschiedene
+Arten der \cgen{}. In \sref{related:parser} werden Werkzeuge für
 die Generierung von Parsern beschrieben. \sref{related:lisp} stellt die
 Programmiersprache Lisp und insbesondere \sexps{}, die universelle
 Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
 \sref{related:xml} mit der \ac{XML} verglichen, außerdem werden dort
 XML-Werkzeuge vorgestellt. 
 
-\lsection[related:codegen]{Code-Generierung}
+\lsection[related:codegen]{\cgen{}}
 
-\todo{Definition} was Code-Generierung bedeutet:
+\begin{itemize}
+\item Runtime vs Compiletime
+\end{itemize}
+
+\todo{Definition} was \cgen{} bedeutet:
 Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
-Unterschiede zwischen Code-Generierungswerkzeugen. \todo{quelle}
+Unterschiede zwischen \cgen{}swerkzeugen. \todo{quelle}
 
 So differenziert man zwischen aktiver und passiver
-Code-Generierung. Aktiv bedeutet, dass die Generierung wiederholt
+\cgen{}. Aktiv bedeutet, dass die Generierung wiederholt
 ausgeführt werden kann, wenn sich etwas am Modell oder Generator
 ändert, da die komplette Datei generiert wird. Passiv generierter Code
 dagegen wird anschließend vom Programmierer modifiziert bzw. erst mit
@@ -360,49 +363,154 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\lsection[related:parser]{Parser-Generatoren}
-
-\lsection[related:lisp]{Lisp und \sexps{}}
+\lsection[related:notation]{Universelle Notationssprachen}
 
 \begin{itemize}
-\item Code-Generierung und Metaprogrammierung seit fast 50 Jahren
-\item was können wir lernen?
-\item lisp: homoikonisch
-\item Einheitliche Syntax macht vieles leichter
-\item compilererweitungen durch makros
+\item Domänenübergreifende Modellierung
 \end{itemize}
 
-\lsubsection[related:lisp:cprep]{Vergleich mit dem C-Präprozessor}
+\lsubsection[related:notation:xml]{XML}
+
+\begin{itemize}
+\item Datenmodell: Baum mit Attributen
+\item Syntax: \icode{<tag attr1="...'>...</tag>}
+\item Problem: Unterknoten vs. Attribut
+  \begin{itemize}
+  \item Attribute können immer auch als Unterknoten ausgedrückt werden -
+    nur syntaktischer Zucker? 
+  \item Unterknoten erlaubt innere Struktur, gut f. komplexere Eigenschaften
+  \item Keine klare Trennlinie (Meta in Attribut?), wachsendes Projekt
+    kann Wechsel zu Unterknoten erfordern
+  \item Wäre ein XML ohne Attribute besser? (Pull- vs Push-Verarbeitung?)
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item XPath: Adressieren, z.B. \icode{//chapter[@title=Einleitung"]/paragraph}
+  (alle Absätze aus Kap. ``Einleitung'')
+\item XSLT: Turing-Vollständige Baum-Transformationssprache in XML
+  \begin{itemize}
+  \item template: Matcher in XPath
+  \item Schleifen, sortierung, if-Abfragen
+  \item Nachvolger der \ac{DSSSL} (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
+  \item Keine ``richtige'', praktische Programmiersprache
+  \item $\rightarrow$ oft wird für komplexere Operationen andere Sprache benutzt
+  \end{itemize}
+\item Für viele Sprachen generierbare XML-Serializer
+\end{itemize}
+
+\lsubsection[related:notation:uml]{UML}
+
+\lsubsection[related:notation:json]{JSON}
+
+\lsubsection[related:notation:sexp]{\sexps}
+
+\lsection[related:templates]{Templates und Makros}
+
+\begin{itemize}
+\item Grundprinzip Quote/Unquote
+\item Unterschiede in Datenstrukturen
+  \begin{itemize}
+  \item Stringbasiert
+  \item Untyüisierte Baumnotation (\sexp{})
+  \item Typisiert
+  \end{itemize}
+\item Unterschiede in Mächtigkeit
+  \begin{itemize}
+  \item Keine Berechnungen, nur vorhandene Werte einfügen
+  \item Vollständige (Meta-)Programmiersprache
+  \item Zwischenstufen möglich
+  \end{itemize}
+\item Macros: 
+  \begin{itemize}
+  \item Kein explizites (Un-)Quote, Entscheidung über Namen
+  \item Syntaktisch nicht von Funktionsaufruf unterscheidbar
+  \item Gut: Integrierter
+  \item Schlecht: Verschleiert Semantik
+  \end{itemize}
+\end{itemize}
+
+\lsubsection[related:templates:stringtemplate]{StringTemplate für Java}
+
+\cite{StringTemplate}
+
+\begin{itemize}
+\item Stringbasiert
+\item Rekursiver Aufruf entspricht Quote
+\item Automatischer Splice von Listen: Praktisch, aber kann verwirren /
+  bestimmte Anwendungsfälle ausschließen
+\item Keine Berechnungen erlaubt
+  \begin{itemize}
+  \item Argument: Model-View Trennung
+  \item Nachteil: komplexe (Kommt dies vor? Frage der Domäne (HTML wohl nicht))
+  \item Erweiterbarkeit wünschenswert
+  \end{itemize}
+\end{itemize}
+
+\lsubsection[related:templates:rails]{Ruby on Rails}
+
+\begin{itemize}
+\item Web-Framework
+\item Template-Engine Erb für (aber nicht nur) HTML-Output
+\item Ansatz von php/perl (welches zuerst?) übernommen
+\item Unquote durch spezielle Tags
+\item Beliebiger Ruby-Code erlaubt, trotz erwünschter MVC-trennung
+\item Kein direktes Quote möglich, aber Aufruf der Rails-Engine oder Erb
+\end{itemize}
+
+\lsubsection[related:templates:cprep]{Der C-Präprozessor}
 \begin{itemize}
 \item C-Makros seit ca. 1975
 \item Keine komplette Programmiersprache (if, define, aber nicht goto, funktionen)
 \item gensym fehlt
 \end{itemize}
 
-\lsection[related:xml]{XML}
+\lsubsection[related:templates:ctemp]{Templates in C++}
 
 \begin{itemize}
-\item gleiche Zielsetzung - Baumstruktur
-\item syntax: ``</tag>'' vs. ``)''
-\item nur vorteilhaft f texteditor ohne parent-matching!
-\item XML komplexer, da Attribute
-\item kann auch durch unterknoten ausgedrückt werden - wird es nur aufgrund
-unständlicher syntax nicht
-\item nicht mehr rekursiv, komplexe attribute gehen nicht (wirklich)
-\item diskussion: makros good or bad
+\item Vorbild für Java-Generics (Generics aber viel weniger mächtig)
+\item "`Funktionale Sprache zur Compilationszeit"'
+\item Berechnungen im Typsystem
+\item Syntax
+\item Beispiele
 \end{itemize}
 
+\lsubsection[related:templates:temphask]{Template Haskell}
+
 \begin{itemize}
-\item XPath: Adressieren, z.B. \icode{//kap[@title="Grundlagen"]/pa}
-  (alle Absätze aus Kap. ``Grundlagen'')
-\item XSLT: Turing-Vollständige Baum-Transformationssprache in XML
+\item Compiler-Erweiterung für Haskell
+\item Ziele ähnlich C++-Templates / Makro-Prozessor
+\item BQ und Slice
+\item Meta-Code können normale Haskell-Funktionen sein
+\item Reification (Reflection)
+\item Statische Prüfung (nötig? Runtime gleich Compiletime)
+\item Problem: Haskell-Syntax
   \begin{itemize}
-  \item template: Matcher in XPath
-  \item Schleifen, sortierung, if-Abfragen
-  \item Nachvolger der \ac{DSSSL} (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
-  \item Unterschied zu Makros: Keine ``richtige'', praktische Programmiersprache
-  \item $\rightarrow oft wird für komplexere Operationen andere Sprache benutzt$
+  \item BQ kann nicht alles darstellen, z.B. $n$-äre Tupel
+  \item spezielle Konstruktoren nötig $\Rightarrow$ komplex, Metaprogramm
+    nicht ähnlich Programm
+  \item Bei Lisp wäre das nicht passiert $\Rightarrow$ Andere Sprachen
+    in Lisp-Notation sinnvoll
   \end{itemize}
+\end{itemize}
+
+\lsubsection[related:templates:macros]{Lisp-Makros}
+
+\begin{itemize}
+\item \cgen{} und Metaprogrammierung seit fast 50 Jahren
+\item was können wir lernen?
+\item lisp: homoikonisch
+\item Einheitliche Syntax macht vieles leichter
+\item compilererweitungen durch makros
+\end{itemize}
+
+\lsection[related:parser]{Parser-Generatoren}
+
+\begin{itemize}
+\item YACC
+\item javacc
+\item Treetop
+\item Parsec
 \end{itemize}
 
 \lchapter[sexy]{Objektorientierte Ruby-Implementation}
@@ -1703,7 +1811,7 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 MagicL enthält zudem ein minimalistisches Testframework, um Compiler
 oder im speziellen Macros inkrementell zu testen.
 
-\lsection[magicl:code]{Code-Generierung}
+\lsection[magicl:code]{\cgen{}}
 
 Um komfortabel korrekt eingerückten Code in einer Zielsprache generieren
 zu können, stellt MagicL einen Datentyp \icode{Code} zur Verfügung,
@@ -1783,7 +1891,7 @@ spezifiziert werden.
 \lsection[magicl:sexphs]{Haskell in \sexps{}}
 
 Wie auch \sexy{} besitzt auch MagicL eine \sexp{}-basierte und damit für
-Code-Generierung geeignete Version seiner Implementationssprache, hier
+\cgen{} geeignete Version seiner Implementationssprache, hier
 also Haskell. Diese ist zwar nicht vollständig, enthält aber die
 wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
 
@@ -1807,7 +1915,7 @@ wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
     \item Typisierte Codegeneration mit erweiterbarer Bibliothek
     \end{itemize}
   \item Manches wirkt etwas umständilch und redundant
-  \item[$\Rightarrow$] Hier könnte Code-Generierung helfen
+  \item[$\Rightarrow$] Hier könnte \cgen{} helfen
     \begin{itemize}
     \item Modellsprache
     \item Kleine DSL für \icode{code}-Konstruktion (kein \icode{text}
@@ -1865,7 +1973,7 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
 \item Versionierung
   \begin{itemize}
   \item Diff (evtl. über IDE-Protokoll)
-  \item Merge für Teamarbeit und passive Code-Generierung
+  \item Merge für Teamarbeit und passive \cgen{}
   \end{itemize}
 \end{itemize}
 
