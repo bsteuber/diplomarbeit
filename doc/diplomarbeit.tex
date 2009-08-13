@@ -318,7 +318,7 @@ XML-Werkzeuge vorgestellt.
 \lsection[related:codegen]{\cgen{}}
 
 \begin{itemize}
-\item Runtime vs Compiletime
+\item Runtime (eval) vs Compiletime (macro)
 \end{itemize}
 
 \todo{Definition} was \cgen{} bedeutet:
@@ -770,9 +770,9 @@ und $B$ identisch, bezeichnet man f auch als Endomorphismus.
 
 Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
 Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
-andere simple Beispielkategorie, die aus den Objekten $A, B$ und den
+andere simple Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
 Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
-dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{Set}}$ - denn
+dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{C}}$ - denn
 jede Kategorie ist selbstverständlich unter Komposition geschlossen.
 
 \fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
@@ -828,7 +828,7 @@ Produkt für die Kategorie $\mathbf{Set}$ ist. $\langle f,g \rangle$ ist
 hier die Funktion, die $x$ auf das Tupel $(f(x), g(x))$ abbildet.
 
 Dreht man im Diagramm alle Pfeile um, erhält man die Definition für das
-Coprodukt, ein zum Produkt dualer\footnote{Die zu einer Kategorie
+Coprodukt, einen zum Produkt dualen\footnote{Die zu einer Kategorie
   $\mathbf{C}$ duale Kategorie $\mathbf{C}^{\mathrm{op}}$ entsteht
   nämlich durch das Umdrehen von Pfeilen.} Operator:
 
