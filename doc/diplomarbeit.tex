@@ -181,6 +181,8 @@
 \acro{MDA}{Model Driven Architecture}
 \acro{UML}{Unified Modelling Language}
 \acro{XML}{Extensible Markup Language}
+\acro{XML-RPC}{XML Remote Procedure Call}
+\acro{W3C}{World Wide Web Consortium}
 \end{acronym}
 
 % \setlength{\parindent}{0pt}
@@ -290,22 +292,6 @@ Rahmen dieser Arbeit behandelt werden können.
 
 \lchapter[related]{Konzepte der generativen Programmierung}
 
-\todo{
-\begin{itemize}
-\item Marc Oliver Stehr Diss
-\item OOPSLA, POPL
-\item Baumtransformationen
-\item Kategorientheorie
-\item JDEX
-\item Metaprogrammierung
-\item Metamodellierung
-\item XML-Editor (Eclipse?)
-\item Eclipse Codegen, Transformationen, UML, ...
-\item UML
-\item Rountrip
-\end{itemize}
-}
-
 Diese Kapitel soll einen Überblick über vorhandene Technologien zur
 \cgen{} liefern.  \sref{related:codegen} erläutert verschiedene
 Arten der \cgen{}. In \sref{related:parser} werden Werkzeuge für
@@ -363,26 +349,78 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\lsection[related:notation]{Universelle Notationssprachen}
+\lsection[related:unilang]{Universelle Repräsentationssprachen}
 
+\todo{Def. aus Buch?}
+
+Eine universelle Notationssprache zeichnet sich im Gegensatz zu einer
+einfachen Programmiersprache oder einem Datenformat durch
+Übertragbarkeit in jede beliebige Domäne aus. Die Notationssprache
+selbst ist dann ausschließlich ein Mittel zur Strukturierung, während
+Ontologie und Semantik frei vom Benutzer gewählt werden können. Im
+folgenden Abschnitt werden die Notationssprachen XML, UML, JSON sowie
+\sexps{} beschrieben und miteinander verglichen.
+
+\lsubsection[related:unilang:xml]{XML} 
+Ein XML-Dokument lässt sich als ein Baum
+verstehen, dessen Knoten benannt sind und Attribute besitzen können, die
+selbst ebenfalls benannt sind. \todo{Siehe DOM} Als Blätter sind auch Strings
+zugelassen. Beispielsweise lässt sich das Dokument
+\begin{code}
+<body>
+  <h1>Title</h1>
+  <a href="http://foo.com">A link</a>
+</body>  
+\end{code} %"<
+durch \abb{xml_tree} visualisieren.
+
+\fig{xml_tree}{Ein XML-Dokument als benannter Baum}
+
+Ein häufiges Problem bei der Definition von XML-Formaten ist die Frage,
+ob eine spezielle Eigenschaft durch einen Unterknoten oder durch ein
+Attribut repräsentiert werden sollte. Attribute sind kürzer und deshalb
+komfortabler, auf der anderen Seite aber weniger ausdrucksmächtig als
+Unterknoten, da sie nur Zahlen oder Strings, nicht aber Werte mit
+innerer Struktur\footnote{Es ist zwar möglich, über einen
+  Attribut-String im XML-Format innere Struktur in Attribute einzubauen
+  - dieser würde dann aber nicht automatisch geparst werden, so dass von
+  diesem Trick eher abzuraten ist.} benutzen können. Es kommt deshalb
+durchaus vor, dass eine Eigenschaft zunächst als Attribut realisiert
+wird, dann aber später bei wachsender Komplexität und
+Modellierungsgenauigkeit durch einen Unterknoten ersetzt werden muss,
+wodurch eine Inkompatibilität zu alten Dateien entsteht.
+
+Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
+- vor allem in Anbetracht der Design-Ziele von XML, denn das \ac{W3C}
+schreibt in \cite{rec_xml}: "`The number of optional features in XML is to
+be kept to the absolute minimum, ideally zero"'. 
+
+Verschiedene Herangehensweisen in XML-Projekten
 \begin{itemize}
-\item Domänenübergreifende Modellierung
+\item \ac{XML-RPC} benutzt überhaupt keine Attribute
+\item Trennung: Meta-Informationen in Attribute, anderes in Unter-Elemente
+  \begin{itemize}
+  \item Problem: Komplexe Attribute
+  \end{itemize}
+\item Unterschiedliche Verarbeitung: Attribute werden direkt
+  mitgeliefert (Push), Unterknoten müssen abgefragt werden (Pull)
+  \begin{itemize}
+  \item Könnte in Modellen für Effizienzsteigerung ausgenutzt werden
+  \end{itemize}
+\item Frage kann nicht endgültig geklärt werden, meine Meinung:
+  Attribute praktisch "`syntaktischer Zucker"', nur nötig aufgrund
+  Aufwändiger XML-Syntax (vgl. \sexps{})
 \end{itemize}
 
-\lsubsection[related:notation:xml]{XML}
-
+Weitere Features:
 \begin{itemize}
-\item Datenmodell: Baum mit Attributen
-\item Syntax: \icode{<tag attr1="...'>...</tag>}
-\item Problem: Unterknoten vs. Attribut
+\item Namespaces
   \begin{itemize}
-  \item Attribute können immer auch als Unterknoten ausgedrückt werden -
-    nur syntaktischer Zucker? 
-  \item Unterknoten erlaubt innere Struktur, gut f. komplexere Eigenschaften
-  \item Keine klare Trennlinie (Meta in Attribut?), wachsendes Projekt
-    kann Wechsel zu Unterknoten erfordern
-  \item Wäre ein XML ohne Attribute besser? (Pull- vs Push-Verarbeitung?)
+  \item Wirklich nötig? Könnte auch mit Grund-XML realisiert werden:
+  \item \icode{<namespace ns="rdf">...</namespace>} %"<
+  \item Zu umständlich?
   \end{itemize}
+\item CDATA-Abschnitte
 \end{itemize}
 
 \begin{itemize}
@@ -399,36 +437,110 @@ Nachteile:
 \item Für viele Sprachen generierbare XML-Serializer
 \end{itemize}
 
-\lsubsection[related:notation:uml]{UML}
+\lsubsection[related:unilang:uml]{UML}
 
-\lsubsection[related:notation:json]{JSON}
+\begin{itemize}
+\item Graphische Modellierungssprache
+\item Zieldomäne: Programmspezifikation, OOP - trotzdem universell?  (Kriterien, Bewertung)
+\item Viele Diagrammtypen, viele Features
+\item Klassendiagramme prinzipiell äquivalent XML (nur Vererbung, nicht
+  mehrfach, keine Public/Private unterteilung etc.)
+\item Universalität $\rightarrow$ UML kann durch XML repräsentiert werden und umgekeht
+\end{itemize}
 
-\lsubsection[related:notation:sexp]{\sexps}
+Beispiel \ac{EMF}: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschließlich Java-Backend
+
+\lsubsection[related:unilang:json]{JSON}
+
+\begin{itemize}
+\item Auszeichnungssprache ähnlich XML
+\item Gültiger Javascript-Code
+\item Im Kommen für viele Webanwendungen
+\item Strukturelle Unterschiede
+  \begin{itemize}
+  \item Nur Attribute, keine unbenannten Kinder
+  \item Listennotation
+  \end{itemize}
+\item Meist kürzer / lesbarer als XML
+\end{itemize}
+
+\lsubsection[related:unilang:sexp]{\sexps}
+
+\begin{itemize}
+\item Syntax aller Sprachen der Lisp-Familie
+\item Keine Attribute
+\item \sexp{} ist Symbol oder Liste von \sexps{}
+\item Normalerweise ist erstes Listenelement Symbol, der Knotenname
+\item Symbole entsprechen Strings, traditionell nur Upper Case (moderne Dialekte können Kleinschreibung)
+\item Lisp-Sprachen haben darüber hinaus meist Syntax für Kommentare, (echte)
+  Strings, Backquotes etc.
+\item Einfachste Struktur aller universellen Repräsentationssprachen
+  \begin{itemize}
+  \item Vorteil für Verarbeitung, z.B. Parser
+  \item Attribute etc. lassen sich dennoch repräsentieren
+  \item \icode{(body (h1 "Title") (a (href "http://foo.com") "A link"))}
+  \end{itemize}
+\end{itemize}
 
 \lsection[related:templates]{Templates und Makros}
 
-\begin{itemize}
-\item Grundprinzip Quote/Unquote
-\item Unterschiede in Datenstrukturen
-  \begin{itemize}
-  \item Stringbasiert
-  \item Untyüisierte Baumnotation (\sexp{})
-  \item Typisiert
-  \end{itemize}
-\item Unterschiede in Mächtigkeit
-  \begin{itemize}
-  \item Keine Berechnungen, nur vorhandene Werte einfügen
-  \item Vollständige (Meta-)Programmiersprache
-  \item Zwischenstufen möglich
-  \end{itemize}
-\item Macros: 
-  \begin{itemize}
-  \item Kein explizites (Un-)Quote, Entscheidung über Namen
-  \item Syntaktisch nicht von Funktionsaufruf unterscheidbar
-  \item Gut: Integrierter
-  \item Schlecht: Verschleiert Semantik
-  \end{itemize}
-\end{itemize}
+\todo{Buch? Bisher eigene Definitionen...}
+
+Templates werden für die Erzeugung von Dokumentmengen eingesetzt, für
+die gewisse statische Bereiche in jedem Dokument identisch sind, während
+sich nur die dynamischen Bereiche ändern - beispielsweise eine Webseite,
+die Daten aus einer Datenbank anzeigt. Ein Template definiert die
+statischen Bereiche und lässt Platzhalter für die dynamischen. Es
+handelt sich dabei im Grunde um eine mathematische Funktion, deren
+Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument ist.
+
+Templates werden normalerweise über die beiden Operationen Quote und
+Unquote definiert. Ein Quote erzeugt ein Template, und das innere eines
+Quotes wird als statisch interpretiert, solange kein Unquote
+auftritt. Nicht überall sind Quotes explizit - oft interpretieren
+Anwendungen auch automatisch die äußerste Ebene einer Template-Datei als
+quotiert. Ein Unquote, welches nur innerhalb eines Quote auftauchen
+darf, erzeugt einen dynamischen Unterabschnitt, welcher meist in einer
+Programmiersprache beschrieben ist. Hier werden die Parameter verwendet,
+die beim Aufruf an das Template übergeben werden. Je nach Anwendung kann
+innerhalb eines Unquote eventuell wieder ein Quote vorkommen, so dass
+ein Sub-Template erzeugt wird.
+
+Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
+machen. Diese unterscheiden sich neben der Syntax vor allem in ihren
+Datenstrukturen für die Dokumentrepräsentation sowie der Mächtigkeit der
+im Unquote erlaubten Operationen. Bei den Datenstrukturen gibt es
+Template-Engines, die Dokumente lediglich als Zeichenketten
+abspeichern, und solche, die komplett auf typisierten Daten
+arbeiten. Dazwischen liegen Engines, die auf strukturierten, aber
+untypisierten Daten arbeiten, welche mittels \sexps{} oder XML
+repräsentiert sind. Die Bandbreite bei der Sprachmächtigkeit im Unquote
+ist ähnlich groß: Es gibt Tools, die überhaupt keine Berechnungen,
+sondern bloß das Einfügen der Parameter zulassen. Auf der anderen Seite
+stehen vollständige (Meta-)Programmiersprachen. Zwischenstufen sind
+ebenfalls möglich.
+
+Makros sind eine spezielle Form von Templates, die in wenigen
+Programmiersprachen angeboten werden. Sie können in normalen
+Programmcode eingebaut werden und werden zur Kompilationszeit
+ausgewertet, womit eine Möglichkeit zur Metaprogrammierung gegeben
+wird. Das Besondere bei einem Makro ist die Art, wie es aufgerufen wird:
+Während Templates normalerweise explizit und erkennbar aufgerufen
+werden, erfolgen Makro-Auswertungen allein über einen Namen und sind
+syntaktisch nicht von einem Funktionsaufruf der zugrunde liegenden
+Sprache unterscheidbar. Gibt es beispielsweise in C ein Makro namens
+\icode{foo}, beschreibt \icode{foo("bar", 42)} einen
+Makroaufruf. Existiert es nicht, ist das Kommando ein Funktionsaufruf.
+Dies kann man positiv und negativ sehen: Meist ist es für einen
+Programmierer angenehm, nicht wissen zu müssen, ob ein Befehl ein Makro
+oder eine Funktion ist - insbesondere wenn ein Makro nur aus
+Optimierungsgründen existiert, obwohl eine Funktion an der gleichen
+Stelle auch ginge. Auf der anderen Seite verschleiern Makros die
+Semantik und können zu unangenehmen Fehlern wie Konflikte bei
+Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
+
+Im Folgenden wird eine Auswahl an Anwendungen von Templates und Makros
+vorgestellt und miteineander verglichen,
 
 \lsubsection[related:templates:stringtemplate]{StringTemplate für Java}
 
@@ -494,23 +606,70 @@ Nachteile:
   \end{itemize}
 \end{itemize}
 
-\lsubsection[related:templates:macros]{Lisp-Makros}
+\lsubsection[related:templates:lisp]{Lisp}
 
 \begin{itemize}
 \item \cgen{} und Metaprogrammierung seit fast 50 Jahren
-\item was können wir lernen?
-\item lisp: homoikonisch
+\item homoikonisch wegen \sexps{}
 \item Einheitliche Syntax macht vieles leichter
-\item compilererweitungen durch makros
+\end{itemize}
+
+\begin{itemize}
+\item Backquote
+  \begin{itemize}
+  \item Spezialsyntax, damit ein \sexp{} nicht ausgewertet, sondern als
+    Liste\footnote{Es ist auch möglich, nur ein einzelnes Symbol zu
+      Quotieren - in diesem Fall ist das Ergebnis selbstverständlich
+      keine Liste.} gespeichert wird: \icode{`(foo 1 2 3)}
+  \item Unquote: \icode{`(foo 1 ,(x + 5) 3)} ergibt den Code \icode{(foo
+      1 42 3)}, falls \icode{x} den Wert 37 hat.
+  \item Splice fügt Liste ein: \icode{`(foo ,@rest)} ergibt \icode{(foo
+      1 2 3)}, wenn \icode{rest} die Liste \icode{(1 2 3)} ist.
+  \end{itemize}
+\item Makros
+  \begin{itemize}
+  \item Funktionen, die zur Compilierungszeit ausgewertet werden
+  \item Vollständige Lisp-Funktionalität steht bereit (vgl. C)
+  \item Parameter und Rückgabewert sind Code, nutzen entsprechend häufig Backquote
+  \item "`Incrementelle Compiler-Erweiterungen"', ermöglichen ganze
+    einbebettete Programmiersprachen (z.B. Prolog), die mit normalem
+    Lisp-Code gemischt werden können.
+  \item "`Name Capture"'
+    \begin{itemize}
+    \item Kann durch Nutzung von \icode{gensym} vermieden werden
+    \item Manchmal erwünscht - Beispiel \icode{aif}\cite{OnLisp}
+    \item Scheme benutzt "`hygienische Makros"', die Namenskonflikte ausschließen
+    \end{itemize}
+  \item Makros, die Makros erzeugen, sind möglich - allerdings werden
+    verschachtelte Backquotes kompliziert (Bsp.)
+  \end{itemize}
 \end{itemize}
 
 \lsection[related:parser]{Parser-Generatoren}
 
 \begin{itemize}
-\item YACC
+\item Lex / Yacc
+  \begin{itemize}
+  \item Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
+  \item LALR(1)-Parser
+  \end{itemize}
 \item javacc
+  \begin{itemize}
+  \item Integriert \ac{EBNF} mit Java-Code
+  \item LL(k)-Parser
+  \end{itemize}
 \item Treetop
+  \begin{itemize}
+  \item Ähnlich javacc, für Ruby
+  \item Parsing Expression Grammar (PEG)
+  \end{itemize}
 \item Parsec
+  \begin{itemize}
+  \item Haskell-Bibliothek
+  \item Keine eigene Syntax, embedded \ac{DSL}
+  \item Basiert auf Monaden
+  \item Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
+  \end{itemize}
 \end{itemize}
 
 \lchapter[sexy]{Objektorientierte Ruby-Implementation}
@@ -1019,7 +1178,7 @@ class (Category ar) => Arrow ar where
   first :: ar a b  -> ar (a, c) (b, c)
 \end{code}
 \icode{arr} ist der Funktor, der jede Funktion auf einen Arrow
-abbildet\footnote{Die Typen werden auf sich selbst abgebildet}.
+abbildet\footnote{Die Typen werden hierbei auf sich selbst abgebildet.}.
 \icode{first} ist eine Funktion, die aus einem Arrow einen Arrow auf
 Tupeln macht, der nur auf dem ersten Element arbeitet, das zweite
 dagegen unverändert durchschleift. Somit lassen sich zusätzliche Werte
@@ -1189,16 +1348,32 @@ jede Monade lässt sich beispielsweise mittels \icode{Kleisli} auf einen
 entsprechenden Arrow abbilden. Auf der anderen Seite entspricht aber
 nicht jedem Arrow eine Monade, denn aus den Arrow-Operationen allein
 lässt sich \icode{>>=} % <<
-nicht konstruieren (siehe \cite[S. 18f]{Hughes}). Dies wirft die Frage
-auf, weshalb Haskell überhaupt Monaden benutzt und nicht alles über
-Arrows realisiert. Zum einen gibt es dafür historische Gründe: Monaden
-waren bereits 1993 in Haskell präsent \cite[S.23ff]{HaskellHistory},
-während Arrows erst 1998 von John Hughes vorgeschlagen wurden, da sich
-spezielle Parser mit statischen Komponenten nicht durch Monaden
-ausdrücken lassen \cite{Hughes}. Zum anderen bieten Monaden aber auch
-Vorzüge: Die Definition einer Monade ist etwas kürzer, da keine
-\icode{first}-Funktion für Produkte bereitgestellt werden muss - wie
-obiger Code zeigt lässt sich dies bereits mittels \icode{>>=} % <<
+nicht konstruieren. Hierfür wird zusätzlich die Operation \icode{app}
+benötigt, die von der Typklasse \icode{ArrowApply} definiert wird (für
+Details siehe \cite[S. 18f]{Hughes}):
+\begin{code}
+class (Arrow ar) => ArrowApply ar where
+  app :: ar (ar a b, a) b  
+\end{code}
+Mit \icode{app} wird also ein Arrow bereitgestellt, der als Parameter
+einen weiteren Arrow sowie eine Eingabe bekommt, um dann den übergebenen
+Arrow auf die Eingabe anzuwenden. Damit ist es möglich, Arrows
+einzusetzen, die erst im Verarbeitungsprozess und in Abhängigkeit der
+Eingabedaten erzeugt werden - eine Eigenschaft, die Monaden generell
+besitzen. Dies wird beispielsweise in \sref{magicl:parser} wichtig für
+die Konstruktion von kontextsensitiven Parsern.
+
+Instanzen der Klasse \icode{ArrowChoice} sind vollständig äquivalent zu
+Monaden.  Dies wirft die Frage auf, weshalb Haskell überhaupt Monaden
+benutzt und nicht alles über Arrows realisiert. Zum einen gibt es dafür
+historische Gründe: Monaden waren bereits 1993 in Haskell präsent
+\cite[S.23ff]{HaskellHistory}, während Arrows erst 1998 von John Hughes
+vorgeschlagen wurden, da sich spezielle Parser mit statischen
+Komponenten nicht durch Monaden ausdrücken lassen \cite{Hughes}. Zum
+anderen bieten Monaden aber auch Vorzüge: Die Definition einer Monade
+ist etwas kürzer, da keine \icode{first}-Funktion für Produkte
+bereitgestellt werden muss - wie obiger Code zeigt lässt sich dies
+bereits mittels \icode{>>=} % <<
 ausdrücken. Zudem gibt es für Monaden in Haskell die praktische
 \icode{do}-Notation:
 \begin{code}
@@ -1315,6 +1490,12 @@ vorgenommen werden sollen, die sich nicht mittels Monaden ausdrücken
 lassen - beispielsweise ein effizienterer Parsing-Algorithmus, der
 sowohl statische als auch dynamische Komponenten enthält, wie ihn
 Swierstra und Duponcheel entworfen haben (siehe \cite[S. 8ff]{Hughes}).
+
+Wenn, wie in Parsec möglich (siehe \cite[S. 3]{Parsec}),
+kontextsensitive Parser - beispielsweise für die Zuordnung von
+schließenden Tags in XML-Dokumenten - konstruiert werden sollen,
+müssen die zugrundeliegenden Arrows allerdings äquivalent zu Monaden
+sein und \icode{ArrowApply} implementieren
 
 Dieser Abschnitt entwickelt nun schrittweise einen Parser-Datentyp aus
 Arrows. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
@@ -1530,7 +1711,7 @@ ausgeführt wird, frei wählbar. So können rein funktionale Parser in
 $Hask_p$ konstruiert werden. Benötigt man aber Debug Outputs (z.B. bei
 der Suche einer Endlosschleife) oder andere Seiteneffekte, kann
 $\mathbf{IO}_p$ benutzt werden. In MagicL werden diese Kategorien durch
-die Typaliase FunParser wowie IOParser bereitgestellt:
+die Typaliase \icode{FunParser} wowie \icode{IOParser} bereitgestellt:
 \begin{code}
 type FunParser t a b = ParseFunctor t (->) a b
 type IOParser  t a b = ParseFunctor t IOArrow a b
@@ -1835,7 +2016,7 @@ Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
 Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
 \icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
 \begin{code} 
-indent 2 (conc [text "hallo", newline, text welt])
+indent 2 (conc [text "hallo", newline, text "welt"])
 \end{code}
 den Text
 \begin{code}

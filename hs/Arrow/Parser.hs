@@ -40,6 +40,9 @@ instance (ArrowChoice ar) => ArrowFail (ParseFunctor t ar) where
 instance (ArrowChoice ar) => ArrowPlus (ParseFunctor t ar) where
     P f <+> P g = P (f <+> g)
 
+instance (ArrowChoice ar, ArrowApply ar) => ArrowApply (ParseFunctor t ar) where
+    app = P $ (arr runP *** id) >>> app
+
 instance (ArrowChoice ar) => Functor (ParseFunctor t ar) ar where
     lift = P . lift . lift . lift
 
