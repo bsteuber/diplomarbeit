@@ -37,6 +37,9 @@
 
 \newcommand\icode[1]{\lstinline?#1?}
 
+% \newenvironment{code}{\begin{verbatim}}{\end{verbatim}}
+% \newcommand\icode[1]{\verb^#1^}
+
 
 \newcommand{\todo}[1]{
   \textcolor{red}{TODO: #1}
@@ -178,7 +181,9 @@
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
+\acro{HTML}{Hypertext Markup Language}
 \acro{MDA}{Model Driven Architecture}
+\acro{PHP}{PHP: Hypertext Preprocessor}
 \acro{UML}{Unified Modelling Language}
 \acro{XML}{Extensible Markup Language}
 \acro{XML-RPC}{XML Remote Procedure Call}
@@ -192,8 +197,8 @@
 
 \lsection[intro:motiv]{Motivation}
 
-Modellgetriebene Softwareentwicklung ist in aller Munde: Die \ac{UML}
-feiert bald ihr 15-Jähriges bestehen \footnote{Der
+Modellgetriebene Softwareentwicklung ist in aller Munde: UML
+feiert bald sein 15-Jähriges bestehen \footnote{Der
   Standarisierungsprozess von UML begann 1994, als Gary Booch und Jim
   Rumbaugh mit der Vereinheitlichung ihrer Modellierungstechniken
   begannen. \cite{TODO}}, IBM vermarktet seit Jahren das Produkt
@@ -265,7 +270,7 @@ kann nun durch aus \sexps{} genererierten Versionen ersetzt werden,
 wodurch ein metazirkulärer Compiler entsteht.
 
 Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
-(\sexp{}-basierte) \ac{DSL} für Compilerdefinition gestaltet werden kann, in
+(\sexp{}-basierte) DSL für Compilerdefinition gestaltet werden kann, in
 der sich die Übersetzung einfacher beschreiben lässt als in X
 oder deren \sexp{}-Schwester. Diese Sprache kann beispielsweise die
 Definition von Lisp-Makros ermöglichen.
@@ -298,7 +303,7 @@ Arten der \cgen{}. In \sref{related:parser} werden Werkzeuge für
 die Generierung von Parsern beschrieben. \sref{related:lisp} stellt die
 Programmiersprache Lisp und insbesondere \sexps{}, die universelle
 Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
-\sref{related:xml} mit der \ac{XML} verglichen, außerdem werden dort
+\sref{related:xml} mit der XML verglichen, außerdem werden dort
 XML-Werkzeuge vorgestellt. 
 
 \lsection[related:codegen]{\cgen{}}
@@ -391,13 +396,13 @@ Modellierungsgenauigkeit durch einen Unterknoten ersetzt werden muss,
 wodurch eine Inkompatibilität zu alten Dateien entsteht.
 
 Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
-- vor allem in Anbetracht der Design-Ziele von XML, denn das \ac{W3C}
+- vor allem in Anbetracht der Design-Ziele von XML, denn das W3C
 schreibt in \cite{rec_xml}: "`The number of optional features in XML is to
 be kept to the absolute minimum, ideally zero"'. 
 
 Verschiedene Herangehensweisen in XML-Projekten
 \begin{itemize}
-\item \ac{XML-RPC} benutzt überhaupt keine Attribute
+\item XML-RPC benutzt überhaupt keine Attribute
 \item Trennung: Meta-Informationen in Attribute, anderes in Unter-Elemente
   \begin{itemize}
   \item Problem: Komplexe Attribute
@@ -430,7 +435,7 @@ Weitere Features:
   \begin{itemize}
   \item template: Matcher in XPath
   \item Schleifen, sortierung, if-Abfragen
-  \item Nachvolger der \ac{DSSSL} (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
+  \item Nachvolger der DSSSL (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
   \item Keine ``richtige'', praktische Programmiersprache
   \item $\rightarrow$ oft wird für komplexere Operationen andere Sprache benutzt
   \end{itemize}
@@ -448,7 +453,7 @@ Weitere Features:
 \item Universalität $\rightarrow$ UML kann durch XML repräsentiert werden und umgekeht
 \end{itemize}
 
-Beispiel \ac{EMF}: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschließlich Java-Backend
+Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschließlich Java-Backend
 
 \lsubsection[related:unilang:json]{JSON}
 
@@ -489,10 +494,13 @@ Beispiel \ac{EMF}: Nicht ausschließlich UML, viele Möglichkeiten (genauer), au
 Templates werden für die Erzeugung von Dokumentmengen eingesetzt, für
 die gewisse statische Bereiche in jedem Dokument identisch sind, während
 sich nur die dynamischen Bereiche ändern - beispielsweise eine Webseite,
-die Daten aus einer Datenbank anzeigt. Ein Template definiert die
+die Daten aus einer Datenbank anzeigt. Auch bei der Erzeugung von
+Programmen tritt dieser Fall auf, so dass Templates eine große Rolle bei
+\cgen{} spielen. Ein Template definiert die
 statischen Bereiche und lässt Platzhalter für die dynamischen. Es
 handelt sich dabei im Grunde um eine mathematische Funktion, deren
-Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument ist.
+Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument
+ist.
 
 Templates werden normalerweise über die beiden Operationen Quote und
 Unquote definiert. Ein Quote erzeugt ein Template, und das innere eines
@@ -540,41 +548,69 @@ Semantik und können zu unangenehmen Fehlern wie Konflikte bei
 Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
 
 Im Folgenden wird eine Auswahl an Anwendungen von Templates und Makros
-vorgestellt und miteineander verglichen,
+vorgestellt und miteinander verglichen,
 
-\lsubsection[related:templates:stringtemplate]{StringTemplate für Java}
+\lsubsection[related:templates:php]{PHP}
 
-\cite{StringTemplate}
+Die Scriptsprache PHP ist von vornherein als Template-System
+konstruiert. PHP-Code muss immer von \lstinline+<?php+ und
+\lstinline+?>+ umgeben sein, was im Grunde ein Unquote darstellt. Das
+Ergebnis der PHP-Blöcke wird als String in die Ausgabedatei eingefügt,
+die ansonsten aus den implizit quotierten Nicht-PHP-Bereichen der
+Eingabedatei besteht.Die Unquote-Syntax ist an
+XML angelehnt, da PHP hauptsächlich für die Erzeugung von
+HTML-Dokumenten verwendet wird. Statt eines direkten Quotes gibt es die
+Möglichkeit, über die Funktion \icode{include} eine andere PHP-Datei
+einzubinden.
 
-\begin{itemize}
-\item Stringbasiert
-\item Rekursiver Aufruf entspricht Quote
-\item Automatischer Splice von Listen: Praktisch, aber kann verwirren /
-  bestimmte Anwendungsfälle ausschließen
-\item Keine Berechnungen erlaubt
-  \begin{itemize}
-  \item Argument: Model-View Trennung
-  \item Nachteil: komplexe (Kommt dies vor? Frage der Domäne (HTML wohl nicht))
-  \item Erweiterbarkeit wünschenswert
-  \end{itemize}
-\end{itemize}
+Viele Web-Frameworks benutzen eine ähnliche Syntax, um HTML-Templates
+mit Scripten in der entsprechenden Programmiersprache zu erstellen.
 
-\lsubsection[related:templates:rails]{Ruby on Rails}
+\lsubsection[related:templates:stringtemplate]{StringTemplate}
 
-\begin{itemize}
-\item Web-Framework
-\item Template-Engine Erb für (aber nicht nur) HTML-Output
-\item Ansatz von php/perl (welches zuerst?) übernommen
-\item Unquote durch spezielle Tags
-\item Beliebiger Ruby-Code erlaubt, trotz erwünschter MVC-trennung
-\item Kein direktes Quote möglich, aber Aufruf der Rails-Engine oder Erb
-\end{itemize}
+\todo{Beispiele?}
+
+StringTemplate\cite{StringTemplate} ist eine stringbasierte
+Template-Engine für Java. Auch hier ist eine Template-Datei implizit
+quotiert, ein Unquote erlolgt mittels \icode{$foo$} oder
+\icode{<foo>}. Im Gegensatz zu den meisten anderen Systemen ist die
+Mächtigkeit der Unquote-Bereiche bei StringTemplate stark reduziert, um
+eine Model-View-Trennung zu erzwingen - alle Berechnungen sollen also im
+Modell, und nicht im Template selbst erfolgen.
+
+Neben der Referenzierung von Java-Objekten - hier wird automatisch
+\icode{toString()} aufgerufen - und deren Instanzvariablen sind nur
+Template-Aufrufe sowie \icode{if}-Abfragen erlaubt, wobei letztere nur
+zwischen \icode{true} und \icode{false} bzw. nicht \icode{null} und
+\icode{null} unterscheiden können - aber keine Berechnungen oder
+Vergleichsoperatoren benutzen können. Template-Aufrufe entsprechen hier
+wieder einem Quote - da auch "`anonyme Templates"' (analog zu anonymen
+Funktionen) benutzt werden können, handelt es sich sogar um ein direktes
+Quote. Statt der Bereitstellung eines Konstruktes wie \icode{foreach}
+iteriert StringTemplate automatisch, wenn ein referenzierter Wert eine
+Liste ist - dies funktioniert auch bei Template-Aufrufen. Hier kann auch
+ein Separator angegeben werden, der dann zwischen den Elementen
+steht. Es gibt auch die Möglichkeit, bei der Verarbeitung einer Liste
+abwechselnd zwei oder mehr Templates aufzurufen - dies wird
+beispielsweise für sich abwechselnde Farben von Zeilen in HTML-Tabellen
+benötigt.
+
+Der hier verfolgte Ansatz funktioniert in der Praxis wohl sehr gut und
+erreicht tatsächlich eine sauberere Aufteilung der Module sowie
+übersichtlichere Template-Dateien als andere Engines. Der einzige
+Schwachpunkt tritt auf, wenn Berechnungen durchgeführt werden müssten,
+die eigentlich nicht ins Modell, sondern ins View gehören, wie
+beispielsweise ein rotes Einfärben von negativen Werten. Hierfür müsste
+ein zusätzliches Attribut \icode{isRed} im Modell bereitgestellt werden,
+wodurch die Trennung wiederum verletzt wäre. Für solche Fälle wäre es
+hilfreich, wenn StringTemplate das Definieren von Helper-Klassen, deren
+Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 
 \lsubsection[related:templates:cprep]{Der C-Präprozessor}
 \begin{itemize}
 \item C-Makros seit ca. 1975
 \item Keine komplette Programmiersprache (if, define, aber nicht goto, funktionen)
-\item gensym fehlt
+\item gensym fehlt, tatsächliche Berechnung zur Kompilierzeit
 \end{itemize}
 
 \lsubsection[related:templates:ctemp]{Templates in C++}
@@ -655,7 +691,7 @@ vorgestellt und miteineander verglichen,
   \end{itemize}
 \item javacc
   \begin{itemize}
-  \item Integriert \ac{EBNF} mit Java-Code
+  \item Integriert EBNF mit Java-Code
   \item LL(k)-Parser
   \end{itemize}
 \item Treetop
@@ -666,7 +702,7 @@ vorgestellt und miteineander verglichen,
 \item Parsec
   \begin{itemize}
   \item Haskell-Bibliothek
-  \item Keine eigene Syntax, embedded \ac{DSL}
+  \item Keine eigene Syntax, embedded DSL
   \item Basiert auf Monaden
   \item Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
   \end{itemize}
