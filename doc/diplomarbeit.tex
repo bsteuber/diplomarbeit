@@ -8,6 +8,7 @@
 \usepackage{amssymb,amsmath}
 \usepackage{graphicx}
 \usepackage{subfig}
+\usepackage{rotating}
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{acronym}
@@ -36,6 +37,9 @@
 }
 
 \newcommand\icode[1]{\lstinline?#1?}
+
+\newcommand\phpo{\lstinline+<?php+}
+\newcommand\phpc{\lstinline+?>+}
 
 % \newenvironment{code}{\begin{verbatim}}{\end{verbatim}}
 % \newcommand\icode[1]{\verb^#1^}
@@ -235,7 +239,7 @@ Garbage Collection oder Konstrukte wie der REPL, eine
 Lisp-Kommandozeile zum interaktiven Programmieren und Testen, bereits
 von modernen Sprachen nachgeahmt wurden, stehen Makros\footnote{Der
   C-Preprozessor bietet ebenfalls Makros an - diese sind allerdings
-  weniger mächtig als Lisp-Makros \sees{related:lisp:cprep}.} nur noch
+  weniger mächtig als Lisp-Makros \sees{cgen:lisp:cprep}.} nur noch
 der kleinen Lisp-Community zur Verfügung. Es wäre also wünschenswert,
 diese oder etwas Vergleichbares im Rahmen moderner Sprachen für
 \cgen{} und -Verarbeitung nutzen zu können.
@@ -277,7 +281,7 @@ Definition von Lisp-Makros ermöglichen.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
-\cref{related} versucht, einen Überblick über den Stand der Technik in
+\cref{cgen} versucht, einen Überblick über den Stand der Technik in
 Sachen \cgen{} zu geben.
 
 In \cref{sexy} wird mit \sexy{} ein erster, in Ruby geschriebener Prototyp eines
@@ -295,18 +299,18 @@ können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
 einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
 Rahmen dieser Arbeit behandelt werden können.
 
-\lchapter[related]{Konzepte der generativen Programmierung}
+\lchapter[cgen]{Architektur von Code-Generatoren}
 
 Diese Kapitel soll einen Überblick über vorhandene Technologien zur
-\cgen{} liefern.  \sref{related:codegen} erläutert verschiedene
-Arten der \cgen{}. In \sref{related:parser} werden Werkzeuge für
-die Generierung von Parsern beschrieben. \sref{related:lisp} stellt die
+\cgen{} liefern.  \sref{cgen:codegen} erläutert verschiedene
+Arten der \cgen{}. In \sref{cgen:parser} werden Werkzeuge für
+die Generierung von Parsern beschrieben. \sref{cgen:lisp} stellt die
 Programmiersprache Lisp und insbesondere \sexps{}, die universelle
 Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
-\sref{related:xml} mit der XML verglichen, außerdem werden dort
+\sref{cgen:xml} mit der XML verglichen, außerdem werden dort
 XML-Werkzeuge vorgestellt. 
 
-\lsection[related:codegen]{\cgen{}}
+\lsection[cgen:intro]{Überblick}
 
 \begin{itemize}
 \item Runtime (eval) vs Compiletime (macro)
@@ -354,7 +358,7 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\lsection[related:unilang]{Universelle Repräsentationssprachen}
+\lsection[cgen:model]{Modellrepräsentation}
 
 \todo{Def. aus Buch?}
 
@@ -366,7 +370,25 @@ Ontologie und Semantik frei vom Benutzer gewählt werden können. Im
 folgenden Abschnitt werden die Notationssprachen XML, UML, JSON sowie
 \sexps{} beschrieben und miteinander verglichen.
 
-\lsubsection[related:unilang:xml]{XML} 
+\lsubsection[cgen:model:crit]{Vergleichskriterien}
+
+\lsubsubsection[cgen:model:crit:type]{Typisierung}
+
+\lsubsubsection[cgen:model:crit:graphic]{Graphische Darstellung}
+
+\lsubsubsection[cgen:model:crit:compose]{Komposition}
+
+Entwurfsmuster, Systemtheorie
+
+\lsubsubsection[cgen:model:crit:attrib]{Attribute}
+
+\lsubsubsection[cgen:model:crit:list]{Repräsentation von Listen}
+
+\lsubsection[cgen:model:string]{Strings}
+
+\lsubsection[cgen:model:object]{Objekte}
+
+\lsubsection[cgen:model:xml]{XML} 
 Ein XML-Dokument lässt sich als ein Baum
 verstehen, dessen Knoten benannt sind und Attribute besitzen können, die
 selbst ebenfalls benannt sind. \todo{Siehe DOM} Als Blätter sind auch Strings
@@ -442,7 +464,7 @@ Weitere Features:
 \item Für viele Sprachen generierbare XML-Serializer
 \end{itemize}
 
-\lsubsection[related:unilang:uml]{UML}
+\lsubsection[cgen:model:uml]{UML}
 
 \begin{itemize}
 \item Graphische Modellierungssprache
@@ -455,7 +477,7 @@ Weitere Features:
 
 Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschließlich Java-Backend
 
-\lsubsection[related:unilang:json]{JSON}
+\lsubsection[cgen:model:json]{JSON}
 
 \begin{itemize}
 \item Auszeichnungssprache ähnlich XML
@@ -469,7 +491,7 @@ Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschl
 \item Meist kürzer / lesbarer als XML
 \end{itemize}
 
-\lsubsection[related:unilang:sexp]{\sexps}
+\lsubsection[cgen:model:sexp]{\sexps}
 
 \begin{itemize}
 \item Syntax aller Sprachen der Lisp-Familie
@@ -487,9 +509,26 @@ Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschl
   \end{itemize}
 \end{itemize}
 
-\lsection[related:templates]{Templates und Makros}
+\lsubsection[cgen:model:sum]{Zusammenfassung}
+
+\begin{figure}[htp]
+  \centering
+\begin{tabular}{|l|l|l|l|l|l|l|}\hline
+\bf Modell      & \bf String & \bf Datentyp & \bf XML & \bf UML & \bf JSON & \bf \sexps{} \\\hline\hline
+\bf Typisiert   & nein       & ja           & halb    & halb    & halb     & halb         \\\hline
+\bf Unterknoten & nein       & nach Sprache & ja      & ja      & nein     & ja           \\\hline
+\bf Attribute   & nein       & ja           & ja      & ja      & ja       & nein         \\\hline
+\bf Listen      & nein       & ja           & nein    & nein    & ja       & nein         \\\hline
+\bf Graphisch   & nein       & nein         & nein    & ja      & nein     & nein         \\\hline
+\end{tabular}  
+  \caption{Vergleich verscheidener Modellrepräsentationen}
+\end{figure}
+
+\lsection[cgen:comp]{Verarbeitungsprozess}
 
 \todo{Buch? Bisher eigene Definitionen...}
+
+\lsubsection[cgen:comp:crit]{Vergleichskriterien}
 
 Templates werden für die Erzeugung von Dokumentmengen eingesetzt, für
 die gewisse statische Bereiche in jedem Dokument identisch sind, während
@@ -550,11 +589,11 @@ Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
 Im Folgenden wird eine Auswahl an Anwendungen von Templates und Makros
 vorgestellt und miteinander verglichen,
 
-\lsubsection[related:templates:php]{PHP}
+\lsubsection[cgen:templates:php]{PHP}
 
 Die Scriptsprache PHP ist von vornherein als Template-System
-konstruiert. PHP-Code muss immer von \lstinline+<?php+ und
-\lstinline+?>+ umgeben sein, was im Grunde ein Unquote darstellt. Das
+konstruiert. PHP-Code muss immer von \phpo{} und
+\phpc{} umgeben sein, was im Grunde ein Unquote darstellt. Das
 Ergebnis der PHP-Blöcke wird als String in die Ausgabedatei eingefügt,
 die ansonsten aus den implizit quotierten Nicht-PHP-Bereichen der
 Eingabedatei besteht.Die Unquote-Syntax ist an
@@ -566,7 +605,7 @@ einzubinden.
 Viele Web-Frameworks benutzen eine ähnliche Syntax, um HTML-Templates
 mit Scripten in der entsprechenden Programmiersprache zu erstellen.
 
-\lsubsection[related:templates:stringtemplate]{StringTemplate}
+\lsubsection[cgen:templates:stringtemplate]{StringTemplate}
 
 \todo{Beispiele?}
 
@@ -606,14 +645,14 @@ wodurch die Trennung wiederum verletzt wäre. Für solche Fälle wäre es
 hilfreich, wenn StringTemplate das Definieren von Helper-Klassen, deren
 Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 
-\lsubsection[related:templates:cprep]{Der C-Präprozessor}
+\lsubsection[cgen:templates:cprep]{Der C-Präprozessor}
 \begin{itemize}
 \item C-Makros seit ca. 1975
 \item Keine komplette Programmiersprache (if, define, aber nicht goto, funktionen)
 \item gensym fehlt, tatsächliche Berechnung zur Kompilierzeit
 \end{itemize}
 
-\lsubsection[related:templates:ctemp]{Templates in C++}
+\lsubsection[cgen:templates:ctemp]{Templates in C++}
 
 \begin{itemize}
 \item Vorbild für Java-Generics (Generics aber viel weniger mächtig)
@@ -623,7 +662,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \item Beispiele
 \end{itemize}
 
-\lsubsection[related:templates:temphask]{Template Haskell}
+\lsubsection[cgen:templates:temphask]{Template Haskell}
 
 \begin{itemize}
 \item Compiler-Erweiterung für Haskell
@@ -642,7 +681,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
   \end{itemize}
 \end{itemize}
 
-\lsubsection[related:templates:lisp]{Lisp}
+\lsubsection[cgen:templates:lisp]{Lisp}
 
 \begin{itemize}
 \item \cgen{} und Metaprogrammierung seit fast 50 Jahren
@@ -681,32 +720,50 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
   \end{itemize}
 \end{itemize}
 
-\lsection[related:parser]{Parser-Generatoren}
+\lsubsection[cgen:comp:sum]{Zusammenfassung}
 
-\begin{itemize}
-\item Lex / Yacc
-  \begin{itemize}
-  \item Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
-  \item LALR(1)-Parser
-  \end{itemize}
-\item javacc
-  \begin{itemize}
-  \item Integriert EBNF mit Java-Code
-  \item LL(k)-Parser
-  \end{itemize}
-\item Treetop
-  \begin{itemize}
-  \item Ähnlich javacc, für Ruby
-  \item Parsing Expression Grammar (PEG)
-  \end{itemize}
-\item Parsec
-  \begin{itemize}
-  \item Haskell-Bibliothek
-  \item Keine eigene Syntax, embedded DSL
-  \item Basiert auf Monaden
-  \item Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
-  \end{itemize}
-\end{itemize}
+\begin{sidewaysfigure}[htp]
+  \centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|} \hline
+\bf Tool           &\bf PHP        &\bf StringTemplate          &\bf C++-Templates          &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp\\\hline\hline
+\bf Eingabe            &Objekt         &String                      &Typ/Wert/Template          &Objekt          &Code            &XML      &\sexp{} \\\hline
+\bf Ausgabe            &String         &String                      &Code für Funktion/Klasse   &Code            &Code            &XML      &\sexp{} \\\hline
+\bf Eingabevalidierung &               &                            &                           &                &                &         &        \\\hline
+\bf Ausgabevalidierung &nein           &nein                        &ja                         &ja              &ja              &         &        \\\hline
+\bf implizit Quotiert  &ja             &ja                          &nein                       &nein            &nein            &         &        \\\hline
+\bf Quote-Syntax       &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &        \\\hline
+\bf Unquote-Syntax     &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &        \\\hline
+\bf Template-Aufruf    &indirekt       &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &        \\\hline  
+\bf Sprachmächtigkeit  &maximal        &minimal                     &mittel                     &maximal         &gering          &         &        \\\hline
+\bf Model-View-Trennung&möglich        &stark                       &                           &                &                &         &        \\\hline
+% Homoikonisch
+% Template ähnlich Code
+\end{tabular}
+\caption{Vergleich der Verarbeitungsprozesse von Werkzeugen zur Code-Generierung}
+\label{magicl:tab:comp}
+\end{sidewaysfigure}
+
+\lsection[cgen:parser]{Parser}
+
+\lsubsection[cgen:parser:yacc]{Lex / Yacc}
+Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse 
+LALR(1)-Parser
+
+\lsubsection[cgen:parser:javacc]{JavaCC}
+ Integriert EBNF mit Java-Code
+ LL(k)-Parser
+
+\lsubsection[cgen:parser:treetop]{Treetop}
+ Ähnlich javacc, für Ruby
+ Parsing Expression Grammar (PEG)
+
+\lsubsection[cgen:parser:parsec]{Parsec}
+ Haskell-Bibliothek
+ Keine eigene Syntax, embedded DSL
+ Basiert auf Monaden
+ Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
+
+\lsubsection[cgen:parser:sum]{Zusammenfasseung}
 
 \lchapter[sexy]{Objektorientierte Ruby-Implementation}
 
