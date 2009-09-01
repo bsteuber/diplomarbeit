@@ -163,6 +163,8 @@
 \newcommand{\sexp}{S"=Expression}
 \newcommand{\sexps}{S"=Expressions}
 \newcommand{\cgen}{Code"=Generierung}
+\newcommand{\cpp}{C\texttt{++}}
+
 
 \begin{document}
 
@@ -514,21 +516,17 @@ Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschl
 \begin{figure}[htp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|}\hline
-\bf Modell      & \bf String & \bf Datentyp & \bf XML & \bf UML & \bf JSON & \bf \sexps{} \\\hline\hline
-\bf Typisiert   & nein       & ja           & halb    & halb    & halb     & halb         \\\hline
-\bf Unterknoten & nein       & nach Sprache & ja      & ja      & nein     & ja           \\\hline
-\bf Attribute   & nein       & ja           & ja      & ja      & ja       & nein         \\\hline
-\bf Listen      & nein       & ja           & nein    & nein    & ja       & nein         \\\hline
-\bf Graphisch   & nein       & nein         & nein    & ja      & nein     & nein         \\\hline
+\bf Modell                 & \bf String & \bf Objekt   & \bf XML & \bf UML & \bf JSON & \bf \sexps{} \\\hline\hline
+\bf Typisiert              & nein       & ja           & halb    & halb    & halb     & halb         \\\hline
+\bf Unterknoten            & nein       & nach Sprache & ja      & ja      & nein     & ja           \\\hline
+\bf Attribute              & nein       & ja           & ja      & ja      & ja       & nein         \\\hline
+\bf Listen                 & nein       & ja           & nein    & nein    & ja       & nein         \\\hline
+\bf Graphische Darstellung & Text       & Baum         & Baum    & Diagramm& Baum     & Baum         \\\hline
 \end{tabular}  
   \caption{Vergleich verscheidener Modellrepräsentationen}
 \end{figure}
 
-\lsection[cgen:comp]{Verarbeitungsprozess}
-
-\todo{Buch? Bisher eigene Definitionen...}
-
-\lsubsection[cgen:comp:crit]{Vergleichskriterien}
+\lsection[cgen:comp]{Template-basierte \cgen{}}
 
 Templates werden für die Erzeugung von Dokumentmengen eingesetzt, für
 die gewisse statische Bereiche in jedem Dokument identisch sind, während
@@ -540,6 +538,28 @@ statischen Bereiche und lässt Platzhalter für die dynamischen. Es
 handelt sich dabei im Grunde um eine mathematische Funktion, deren
 Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument
 ist.
+
+Dieser Abschnitt stellt einige der vielen Template-basierten Tools für
+\cgen{} vor und bewertet diese anhand zunächst zu erarbeiteter
+Vergleichskriterien.
+
+\lsubsection[cgen:comp:crit]{Vergleichskriterien}
+
+Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
+machen. Diese unterscheiden sich neben der Syntax vor allem in ihren
+Datenstrukturen für die Dokumentrepräsentation sowie der Mächtigkeit der
+im Unquote erlaubten Operationen. 
+
+\lsubsubsection[cgen:comp:crit:model]{Verwendete Modelle}
+
+Bei den Datenstrukturen gibt es
+Template-Engines, die Dokumente lediglich als Zeichenketten
+abspeichern, und solche, die komplett auf typisierten Daten
+arbeiten. Dazwischen liegen Engines, die auf strukturierten, aber
+untypisierten Daten arbeiten, welche mittels \sexps{} oder XML
+repräsentiert sind.
+
+\lsubsubsection[cgen:comp:crit:def]{Template-Definition}
 
 Templates werden normalerweise über die beiden Operationen Quote und
 Unquote definiert. Ein Quote erzeugt ein Template, und das innere eines
@@ -553,19 +573,15 @@ die beim Aufruf an das Template übergeben werden. Je nach Anwendung kann
 innerhalb eines Unquote eventuell wieder ein Quote vorkommen, so dass
 ein Sub-Template erzeugt wird.
 
-Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
-machen. Diese unterscheiden sich neben der Syntax vor allem in ihren
-Datenstrukturen für die Dokumentrepräsentation sowie der Mächtigkeit der
-im Unquote erlaubten Operationen. Bei den Datenstrukturen gibt es
-Template-Engines, die Dokumente lediglich als Zeichenketten
-abspeichern, und solche, die komplett auf typisierten Daten
-arbeiten. Dazwischen liegen Engines, die auf strukturierten, aber
-untypisierten Daten arbeiten, welche mittels \sexps{} oder XML
-repräsentiert sind. Die Bandbreite bei der Sprachmächtigkeit im Unquote
+\lsubsubsection[cgen:comp:crit:lang]{Meta-Programmiersprache}
+
+Die Bandbreite bei der Sprachmächtigkeit im Unquote
 ist ähnlich groß: Es gibt Tools, die überhaupt keine Berechnungen,
 sondern bloß das Einfügen der Parameter zulassen. Auf der anderen Seite
 stehen vollständige (Meta-)Programmiersprachen. Zwischenstufen sind
 ebenfalls möglich.
+
+\lsubsubsection[cgen:comp:crit:contr]{Kontrollfluss}
 
 Makros sind eine spezielle Form von Templates, die in wenigen
 Programmiersprachen angeboten werden. Sie können in normalen
@@ -586,8 +602,9 @@ Stelle auch ginge. Auf der anderen Seite verschleiern Makros die
 Semantik und können zu unangenehmen Fehlern wie Konflikte bei
 Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
 
-Im Folgenden wird eine Auswahl an Anwendungen von Templates und Makros
-vorgestellt und miteinander verglichen,
+\lsubsubsection[cgen:comp:crit:sep]{Komponententrennung}
+
+\lsubsubsection[cgen:comp:crit:gentemp]{Generierung von Templates}
 
 \lsubsection[cgen:templates:php]{PHP}
 
@@ -652,7 +669,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \item gensym fehlt, tatsächliche Berechnung zur Kompilierzeit
 \end{itemize}
 
-\lsubsection[cgen:templates:ctemp]{Templates in C++}
+\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}}
 
 \begin{itemize}
 \item Vorbild für Java-Generics (Generics aber viel weniger mächtig)
@@ -666,7 +683,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 
 \begin{itemize}
 \item Compiler-Erweiterung für Haskell
-\item Ziele ähnlich C++-Templates / Makro-Prozessor
+\item Ziele ähnlich \cpp{}-Templates / Makro-Prozessor
 \item BQ und Slice
 \item Meta-Code können normale Haskell-Funktionen sein
 \item Reification (Reflection)
@@ -725,19 +742,21 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \begin{sidewaysfigure}[htp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|l|} \hline
-\bf Tool           &\bf PHP        &\bf StringTemplate          &\bf C++-Templates          &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp\\\hline\hline
-\bf Eingabe            &Objekt         &String                      &Typ/Wert/Template          &Objekt          &Code            &XML      &\sexp{} \\\hline
-\bf Ausgabe            &String         &String                      &Code für Funktion/Klasse   &Code            &Code            &XML      &\sexp{} \\\hline
-\bf Eingabevalidierung &               &                            &                           &                &                &         &        \\\hline
-\bf Ausgabevalidierung &nein           &nein                        &ja                         &ja              &ja              &         &        \\\hline
-\bf implizit Quotiert  &ja             &ja                          &nein                       &nein            &nein            &         &        \\\hline
-\bf Quote-Syntax       &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &        \\\hline
-\bf Unquote-Syntax     &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &        \\\hline
-\bf Template-Aufruf    &indirekt       &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &        \\\hline  
-\bf Sprachmächtigkeit  &maximal        &minimal                     &mittel                     &maximal         &gering          &         &        \\\hline
-\bf Model-View-Trennung&möglich        &stark                       &                           &                &                &         &        \\\hline
-% Homoikonisch
-% Template ähnlich Code
+\bf Tool             &\bf PHP        &\bf StringTemplate          &\bf Templates in \cpp{}    &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp         \\\hline\hline
+\bf Eingabe              &Objekt         &String                      &Typ/Wert/Template          &Objekt          &Code            &XML      &\sexp{}     \\\hline
+\bf Typisierung Eingabe  &hoch           &minimal                     &maximal                    &maximal         &mittel          &mittel   &mittel      \\\hline
+\bf Ausgabe              &String         &String                      &Code für Funktion/Klasse   &Code-Objekt     &Code            &XML      &\sexp{}     \\\hline
+\bf Typisierung Ausgabe  &minimal        &minimal                     &mittel                     &maximal         &mittel          &mittel   &mittel      \\\hline
+\bf implizit Quotiert    &ja             &ja                          &nein                       &nein            &nein            &nein     &nein        \\\hline
+\bf Quote                &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &\icode{`( )}\\\hline
+\bf Unquote              &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &\icode{,}   \\\hline
+\bf Code-Objekt verfügbar&String         &nein                        &nein                       &ja              &nein            &nein     &ja          \\\hline
+\bf Template-Aufruf      &nein           &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &            \\\hline  
+\bf Sprachmächtigkeit    &maximal        &minimal                     &mittel                     &maximal         &gering          &hoch     &maximal     \\\hline
+\bf Komponentenrennung   &möglich        &stark                       &                           &                &                &         &            \\\hline
+\bf Templates generierbar&nein           &nein                        &                           &nein?           &                &ja       &ja          \\\hline
+\bf Kontrollfluss        &               &                            &                           &                &                &         &            \\\hline
+%bf                      &               &                            &                           &                &                &         &            \\\hline
 \end{tabular}
 \caption{Vergleich der Verarbeitungsprozesse von Werkzeugen zur Code-Generierung}
 \label{magicl:tab:comp}
