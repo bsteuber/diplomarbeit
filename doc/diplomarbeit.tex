@@ -187,6 +187,7 @@
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
+\acro{GUI}{Graphical User Interface}
 \acro{HTML}{Hypertext Markup Language}
 \acro{MDA}{Model Driven Architecture}
 \acro{PHP}{PHP: Hypertext Preprocessor}
@@ -362,33 +363,132 @@ Nachteile:
 
 \lsection[cgen:model]{Modellrepräsentation}
 
-\todo{Def. aus Buch?}
-
-Eine universelle Notationssprache zeichnet sich im Gegensatz zu einer
-einfachen Programmiersprache oder einem Datenformat durch
-Übertragbarkeit in jede beliebige Domäne aus. Die Notationssprache
-selbst ist dann ausschließlich ein Mittel zur Strukturierung, während
-Ontologie und Semantik frei vom Benutzer gewählt werden können. Im
-folgenden Abschnitt werden die Notationssprachen XML, UML, JSON sowie
-\sexps{} beschrieben und miteinander verglichen.
+Es gibt im Wesentlichen drei Arten, ein Modell zu repräsentieren: Als
+rohe Zei- chenkette, als getyptes Objekt oder durch eine universelle
+Notation wie XML.  In diesem Abschnitt werden diese drei Ansätze, sowie
+die weiteren Notationssprachen UML, JSON und S-Expressions vorgestellt
+und anhand vorher zu bestimmenden Kriterien bewertet.
 
 \lsubsection[cgen:model:crit]{Vergleichskriterien}
 
 \lsubsubsection[cgen:model:crit:type]{Typisierung}
 
+Das wohl wesentliche Merkmal einer Modellrepräsentation ist seine
+Typisierung. Es gibt auf der einen Seite gänzlich untypisierte
+Repräsentationen wie beispielsweise Bitstreams, die viel Flexibilität,
+aber keinerlei Typsicherheit oder strukturellen Datenzugriff mit sich
+bringen. Auf der anderen Seite stehen statisch getypte Objekte, die
+komfortablen Zugriff und Typsicherheit garantieren, im Gegenzug aber
+sehr unflexibel sind. Dazwischen stehen unverselle Notationen wie XML,
+die eine Struktur, aber keine Typisierung, besitzen.
+
+\todo{low-level immer benötigt f. Serialisierung, universell bzw. keine neue Def. nötig}
+
+\lsubsubsection[cgen:model:crit:univ]{Universalität} Manche
+Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
+sich in den festen Modellen wiederspiegelt. Andere verwenden Modelle,
+die bereits universell und direkt auf jede Domäne anwendbar
+sind. Dazwischen liegen Systeme, in denen der Meta-Programmierer neue
+Modelle definieren kann, so dass eine Übertragbarkeit vorliegt, die
+allerdings mit einem kleinen Mehraufwand verbunden ist.
+
 \lsubsubsection[cgen:model:crit:graphic]{Graphische Darstellung}
+
+Die Möglichkeit, ein Modell zu visualisieren oder gar mit einem GUI zu
+bearbeten, ist sehr praktisch für Doumentation, Übersichtlichkeit sowie
+Zusammenarbeit mit Domänenexperten, die das verwendete System nicht
+genau verstehen müssen.
 
 \lsubsubsection[cgen:model:crit:compose]{Komposition}
 
-Entwurfsmuster, Systemtheorie
+Modelle lassen sich oft als Bäume beschreiben, in denen die Kinder eines
+Knotens als Untermodelle oder Komponenten aufgefasst werden. Dies
+enspricht dem Entwurfsmuster Komposition\cite{TODO}. Eine
+Modellrepräsentation sollte deshalb das Konzept Unterknoten abbilden
+können.
 
 \lsubsubsection[cgen:model:crit:attrib]{Attribute}
 
+Attribute sind benannte Komponenten eines Modells und nützlich, um
+spezielle Eigenschaften eines Modells festzuhalten. \todo{vgl. Slots,
+  OOP} Manche Modellrepräsentationen stellen direkt Attrbute bereit,
+andere wie \sexps{} können diese beispielsweise über Unterknoten
+simulieren.
+
 \lsubsubsection[cgen:model:crit:list]{Repräsentation von Listen}
+
+Aufzählungen kommen in Modellen ebenfalls häufig vor, weshalb diese
+dargestelt werden können sollten. Auch hier gibt es Repräsentation wie
+JSON, die Listen direkt unterstützen, und solche, die sie durch
+Unterknoten repräsentieren. 
 
 \lsubsection[cgen:model:string]{Strings}
 
+Zeichenketten stehen auf der niedrigsten Stufe der Datenrepräsentation -
+prizipiell unterscheiden sie sich nicht von Bit-Streams. Da Strings
+keinerlei Struktur oder Typisierung ermöglichen, ist eine Repräsentation
+als String für die Verarbeitung von Modellen eher ungeeignet. Nützlich
+ist diese dagegen, wenn ein Modell persistent abgespeichert oder über
+das Netzwerk verschickt werden sollen. Anschließend kann aus dem String
+über einen Parser wieder ein strukturiertes Modell erzeugt werden. Eine
+graphische Darstellung besitzen Strings nicht, wenn man von der Anzeige
+als Text absieht.
+
 \lsubsection[cgen:model:object]{Objekte}
+
+Das Wort ``Objekt'' wird in dieser Arbeit nicht ausschließlich im objektorientierten
+Sinn verwendet - vielmehr ist eine beliebige Datentypinstanz einer
+Programmiersprache gemeint. Objekte bieten den höchsten Typisierungsgrad
+und die damit verbundene Sicherheit\footnote{Eine weitere Steigerung
+  wäre über Typen hinausgehende Validierung von Modellen.}. Hier kann
+allerdings zwischen Objekten in statisch und dynamisch getypten Sprachen
+unterschieden werden, denn in dynamischen Typsystemen werden Typfehler
+erst beim Zugriff, bei \cgen{} also vermutlich erst im
+Übersetzungsvorgang erkannt. In den meisten Sprachen gibt es Attribute
+für Objekten sowie einen Listen- oder Arraydatentyp. Unbenannte
+Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
+Haskell-Datentypen \sees{magicl:haskell}. Eine Visualisierung von
+Objekten kann als Baum mit benannnten Kanten erfolgen.
+
+\lsubsection[cgen:model:sexp]{\sexps}
+
+\sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
+Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
+eine Liste von \sexps{}. Symbole sind Zeichenketten\footnote{Die meisten
+Lisp-Dialekte unterscheiden aufgrund ihres Alters nicht zwischen Groß-
+und Kleinbuchstaben in Symbolen - die im Rahmen dieser Arbeit
+entwickelten Frameworks allerdings schon.}, die keine
+Leerzeichen oder andere vom Lisp verwendeten Sonderzeichen
+enthalten. Listen werden in runde Klammern gesetzt - mit Leerzeichen als
+Trennsymbol. Beispiele für \sexps{} sind:
+\begin{itemize}
+\item \icode{foo}
+\item \icode{(bar)}
+\item \icode{(user (name Harald) (email Harry@baz.com))}
+\end{itemize}
+
+\sexps{} sind zwar formal als Listen definiert, können aber auch als
+Bäume mit benannten Knoten aufgefasst werden - hierfür wird das erste
+Element einer Liste - typischerweise ein Symbol - als Name, sowie alle
+weiteren als Unterknoten interpretiert. Zwischen \icode{(foo)} und
+\icode{foo} wird weiterhin unterschieden. Das letzte Beispiel entspricht
+damit dem Baum aus \abb{TODO}. In dieser Arbeit werden \sexps{}
+ausschließlich als derartige Bäume verwendet, um ein möglichst klares
+und eindeutiges Modell zu haben. Hierdurch werden allerdings Ausdrücke
+wie \icode{()} oder \icode{((lambda (x) (+ x 1)) 41)} illegal, welche
+beispielsweise in Scheme\cite{TODO} durchaus möglich sind. Dieses
+Problem ließe sich durch Einfügen eines Knotennamens beheben. Ähnliches
+gilt für Ausdrücke, die zwar noch legal sind, aber die Semantik des
+Knotennamens verzerren, wie \icode{(interval (1 10))} - statt dessen
+sollte lieber \icode{(interval 1 10)} verwendet werden.
+
+Über die bloße \sexp{}-Syntax hinaus besitzen Lisp-Dialekte oft noch
+Syntax für Kommentare, Strings, Symbolnamen die Leerzeichen enthalten
+und einiges mehr. 
+
+ Einfachste Struktur aller universellen Repräsentationssprachen
+ Vorteil für Verarbeitung, z.B. Parser
+ Attribute etc. lassen sich dennoch repräsentieren
 
 \lsubsection[cgen:model:xml]{XML} 
 Ein XML-Dokument lässt sich als ein Baum
@@ -493,23 +593,6 @@ Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschl
 \item Meist kürzer / lesbarer als XML
 \end{itemize}
 
-\lsubsection[cgen:model:sexp]{\sexps}
-
-\begin{itemize}
-\item Syntax aller Sprachen der Lisp-Familie
-\item Keine Attribute
-\item \sexp{} ist Symbol oder Liste von \sexps{}
-\item Normalerweise ist erstes Listenelement Symbol, der Knotenname
-\item Symbole entsprechen Strings, traditionell nur Upper Case (moderne Dialekte können Kleinschreibung)
-\item Lisp-Sprachen haben darüber hinaus meist Syntax für Kommentare, (echte)
-  Strings, Backquotes etc.
-\item Einfachste Struktur aller universellen Repräsentationssprachen
-  \begin{itemize}
-  \item Vorteil für Verarbeitung, z.B. Parser
-  \item Attribute etc. lassen sich dennoch repräsentieren
-  \item \icode{(body (h1 "Title") (a (href "http://foo.com") "A link"))}
-  \end{itemize}
-\end{itemize}
 
 \lsubsection[cgen:model:sum]{Zusammenfassung}
 
@@ -753,7 +836,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \bf Code-Objekt verfügbar&String         &nein                        &nein                       &ja              &nein            &nein     &ja          \\\hline
 \bf Template-Aufruf      &nein           &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &            \\\hline  
 \bf Sprachmächtigkeit    &maximal        &minimal                     &mittel                     &maximal         &gering          &hoch     &maximal     \\\hline
-\bf Komponentenrennung   &möglich        &stark                       &                           &                &                &         &            \\\hline
+\bf Komponententrennung  &möglich        &stark                       &                           &                &                &         &            \\\hline
 \bf Templates generierbar&nein           &nein                        &                           &nein?           &                &ja       &ja          \\\hline
 \bf Kontrollfluss        &               &                            &                           &                &                &         &            \\\hline
 %bf                      &               &                            &                           &                &                &         &            \\\hline
