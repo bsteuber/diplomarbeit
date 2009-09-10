@@ -311,7 +311,7 @@ die Generierung von Parsern beschrieben. \sref{cgen:lisp} stellt die
 Programmiersprache Lisp und insbesondere \sexps{}, die universelle
 Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
 \sref{cgen:xml} mit der XML verglichen, außerdem werden dort
-XML-Werkzeuge vorgestellt. 
+XML-Werkzeuge vorgestellt.
 
 \lsection[cgen:intro]{Überblick}
 
@@ -420,7 +420,7 @@ simulieren.
 Aufzählungen kommen in Modellen ebenfalls häufig vor, weshalb diese
 dargestelt werden können sollten. Auch hier gibt es Repräsentation wie
 JSON, die Listen direkt unterstützen, und solche, die sie durch
-Unterknoten repräsentieren. 
+Unterknoten repräsentieren.
 
 \lsubsection[cgen:model:string]{Strings}
 
@@ -483,14 +483,13 @@ Knotennamens verzerren, wie \icode{(interval (1 10))} - statt dessen
 sollte lieber \icode{(interval 1 10)} verwendet werden.
 
 Über die bloße \sexp{}-Syntax hinaus besitzen Lisp-Dialekte oft noch
-Syntax für Kommentare, Strings, Symbolnamen die Leerzeichen enthalten
-und einiges mehr. 
+Syntax für Kommentare, Strings, Symbolnamen die Leerzeichen enthalten etc.
 
  Einfachste Struktur aller universellen Repräsentationssprachen
  Vorteil für Verarbeitung, z.B. Parser
  Attribute etc. lassen sich dennoch repräsentieren
 
-\lsubsection[cgen:model:xml]{XML} 
+\lsubsection[cgen:model:xml]{XML}
 Ein XML-Dokument lässt sich als ein Baum
 verstehen, dessen Knoten benannt sind und Attribute besitzen können, die
 selbst ebenfalls benannt sind. \todo{Siehe DOM} Als Blätter sind auch Strings
@@ -499,7 +498,7 @@ zugelassen. Beispielsweise lässt sich das Dokument
 <body>
   <h1>Title</h1>
   <a href="http://foo.com">A link</a>
-</body>  
+</body>
 \end{code} %"<
 durch \abb{xml_tree} visualisieren.
 
@@ -522,7 +521,7 @@ wodurch eine Inkompatibilität zu alten Dateien entsteht.
 Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
 - vor allem in Anbetracht der Design-Ziele von XML, denn das W3C
 schreibt in \cite{rec_xml}: "`The number of optional features in XML is to
-be kept to the absolute minimum, ideally zero"'. 
+be kept to the absolute minimum, ideally zero"'.
 
 Verschiedene Herangehensweisen in XML-Projekten
 \begin{itemize}
@@ -605,7 +604,7 @@ Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschl
 \bf Attribute              & nein       & ja           & ja      & ja      & ja       & nein         \\\hline
 \bf Listen                 & nein       & ja           & nein    & nein    & ja       & nein         \\\hline
 \bf Graphische Darstellung & Text       & Baum         & Baum    & Diagramm& Baum     & Baum         \\\hline
-\end{tabular}  
+\end{tabular}
   \caption{Vergleich verscheidener Modellrepräsentationen}
 \end{figure}
 
@@ -631,7 +630,7 @@ Vergleichskriterien.
 Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
 machen. Diese unterscheiden sich neben der Syntax vor allem in ihren
 Datenstrukturen für die Dokumentrepräsentation sowie der Mächtigkeit der
-im Unquote erlaubten Operationen. 
+im Unquote erlaubten Operationen.
 
 \lsubsubsection[cgen:comp:crit:model]{Verwendete Modelle}
 
@@ -834,7 +833,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \bf Quote                &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &\icode{`( )}\\\hline
 \bf Unquote              &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &\icode{,}   \\\hline
 \bf Code-Objekt verfügbar&String         &nein                        &nein                       &ja              &nein            &nein     &ja          \\\hline
-\bf Template-Aufruf      &nein           &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &            \\\hline  
+\bf Template-Aufruf      &nein           &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &            \\\hline
 \bf Sprachmächtigkeit    &maximal        &minimal                     &mittel                     &maximal         &gering          &hoch     &maximal     \\\hline
 \bf Komponententrennung  &möglich        &stark                       &                           &                &                &         &            \\\hline
 \bf Templates generierbar&nein           &nein                        &                           &nein?           &                &ja       &ja          \\\hline
@@ -848,7 +847,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \lsection[cgen:parser]{Parser}
 
 \lsubsection[cgen:parser:yacc]{Lex / Yacc}
-Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse 
+Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
 LALR(1)-Parser
 
 \lsubsection[cgen:parser:javacc]{JavaCC}
@@ -885,7 +884,7 @@ Ansatzes und liefert die Motivation für eine neue Version.
 \lsection[sexy:reqs]{Anforderungen}
 
 \begin{itemize}
-\item 
+\item
 \end{itemize}
 
 \lsection[sexy:ruby]{Ruby}
@@ -900,7 +899,7 @@ Funktionen realisiert werden können.  Unter Anderem aufgrund des
 erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
 auch außerhalb seines Herkunftslandes Japan recht beliebt.
 
-\lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften} 
+\lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften}
 
 Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
   interpretierten Sprache ist das Bereitstellen einer
@@ -999,7 +998,7 @@ Modelle, Parser und Compiler, die Teil von MagicL sind.
 \item Schachtelung von Makros
 \item EBNF wünschenswert
 \item Generischer Pretty-Printer
-\item Robusterer \sexp-{Parser} 
+\item Robusterer \sexp-{Parser}
 \item Typisiert vs untypisierte Zwischenmodelle
 \item Vorteile Typisiert
   \begin{itemize}
@@ -1248,7 +1247,7 @@ Eine andere Möglichkeit, aus Funktoren eine Kategorien zu bilden,
 besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
 \ato \mathbf{D}$ als Objekte bilden die sogenannte Funktorkategorie über
 $\mathbf{C}$ und $\mathbf{D}$, deren Morphismen natürliche
-Transformationen heißen. 
+Transformationen heißen.
 
 \defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha:F \nto
 G$ ordnet jedem Objekt $A$ aus $\mathbf{C}$ einen Morphismus
@@ -1285,7 +1284,7 @@ wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
 }
 $\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier den Identitätsfunktor,
 $\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den Identitätsmorphismus. Auch diese Gleichungen ließen sich
-als kommutative Diagramme darstellen.  
+als kommutative Diagramme darstellen.
 
 Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
 $T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
@@ -1526,12 +1525,12 @@ bereit:
 \begin{code}
 newtype Kleisli m a b = Kleisli (a -> m b)
 
-instance (Monad m) => Category (Kleisli m) 
+instance (Monad m) => Category (Kleisli m)
   where id = Kleisli return
         Kleisli f . Kleisli g = Kleisli composed
           where composed x = g x >>= f
 
-instance (Monad m) => Arrow (Kleisli m) 
+instance (Monad m) => Arrow (Kleisli m)
   where arr fun = Kleisli (return . fun)
         first (Kleisli f) = Kleisli tupleF
           where tupleF (x, z) = f x >>= (\ y -> return (y, z))
@@ -1548,7 +1547,7 @@ benötigt, die von der Typklasse \icode{ArrowApply} definiert wird (für
 Details siehe \cite[S. 18f]{Hughes}):
 \begin{code}
 class (Arrow ar) => ArrowApply ar where
-  app :: ar (ar a b, a) b  
+  app :: ar (ar a b, a) b
 \end{code}
 Mit \icode{app} wird also ein Arrow bereitgestellt, der als Parameter
 einen weiteren Arrow sowie eine Eingabe bekommt, um dann den übergebenen
@@ -1580,7 +1579,7 @@ ist syntaktischer Zucker für
 \begin{code}
 foo >>= (\ x ->
   bar x >>= (\ y ->
-    return y))          
+    return y))
 \end{code} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt -
 dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
@@ -1610,7 +1609,7 @@ bei jeder Funktion die Rückgabe geprüft und nur im Erfolgsfall die
 nächste aufgerufen muss. Haskell vereinfacht dies, indem \icode{Maybe}
 zur Monade erklärt wird:
 \begin{code}
-instance Monad Maybe 
+instance Monad Maybe
   where return = Just
         (Nothing >>= _) = Nothing
         (Just x  >>= f) = f x
@@ -1675,7 +1674,7 @@ später beliebige andere Parser-Architekturen integriert werden können.
 Haskell besitzt mit Parsec\cite{Parsec} bereits eine sehr
 performante und praktische Parser-Kombinator-Bibliothek, die auf Monaden
 basiert. Diese ist allerdings auf die Verarbeitung von Zeichenketten
-beschränkt, weshalb sie in MagicL keine Verwendung findet. 
+beschränkt, weshalb sie in MagicL keine Verwendung findet.
 
 MagicL benutzt Arrows und Funktoren, um möglichst allgemein zu
 sein. Alles, was im Rahmen dieser Arbeit implementiert wurde, hätte zwar
@@ -1824,7 +1823,7 @@ Typparameter \icode{s} für den Zustand bekommt:
 newtype StateFunctor s ar a b = StateF (ar (a, s) (b, s))
 
 instance (Arrow ar) => Functor (StateFunctor s ar) ar where
-    lift = StateF . first  
+    lift = StateF . first
 \end{code} % <<
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
@@ -1839,7 +1838,7 @@ definiert werden:
 class (Arrow ar) => ArrowState s ar | ar -> s where
   get :: ar a s
   put :: ar s ()
-  
+
 instance (Arrow ar) => ArrowState s (StateFunctor s ar)
   where
     get = StateF (arr (\ (_, state) -> (state, state)))
@@ -1863,7 +1862,7 @@ Morphismus $A \ato B$ aus $\mathbf{C}_p$ auf $A \times S \ato
 auf $A \times S \ato (\mathrm{String} + B) \times S$, wie es andersherum
 wäre. Denn das Coprodukt muss "`außen"' stehen, um im Kontrollfluß
 zuerst bearbeitet zu werden und somit ein Backtracking im Fehlerfall zu
-ermöglichen. 
+ermöglichen.
 
 Backtracking wird allerdings zu einem Problem, wenn man sinnvolle
 Fehlermeldungen produzieren will. Man stelle sich einen Parser für die
@@ -1893,9 +1892,9 @@ Die Haskell-Definition vom \icode{FailFunctor} benutzt als Zustandstyp
 einen Stream (als Liste repräsentiert) vom Token-Typ \icode{t}:
 
 \begin{code}
-newtype ParseFunctor t ar a b = 
-  P (StateFunctor 
-     [t] 
+newtype ParseFunctor t ar a b =
+  P (StateFunctor
+     [t]
      (FailFunctor (FailFunctor ar))
      a
      b)
@@ -1952,7 +1951,7 @@ Instanzen von \icode{ArrowPlus} unter anderem folgende Funktionen:
 \begin{code}
 optional :: (...) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
-  where constArrow x = arr (\ _ -> x) 
+  where constArrow x = arr (\ _ -> x)
 
 many :: (...) => ar a b -> ar a [b]
 many f = many1 f <+> constArrow []
@@ -1966,7 +1965,7 @@ skip :: (...) => ar a b -> ar a a
 skip f = (f &&& id) >>^ snd
 
 sepBy :: (...) => ar a c -> ar a b -> ar a [b]
-sepBy sep item = 
+sepBy sep item =
   optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
     where
       unMaybeList  Nothing  = []
@@ -2016,7 +2015,7 @@ Ein Symbol ist eine Kette von Zeichen, die weder Whitespace noch
 Klammern sind. Dieses wird gleich an den \icode{Symbol}-Konstruktor
 übergeben, um den Typ \icode{Sexp} zu erhalten.
 \begin{code}
-parseNode = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq ')') 
+parseNode = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq ')')
 \end{code} % <<
 Ein Knoten ist eine von Klammern umgebene Liste von \sexps{}, die
 mittels \icode{Node}-Konstruktor zu einem \sexp{} wird.
@@ -2030,7 +2029,7 @@ Tritt bei Lesen ein Fehler auf, wird automatisch eine brauchbare Fehlermeldung
 ausgegeben, z.B.
 
 \begin{code}
-"(test) )"  ==>  Empty stream expected: ")"  
+"(test) )"  ==>  Empty stream expected: ")"
 \end{code}
 
 \lsection[magicl:sexp]{Parsen von \sexps{}}
@@ -2049,7 +2048,7 @@ repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
   werden - aber es handelt sich ja nur um ein einfaches Beispiel.}:
 \begin{code}
 (person Franz)
-(person Walter)  
+(person Walter)
 (person Heinz)
 \end{code}
 
@@ -2088,10 +2087,10 @@ nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
   sichergestellt, dass der Knoten auch wirklich vollständig gelesen
   wurde - will man dies nicht, da man den Rest ignoriert, gibt es die
   Funktion \icode{looseMacro} mit identischer Signatur.
-\end{itemize} 
+\end{itemize}
 Das obige Beispiel lässt sich nun umschreiben:
 \begin{code}
-parsePerson  = macro "person" takeSymbol  
+parsePerson  = macro "person" takeSymbol
 parsePersons = many parsePerson
 \end{code}
 
@@ -2176,7 +2175,7 @@ verwendeten Typen:
 \begin{code}
 class Compiler a b where
   compile :: IOArrow a b
-  
+
 instance (Compilable x a b) => Compiler a b where
   compile = toIO comp
 \end{code}
@@ -2210,23 +2209,23 @@ ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
 Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
 Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
 \icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
-\begin{code} 
+\begin{code}
 indent 2 (conc [text "hallo", newline, text "welt"])
 \end{code}
 den Text
 \begin{code}
 hallo
-  welt  
+  welt
 \end{code}
 ergeben - dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
 mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
-Funktionen wie 
+Funktionen wie
 \begin{code}
   joinBy :: Code -> [Code]
 \end{code}
 - welche einen Seperator benutzt, um eine Liste zusammenzufügen.
 \begin{code}
-joinBy "; " [text "foo", text "bar", text "baz"]  
+joinBy "; " [text "foo", text "bar", text "baz"]
 \end{code}
 würde also
 \begin{code}
@@ -2243,16 +2242,16 @@ Klammerung.
 \sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
 noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
 \begin{code}
-(a b (c d) e)  
+(a b (c d) e)
 \end{code}
 Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
 auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
 Zeichen eingerückt werden:
 \begin{code}
 (a
-  b 
+  b
   (c d)
-  e)  
+  e)
 \end{code}
 Dies lässt sich mit dieser rekursiven Funktion erreichen:
 \begin{code}
@@ -2354,7 +2353,7 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
 \end{itemize}
 
 \bibliographystyle{gerplain}
-\bibliography{diplomarbeit} 
+\bibliography{diplomarbeit}
 
 \end{document}
 
