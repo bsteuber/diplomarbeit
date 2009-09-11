@@ -425,7 +425,7 @@ Unterknoten repräsentieren.
 \lsubsection[cgen:model:string]{Strings}
 
 Zeichenketten stehen auf der niedrigsten Stufe der Datenrepräsentation -
-prizipiell unterscheiden sie sich nicht von Bit-Streams. Da Strings
+prinzipiell unterscheiden sie sich nicht von Bit-Streams. Da Strings
 keinerlei Struktur oder Typisierung ermöglichen, ist eine Repräsentation
 als String für die Verarbeitung von Modellen eher ungeeignet. Nützlich
 ist diese dagegen, wenn ein Modell persistent abgespeichert oder über
@@ -483,45 +483,73 @@ Knotennamens verzerren, wie \icode{(interval (1 10))} - statt dessen
 sollte lieber \icode{(interval 1 10)} verwendet werden.
 
 Über die bloße \sexp{}-Syntax hinaus besitzen Lisp-Dialekte oft noch
-Syntax für Kommentare, Strings, Symbolnamen die Leerzeichen enthalten etc.
+Syntax für Kommentare, Strings, Symbolnamen mit Leerzeichen
+etc. Dennoch sind \sexps{} wohl die einfachste benutzte
+Repräsentationsform für strukturierte Daten. Das Modell selbst ist
+ungetypt, da in den Blättern Strings stehen. Eine Validierung kann
+daher erst nach dem Einlesen erfolgen.
 
- Einfachste Struktur aller universellen Repräsentationssprachen
- Vorteil für Verarbeitung, z.B. Parser
- Attribute etc. lassen sich dennoch repräsentieren
+Attribute und Listen\footnote{Hier wird die oben erläuterte
+  Interpretation als Baum vorausgesetzt - ansonsten wären Listen
+  explizit verfügbar.} sind in der Grundstruktur zunächst nicht
+vorgesehen, können aber über Unterknoten oder spezielle Symbole
+dennoch repräsentiert werden. Beispielsweise könnte das Attribut
+\icode{color} mit Wert \icode{red} eines Autos durch \icode{(car
+  (color red))} oder \icode{(car :color red)} ausgedrückt werden, eine
+Liste durch \icode{(list a b c)}.
+
+Trotz der simplen Struktur und Syntax, die auch benötigte Tools wie
+Editoren, Parser usw. vereinfachen, bieten \sexps{} also eine
+universelle Modellierungssprache an, mit der auch zusätzliche Features wie
+Attribute oder Listen indirekt repräsentiert werden können.
 
 \lsubsection[cgen:model:xml]{XML}
-Ein XML-Dokument lässt sich als ein Baum
-verstehen, dessen Knoten benannt sind und Attribute besitzen können, die
-selbst ebenfalls benannt sind. \todo{Siehe DOM} Als Blätter sind auch Strings
-zugelassen. Beispielsweise lässt sich das Dokument
+
+XML ist die wohl derzeit meistverbreitete Markupsprache, weshalb hier
+auf eine detailierte Einführung verzichtet wird. Wie bei \sexps{}
+handelt es sich um eine strukturierte, ungetypte Repräsentation, die
+einem knotenbenannten Baum entspricht. XML unterscheidet sich von
+\sexps{} - Syntax zunächst ausgenommen - hauptsächlich durch das
+Vorhandensein von Attributen. Darüber hinaus gibt es Features wie
+Namensräume, Referenzen und CDATA-Abschnitte, welche Zeichenketten
+repräsentieren können, die mit XML-Syntax interferieren würden.
+
+In der Baumrepräsentation lassen sich Attribute als zusätzlicher
+Kantentyp verstehen, so dass das Beispiel
+
 \begin{code}
 <body>
   <h1>Title</h1>
   <a href="http://foo.com">A link</a>
 </body>
 \end{code} %"<
-durch \abb{xml_tree} visualisieren.
+durch \abb{xml_tree} visualisiert werden könnte.
 
 \fig{xml_tree}{Ein XML-Dokument als benannter Baum}
 
-Ein häufiges Problem bei der Definition von XML-Formaten ist die Frage,
-ob eine spezielle Eigenschaft durch einen Unterknoten oder durch ein
-Attribut repräsentiert werden sollte. Attribute sind kürzer und deshalb
-komfortabler, auf der anderen Seite aber weniger ausdrucksmächtig als
-Unterknoten, da sie nur Zahlen oder Strings, nicht aber Werte mit
-innerer Struktur\footnote{Es ist zwar möglich, über einen
-  Attribut-String im XML-Format innere Struktur in Attribute einzubauen
-  - dieser würde dann aber nicht automatisch geparst werden, so dass von
-  diesem Trick eher abzuraten ist.} benutzen können. Es kommt deshalb
-durchaus vor, dass eine Eigenschaft zunächst als Attribut realisiert
-wird, dann aber später bei wachsender Komplexität und
-Modellierungsgenauigkeit durch einen Unterknoten ersetzt werden muss,
-wodurch eine Inkompatibilität zu alten Dateien entsteht.
+Ein häufiges Problem bei der Definition von XML-Formaten ist die
+Frage, ob eine spezielle Eigenschaft durch einen Unterknoten oder
+durch ein Attribut repräsentiert werden sollte. Attribute sind in der
+Schreibweise kürzer und deshalb komfortabler, auf der anderen Seite
+aber weniger ausdrucksmächtig als Unterknoten, da sie nur Strings,
+nicht aber Werte mit innerer Struktur\footnote{Es ist zwar möglich,
+  über einen Attribut-String im XML-Format innere Struktur in
+  Attribute einzubauen - dieser würde dann aber nicht automatisch
+  geparst werden, so dass von diesem Trick eher abzuraten ist.}
+benutzen können. Es kommt deshalb durchaus vor, dass eine Eigenschaft
+zunächst als Attribut realisiert wird, dann aber später bei wachsender
+Komplexität und Modellierungsgenauigkeit durch einen Unterknoten
+ersetzt werden muss, wodurch eine Inkompatibilität zu alten Dateien
+entsteht.
 
-Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
-- vor allem in Anbetracht der Design-Ziele von XML, denn das W3C
-schreibt in \cite{rec_xml}: "`The number of optional features in XML is to
-be kept to the absolute minimum, ideally zero"'.
+Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig
+sind oder vielmehr ein optionales Feature, was nur aufgrund der - aus
+Sicht eines Lisp-Programmierers - zu umständlichen Syntax für die
+Knotendefinition benutzt wird. In diesem Fall sollten Attribute wohl
+in der Zukunft aus XML verschwinden, schließlich schreibt das
+W3C\cite{rec_xml}: "`The number of optional features in XML is to be
+kept to the absolute minimum, ideally zero"'. Wird also ein zweiter,
+limitierter Kantentyp für Anwendungen benötigt? 
 
 Verschiedene Herangehensweisen in XML-Projekten
 \begin{itemize}
