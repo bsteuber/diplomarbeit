@@ -58,6 +58,7 @@
 \newcommand\lparagraph{}
 \newcommand\cref{}
 \newcommand\sref{}
+\newcommand\fref{}
 \newcommand\abb{}
 \newcommand\fig{}
 \newcommand\figs{}
@@ -97,6 +98,7 @@
   \renewcommand\sref[1]{%
     Abschnitt~\ref{#1:sec:##1}%
   }%
+  \renewcommand{\fref}[1]{\ref{#1:fig:##1}}
   \renewcommand{\abb}[1]{Abb.\ref{#1:fig:##1}}
   \renewcommand{\fig}[3][\defaultscale]{%
     \begin{figure}[htp]
@@ -492,16 +494,22 @@ daher erst nach dem Einlesen erfolgen.
 Attribute und Listen\footnote{Hier wird die oben erläuterte
   Interpretation als Baum vorausgesetzt - ansonsten wären Listen
   explizit verfügbar.} sind in der Grundstruktur zunächst nicht
-vorgesehen, können aber über Unterknoten oder spezielle Symbole
-dennoch repräsentiert werden. Beispielsweise könnte das Attribut
-\icode{color} mit Wert \icode{red} eines Autos durch \icode{(car
-  (color red))} oder \icode{(car :color red)} ausgedrückt werden, eine
-Liste durch \icode{(list a b c)}.
+vorgesehen, können aber über Unterknoten simuliert
+werden. Beispielsweise könnte ein Auto mit dem Attributen \icode{color :
+  red} und \icode{specials : [ac, navigation]} wie folgt dargestellt
+werden:
+\begin{code}
+(car
+  (color red)
+  (specials ac navigation))
+\end{code}
 
-Trotz der simplen Struktur und Syntax, die auch benötigte Tools wie
-Editoren, Parser usw. vereinfachen, bieten \sexps{} also eine
-universelle Modellierungssprache an, mit der auch zusätzliche Features wie
-Attribute oder Listen indirekt repräsentiert werden können.
+Dies entspricht dem Baum in \abb{car_sexp}.
+\fig{car_sexp}{Baumrepräsentation des Auto-Beispiels} Trotz der simplen
+Struktur und Syntax, die auch benötigte Tools wie Editoren, Parser
+usw. vereinfachen, bieten \sexps{} also eine universelle
+Modellierungssprache an, mit der auch Attribute und Listen indirekt
+repräsentiert werden können.
 
 \lsubsection[cgen:model:xml]{XML}
 
@@ -514,18 +522,24 @@ Vorhandensein von Attributen. Darüber hinaus gibt es Features wie
 Namensräume, Referenzen und CDATA-Abschnitte, welche Zeichenketten
 repräsentieren können, die mit XML-Syntax interferieren würden.
 
-In der Baumrepräsentation lassen sich Attribute als zusätzlicher
-Kantentyp verstehen, so dass das Beispiel
-
+Das Auto-Beispiel könnte durch
 \begin{code}
-<body>
-  <h1>Title</h1>
-  <a href="http://foo.com">A link</a>
-</body>
+<car color="red">
+  <specials>
+    <special>AC</special>
+    <special>Navigation</special>
+  </specials>
+</car>
 \end{code} %"<
-durch \abb{xml_tree} visualisiert werden könnte.
+repräsentiert werden. Die Farbe ist hier ein Attribut. Das Beispiel
+zeigt auch, dass Listen in XML umständlicher sind als in \sexps{}, da
+XML-Knoten neben beliebig vielen XML-Knoten immer nur einen String als
+Unterknoten haben können - aus diesem Grund wird der Baum für die
+Specials um eine Ebene erweitert, wie \abb{car_xml} zeigt. Die Abbildung
+zeigt auch, dass Attribute als zweiter Kantentyp, der nur Strings als
+Kinder zulässt, aufgefasst werden können.
 
-\fig{xml_tree}{Ein XML-Dokument als benannter Baum}
+\fig{car_xml}{Repräsentation eines Autos in XML}
 
 Ein häufiges Problem bei der Definition von XML-Formaten ist die
 Frage, ob eine spezielle Eigenschaft durch einen Unterknoten oder
@@ -542,99 +556,138 @@ Komplexität und Modellierungsgenauigkeit durch einen Unterknoten
 ersetzt werden muss, wodurch eine Inkompatibilität zu alten Dateien
 entsteht.
 
-Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig
-sind oder vielmehr ein optionales Feature, was nur aufgrund der - aus
-Sicht eines Lisp-Programmierers - zu umständlichen Syntax für die
-Knotendefinition benutzt wird. In diesem Fall sollten Attribute wohl
-in der Zukunft aus XML verschwinden, schließlich schreibt das
+Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
+oder vielmehr ein optionales Feature, was nur aufgrund der - aus Sicht
+eines Lisp-Programmierers - zu umständlichen Syntax für die
+Knotendefinition benutzt wird. In diesem Fall sollten Attribute wohl in
+der Zukunft aus XML verschwinden, schließlich schreibt das
 W3C\cite{rec_xml}: "`The number of optional features in XML is to be
-kept to the absolute minimum, ideally zero"'. Wird also ein zweiter,
-limitierter Kantentyp für Anwendungen benötigt? 
+kept to the absolute minimum, ideally zero"'.
 
-Verschiedene Herangehensweisen in XML-Projekten
-\begin{itemize}
-\item XML-RPC benutzt überhaupt keine Attribute
-\item Trennung: Meta-Informationen in Attribute, anderes in Unter-Elemente
-  \begin{itemize}
-  \item Problem: Komplexe Attribute
-  \end{itemize}
-\item Unterschiedliche Verarbeitung: Attribute werden direkt
-  mitgeliefert (Push), Unterknoten müssen abgefragt werden (Pull)
-  \begin{itemize}
-  \item Könnte in Modellen für Effizienzsteigerung ausgenutzt werden
-  \end{itemize}
-\item Frage kann nicht endgültig geklärt werden, meine Meinung:
-  Attribute praktisch "`syntaktischer Zucker"', nur nötig aufgrund
-  Aufwändiger XML-Syntax (vgl. \sexps{})
-\end{itemize}
+Ist also ein zweiter, limitierter Kantentyp für bestimmte Zwecke
+nützlich? Ein Beispiel wäre die Trennung von normalen und
+Meta-Eigenschaften, wobei letztere als Attribute repräsentiert werden
+könnten. Ein anderes ist die Aufteilung zwischen Pull- und
+Push-Verarbeitung: Attribute werden üblicherweise direkt mit einem per
+Query erfragten Knoten mitgeliefert (Push), während Unterknoten nur
+mitgeschickt werden, wenn diese explizit abgefragt wurden (Pull). Auch
+für die Trennung von optionalen und erforderlichen Eigenschaften könnte
+solch ein zweiter Kantentyp nützlich sein.
 
-Weitere Features:
-\begin{itemize}
-\item Namespaces
-  \begin{itemize}
-  \item Wirklich nötig? Könnte auch mit Grund-XML realisiert werden:
-  \item \icode{<namespace ns="rdf">...</namespace>} %"<
-  \item Zu umständlich?
-  \end{itemize}
-\item CDATA-Abschnitte
-\end{itemize}
+Das Problem bei all diesen Beispielen ist jedoch die Einschränkung auf
+String-Attribute. Sobald ein Attribut einen strukturierten Wert erhalten
+soll, bricht jede systematische Trennung zusammen, und es muss auf
+Unterknoten zugegriffen werden. In diesem Fall ist es aber vermutlich
+besser, von Anfang an auf Attribute zu verzichten.
 
-\begin{itemize}
-\item XPath: Adressieren, z.B. \icode{//chapter[@title=Einleitung"]/paragraph}
-  (alle Absätze aus Kap. ``Einleitung'')
-\item XSLT: Turing-Vollständige Baum-Transformationssprache in XML
-  \begin{itemize}
-  \item template: Matcher in XPath
-  \item Schleifen, sortierung, if-Abfragen
-  \item Nachvolger der DSSSL (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
-  \item Keine ``richtige'', praktische Programmiersprache
-  \item $\rightarrow$ oft wird für komplexere Operationen andere Sprache benutzt
-  \end{itemize}
-\item Für viele Sprachen generierbare XML-Serializer
-\end{itemize}
-
-\lsubsection[cgen:model:uml]{UML}
-
-\begin{itemize}
-\item Graphische Modellierungssprache
-\item Zieldomäne: Programmspezifikation, OOP - trotzdem universell?  (Kriterien, Bewertung)
-\item Viele Diagrammtypen, viele Features
-\item Klassendiagramme prinzipiell äquivalent XML (nur Vererbung, nicht
-  mehrfach, keine Public/Private unterteilung etc.)
-\item Universalität $\rightarrow$ UML kann durch XML repräsentiert werden und umgekeht
-\end{itemize}
-
-Beispiel EMF: Nicht ausschließlich UML, viele Möglichkeiten (genauer), ausschließlich Java-Backend
+Eine ähnliche Diskussion lässt sich über Namespaces führen. Auch wenn
+deren Nützlichkeit unbestritten ist, ist es fraglich, ob sie unbedingt
+Teil des Grund-XML sein müssen. Moderner wäre wohl ein Entwurf mit
+minimaler Basissprache, in der Doppelpunkte in Knotennamen zugelassen
+sind, sowie einem Plugin-System, welches unter anderem einen
+Namespace-Preprocessor bereitstellt, der die Doppelpunkte korrekt
+interpretiert.
 
 \lsubsection[cgen:model:json]{JSON}
 
-\begin{itemize}
-\item Auszeichnungssprache ähnlich XML
-\item Gültiger Javascript-Code
-\item Im Kommen für viele Webanwendungen
-\item Strukturelle Unterschiede
-  \begin{itemize}
-  \item Nur Attribute, keine unbenannten Kinder
-  \item Listennotation
-  \end{itemize}
-\item Meist kürzer / lesbarer als XML
-\end{itemize}
+JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
+Javascript, weshalb es direkt von einem Javascript-Interpreter
+eingelesen werden kann. Dies macht JSON vor allem für Webanwendungen
+interessant. Mit JSON können anonyme Objekte mit Attributen sowie Listen
+explizit repräsentiert werden. Als Blätter sind Strings und elementare
+Datentypen zugelassen, die beim Einlesen dynamisch typisiert werden.
 
+Das Auto-Beispiel kann in JSON wie folgt repräsentiert werden:
+\begin{code}
+{
+  "color"    : "red",
+  "specials" : ["ac", "navigation"]
+}
+\end{code}
+Die Benennung als \icode{car} muss außerhalb erfolgen, d.h. bei einem
+übergeordneten Objekt als Attribut oder auf der höchsten Ebene
+beispielsweise durch den Dateinamen.
+
+Auch wenn es hier Attribute statt Unterknoten gibt, ist JSON \sexps{}
+sehr nah. Denn ein Attribut ist strukturell nichts anderes als ein
+Unterknoten mit Namen, wie auch das Auto-Beispiel in beiden Sprachen
+zeigt. Es gibt nur zwei strukturelle Unterschiede: Zum einen
+differenziert JSON zwischen ein- und listenwertigen Attributen, während
+ein \sexp{} standardmäßig eine Liste von Unterelementen ist. Zum anderen
+unterscheidet sich die äußerste Ebene, wo bei \sexps{} ein Name, in JSON
+hingegen ein Wert steht.
+
+\lsubsection[cgen:model:uml]{UML}
+
+UML ist eine graphische Modellierungssprache, die speziell für die
+Spezifikation von Softwaresystemen entworfen wurde und insbesondere den
+Objektorientierten, imperativen Entwurf unterstützt. Viele Tools können
+aus UML beispielsweise Java-Quellcode generieren. Es gibt in UML eine
+Reihe verschiedener Diagrammarten, die verschiedene Knoten- und
+Kantentypen in einem Graphen erlauben. Teilweise können auch Unterknoten
+in einen Knoten eingebettet werden. Abgespeichert werden UML-Diagramme
+meist in einem XML-Format.
+
+Nach graphischen Elementen ist bereits eine Teilmenge der
+UML-Klassen\-diagramme äquivalent zu XML etc., da diese bereits
+knotenbenannte Bäume mit Attributen darstellen kann. Die Abbildungen
+\fref{car_sexp} und \fref{car_xml} benutzen ausschließlich solche
+Komponenten - diese wurden allerdings zweckentfremdet, indem
+beispielsweise Vererbungskanten für Unterknoten verwendet wurden. In
+diesem Sinne ist UML also universell. Eine semantisch korrekte Abbildung
+auf UML-Objektdiagramme ist ebenfalls möglich, allerdings mit einem
+größeren Aufwand verbunden. \abb{car_uml} zeigt das Auto-Beispiel als
+Objektdiagramm.
+
+\fig{car_uml}{Auto-Beispiel als UML-Objektdiagramm}
 
 \lsubsection[cgen:model:sum]{Zusammenfassung}
 
-\begin{figure}[htp]
+Es gibt im wesentlichen drei Arten, ein Modell zu repräsentieren:
+\begin{itemize}
+\item Als unstrukturierten, untypisierten String/Bitstream
+\item Als strukturierten, untypisierten Baum
+\item Als strukturiertes, typisiertes Objekt
+\end{itemize}
+
+\begin{sidewaysfigure}[htp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|}\hline
-\bf Modell                 & \bf String & \bf Objekt   & \bf XML & \bf UML & \bf JSON & \bf \sexps{} \\\hline\hline
-\bf Typisiert              & nein       & ja           & halb    & halb    & halb     & halb         \\\hline
-\bf Unterknoten            & nein       & nach Sprache & ja      & ja      & nein     & ja           \\\hline
-\bf Attribute              & nein       & ja           & ja      & ja      & ja       & nein         \\\hline
-\bf Listen                 & nein       & ja           & nein    & nein    & ja       & nein         \\\hline
-\bf Graphische Darstellung & Text       & Baum         & Baum    & Diagramm& Baum     & Baum         \\\hline
+\bf Modell                 & \bf String & \bf Objekt         & \bf \sexps{} & \bf XML & \bf JSON & \bf UML \\
+\hline\hline
+\bf Typisiert              & nein       & ja                 & nein         & nein    & nein     & nein    \\\hline
+\bf Universell             & ja         & Klasse erforderlich& ja           & ja      & ja       & ja      \\\hline
+\bf Sprachunabhängig       & ja         & nein               & ja           & ja      & ja       & ja      \\\hline
+\bf Graphische Darstellung & Text       & Baum               & Baum         & Baum    & Baum     & Graph   \\\hline
+\bf Unterknoten            & nein       & nach Sprache       & ja           & ja      & nein     & ja      \\\hline
+\bf Attribute              & nein       & ja                 & nein         & ja      & ja       & ja      \\\hline
+\bf Listen                 & nein       & ja                 & nein         & nein    & ja       & nein    \\\hline
+\bf Feature-Anzahl         & minimal    & nach Sprache       & minimal      & mittel  & klein    & groß    \\\hline
 \end{tabular}
   \caption{Vergleich verscheidener Modellrepräsentationen}
-\end{figure}
+  \label{magicl:fig:model}
+\end{sidewaysfigure}
+
+Alle drei haben ihre Daseinsberechtigung: Strings sind immer nötig, wenn
+ein Modell dauerhaft gespeichert oder verschickt werden
+soll. Untypisierte Baumrepräsentation hingegen sind praktisch für die
+Bearbeitung von Modellen, da sie sowohl Struktur als auch Universalität
+anbieten. Auch für eine simple, untypisierte Verarbeitung von Modellen
+sind Baumrepräsentationen gut geeignet. Für eine aufwändigere
+Verarbeitung, die komplexe Rechnungen oder Algorithmen erfordert, eignen
+sich typisierte Objekte am besten. Dafür ist es allerdings nötig, eine
+spezielle Klasse bzw. andere Datentyp-Definition für dieses Modell zu
+definieren. Zudem ist eine Übertragbarkeit zwischen Programmiersprachen
+im Allgemeinen nicht gegeben.
+
+\abb{model} zeigt eine tabellarische Zusammenfassung des in diesem
+Abschnitt erfolgten Vergleichs von Stings, Objekten, den
+Baumrepräsentationssprachen \sexps{}, XML und JSON sowie der graphischen
+Modellierungssprache UML. Den \sexps{} fällt unter den
+Baumrepräsentationen eine besondere Rolle zu, da diese im Gegensatz zu
+beispielsweise XML minimal und redundanzfrei definiert sind, ohne an
+Ausdrucksmächtigkeit zu verlieren. Aus diesem Grund widmet sich diese
+Arbeit vor allem \sexp-gestützter Code-Generierung.
 
 \lsection[cgen:comp]{Template-basierte \cgen{}}
 
@@ -649,88 +702,136 @@ handelt sich dabei im Grunde um eine mathematische Funktion, deren
 Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument
 ist.
 
-Dieser Abschnitt stellt einige der vielen Template-basierten Tools für
-\cgen{} vor und bewertet diese anhand zunächst zu erarbeiteter
-Vergleichskriterien.
+Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
+machen. Diese unterscheiden sich oft neben der Syntax in vielen weiteren
+Punkten. Dieser Abschnitt stellt zunächst diese Vergleichskriterien vor,
+anschließend wird eine Auswahl Template-basierter Tools zur \cgen anhand
+dieser Kriterien verglichen und bewertet.
 
 \lsubsection[cgen:comp:crit]{Vergleichskriterien}
-
-Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
-machen. Diese unterscheiden sich neben der Syntax vor allem in ihren
-Datenstrukturen für die Dokumentrepräsentation sowie der Mächtigkeit der
-im Unquote erlaubten Operationen.
-
 \lsubsubsection[cgen:comp:crit:model]{Verwendete Modelle}
 
-Bei den Datenstrukturen gibt es
-Template-Engines, die Dokumente lediglich als Zeichenketten
-abspeichern, und solche, die komplett auf typisierten Daten
-arbeiten. Dazwischen liegen Engines, die auf strukturierten, aber
-untypisierten Daten arbeiten, welche mittels \sexps{} oder XML
-repräsentiert sind.
+Template-Engines unterscheiden sich sowohl in den Eingabe-, als auch in
+den Ausgabemodellen. Möglich sind Zeichenketten, typisierte Objekte
+sowie untypisierte Bäume wie \sexps{} oder XML \sees{cgen:model}.
 
 \lsubsubsection[cgen:comp:crit:def]{Template-Definition}
 
-Templates werden normalerweise über die beiden Operationen Quote und
-Unquote definiert. Ein Quote erzeugt ein Template, und das innere eines
-Quotes wird als statisch interpretiert, solange kein Unquote
-auftritt. Nicht überall sind Quotes explizit - oft interpretieren
-Anwendungen auch automatisch die äußerste Ebene einer Template-Datei als
-quotiert. Ein Unquote, welches nur innerhalb eines Quote auftauchen
-darf, erzeugt einen dynamischen Unterabschnitt, welcher meist in einer
+Die Definition von Templates lässt sich Anhand der Operationen Quote und
+Unquote erläutern, welche aus dem Lisp-Umfeld stammen\footnote{Üblich
+  sind unter Lisp-Programmierern statt des Begriffs "`Quote"' meist
+  "`Backquote"' oder "`Quasiquote"', während ein Quote komplett statisch
+  ist. Da es aber immer möglich ist, kein Unquote zu verwenden und so
+  komplett statische Blöcke zu bauen, ist dieser Begriff unnötig,
+  weshalb in dieser Arbeit alles als Quote bezeichnet wird.}.  
+
+Ein Quote erzeugt ein Template, und das innere eines Quotes wird als
+statisch interpretiert, solange darin kein Unquote auftritt. Nicht
+überall sind Quotes explizit - oft interpretieren Anwendungen auch
+automatisch die äußerste Ebene einer Template-Datei als quotiert. Manche
+Tools zur \cgen{} besitzen kein umfassendes Quote, mit dem sich wirklich
+jede gewünschte, Quellcode erzeugende Funktion ausdrücken lässt. Aus
+syntaktischen Gründen könnte es beispielsweise nicht möglich sein, eine
+variable Anzahl an Statements zu erzeugen.
+
+Ein Unquote, welches nur innerhalb eines Quote auftauchen darf, erzeugt
+einen dynamischen Unterabschnitt, welcher meist in einer
 Programmiersprache beschrieben ist. Hier werden die Parameter verwendet,
 die beim Aufruf an das Template übergeben werden. Je nach Anwendung kann
 innerhalb eines Unquote eventuell wieder ein Quote vorkommen, so dass
-ein Sub-Template erzeugt wird.
+ein Sub-Template erzeugt wird. Manche Systeme benutzen auch ein
+implizites Unquote was dann durchgeführt wird, wenn ein Token mit dem
+Namen eines Template-Parameters übereinstimmt.
+
+Es gibt generell auch die Möglichkeit, Code nicht über Templates,
+sondern direkt über die Manipulation von Objekten zu
+erzeugen. Beispielsweise kann in einer Programmiersprache ohne
+Template-Engine eine Funktion definiert wird, die mit String-Operationen
+arbeitet, letztlich aber die gleiche Aufgabe erfüllt wie ein
+Template. Manche Tools bieten neben Templates ebenfalls die
+programmatische Erzeugung von Code an. Normalerweise jedoch ist, wenn
+möglich, die Erzeugung mittels Quote und Unquote zu bevorzugen, da hier
+der generierende Code dem generierten ähnelt, was eine bessere
+Lesbarkeit mit sich bringt.
 
 \lsubsubsection[cgen:comp:crit:lang]{Meta-Programmiersprache}
 
-Die Bandbreite bei der Sprachmächtigkeit im Unquote
-ist ähnlich groß: Es gibt Tools, die überhaupt keine Berechnungen,
-sondern bloß das Einfügen der Parameter zulassen. Auf der anderen Seite
-stehen vollständige (Meta-)Programmiersprachen. Zwischenstufen sind
-ebenfalls möglich.
+Die Bandbreite bei der Sprachmächtigkeit in Unquote-Bereichen ist hoch:
+Es gibt Tools, die überhaupt keine Berechnungen, sondern lediglich das
+Einfügen der Parameter zulassen. Auf der anderen Seite stehen
+vollständige (Meta-)Programmiersprachen. Zwischenstufen sind ebenfalls
+möglich.
 
 \lsubsubsection[cgen:comp:crit:contr]{Kontrollfluss}
 
-Makros sind eine spezielle Form von Templates, die in wenigen
-Programmiersprachen angeboten werden. Sie können in normalen
-Programmcode eingebaut werden und werden zur Kompilationszeit
-ausgewertet, womit eine Möglichkeit zur Metaprogrammierung gegeben
-wird. Das Besondere bei einem Makro ist die Art, wie es aufgerufen wird:
-Während Templates normalerweise explizit und erkennbar aufgerufen
-werden, erfolgen Makro-Auswertungen allein über einen Namen und sind
-syntaktisch nicht von einem Funktionsaufruf der zugrunde liegenden
-Sprache unterscheidbar. Gibt es beispielsweise in C ein Makro namens
-\icode{foo}, beschreibt \icode{foo("bar", 42)} einen
-Makroaufruf. Existiert es nicht, ist das Kommando ein Funktionsaufruf.
-Dies kann man positiv und negativ sehen: Meist ist es für einen
-Programmierer angenehm, nicht wissen zu müssen, ob ein Befehl ein Makro
-oder eine Funktion ist - insbesondere wenn ein Makro nur aus
-Optimierungsgründen existiert, obwohl eine Funktion an der gleichen
-Stelle auch ginge. Auf der anderen Seite verschleiern Makros die
-Semantik und können zu unangenehmen Fehlern wie Konflikte bei
-Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
+Ein weiterer Unterschied zwischen Code-Generatoren liegt im
+Kontrollfluss. Manche Systeme können nur ein einzelnes Template
+verarbeiten, so dass alles weitere in einer externe Programmiersprache
+festgelegt ist. Engines mit einer richtigen Meta-Programmiersprache
+bieten hingegen oft die Möglichkeit, programmatische die Template-Engine
+selbst und damit indirekt ein weiteres Template aufzurufen. Andere
+lassen den direkten Aufruf weiterer Templates zu. Eine Alternative zur
+aufrufbasierten Steuerung ist durch Makros gegeben. Makros sind
+Templates, die an einen Knotennamen oder ein Muster gebunden sind. Der
+Generator entscheidet dann Anhand des Modells, welches Template für die
+Verarbeitung zuständig ist.
 
 \lsubsubsection[cgen:comp:crit:sep]{Komponententrennung}
+\todo{MVC-Buch?}
+Die meisten Software-Systeme lassen sich durch eine
+Model-View-Controller-Architektur (MVC) beschreiben. Daten und deren
+Verarbeitung werden vom Modell verwaltet. Ablaufsteuerung und Behandlung
+von Benutzerinteraktionen gehören in den Controller. Views sind für die
+graphische oder textuelle Formatierung der Modelle zuständig.
+
+Code-Generatoren benötigen normalerweise sehr wenige
+Benutzerinteraktionen und haben eine simple Ablaufsteuerung, da diese
+lediglich Eingabemodelle in Ausgabemodelle übersetzen. Controller
+stellen deshalb meist nur einen kleinen Anteil am Generator. Als Views
+können Templates aufgefasst werden, weshalb diese meist den Hauptteil
+bilden.
+
+Eine klare Komponententrennung zwischen diesen Bereichen verbessert die
+Modularisierung und somit Übersichtlichkeit, Wartbarkeit und
+Aufgabenverteilung innerhalb des Projektes. Deswegen gelten
+beispielsweise Views, die komplexe Berechnungen am Modell vornehmen, als
+schlechter Stil. Es ist daher von Vorteil, wenn Generatoren eine
+Trennung von Model, View und Controller unterstützt oder gar forciert -
+auf der anderen Seite sollte das Tool aber nicht im Wege stehen, wenn
+eine ungewöhnliche Aufgabe andere Wege erfordert.
 
 \lsubsubsection[cgen:comp:crit:gentemp]{Generierung von Templates}
+
+Manchmal ist es von Vorteil, nicht nur Code der Zielsprache, sondern
+auch Templates selbst programmatisch generieren zu können. Dies ist der
+Fall, wenn sich viele Templates nur geringfügig unterscheiden, diese
+aber dennoch nicht zu einem einzigen Template zusammengefasst werden
+können oder sollen, etwa wenn kein zusätzlicher Parameter gewünscht ist.
+
+Die Möglichkeit, Templates von Templates zu konstruieren, stellt oft ein
+syntaktisches Problem dar, da nicht ohne weiteres klar ist, ob sich
+beispielsweise ein Unquote auf das Meta-Template oder das generierte
+Template bezieht. Dies muss meist über aufwändige Escape-Sequenzen
+umgangen werden - nur wenige Frameworks dagegen unterstüzen hingegen
+explizit die Generierung von Templates.
 
 \lsubsection[cgen:templates:php]{PHP}
 
 Die Scriptsprache PHP ist von vornherein als Template-System
-konstruiert. PHP-Code muss immer von \phpo{} und
-\phpc{} umgeben sein, was im Grunde ein Unquote darstellt. Das
+konstruiert. Viele Web-Frameworks benutzen eine PHP ähnelnde Syntax, um
+Templates für HTML-Dateien zu beschreiben. PHP-Code muss immer von
+\phpo{} und \phpc{} umgeben sein, was praktisch ein Unquote
+darstellt. Parameter in PHP sind dynamisch typisierte Objekte. Das
 Ergebnis der PHP-Blöcke wird als String in die Ausgabedatei eingefügt,
 die ansonsten aus den implizit quotierten Nicht-PHP-Bereichen der
-Eingabedatei besteht.Die Unquote-Syntax ist an
-XML angelehnt, da PHP hauptsächlich für die Erzeugung von
-HTML-Dokumenten verwendet wird. Statt eines direkten Quotes gibt es die
-Möglichkeit, über die Funktion \icode{include} eine andere PHP-Datei
-einzubinden.
-
-Viele Web-Frameworks benutzen eine ähnliche Syntax, um HTML-Templates
-mit Scripten in der entsprechenden Programmiersprache zu erstellen.
+Template-Datei besteht. Die Unquote-Syntax ist an XML angelehnt, da PHP
+hauptsächlich für die Erzeugung von HTML-Dokumenten verwendet
+wird. Statt eines direkten Template-Aufrufs gibt es die Möglichkeit,
+über die Funktion \icode{include} eine andere PHP-Datei
+einzubinden. Eine Trennung von Model und View wird von PHP nicht
+speziell unterstützt oder gefordert, ist aber möglich. Eine Generierung
+von PHP-Dateien wird nicht speziell unterstützt und ist deswegen
+aufwändig umzusetzen.
 
 \lsubsection[cgen:templates:stringtemplate]{StringTemplate}
 
@@ -739,38 +840,134 @@ mit Scripten in der entsprechenden Programmiersprache zu erstellen.
 StringTemplate\cite{StringTemplate} ist eine stringbasierte
 Template-Engine für Java. Auch hier ist eine Template-Datei implizit
 quotiert, ein Unquote erlolgt mittels \icode{$foo$} oder
-\icode{<foo>}. Im Gegensatz zu den meisten anderen Systemen ist die
-Mächtigkeit der Unquote-Bereiche bei StringTemplate stark reduziert, um
-eine Model-View-Trennung zu erzwingen - alle Berechnungen sollen also im
-Modell, und nicht im Template selbst erfolgen.
+\icode{<foo>}. Im Gegensatz zu PHP und den meisten anderen Systemen ist
+die Mächtigkeit der Unquote-Bereiche in StringTemplate stark reduziert,
+um eine Model-View-Trennung zu erzwingen - alle Berechnungen sollen also
+im Modell, und nicht im Template selbst erfolgen.
 
 Neben der Referenzierung von Java-Objekten - hier wird automatisch
 \icode{toString()} aufgerufen - und deren Instanzvariablen sind nur
 Template-Aufrufe sowie \icode{if}-Abfragen erlaubt, wobei letztere nur
 zwischen \icode{true} und \icode{false} bzw. nicht \icode{null} und
 \icode{null} unterscheiden können - aber keine Berechnungen oder
-Vergleichsoperatoren benutzen können. Template-Aufrufe entsprechen hier
-wieder einem Quote - da auch "`anonyme Templates"' (analog zu anonymen
-Funktionen) benutzt werden können, handelt es sich sogar um ein direktes
-Quote. Statt der Bereitstellung eines Konstruktes wie \icode{foreach}
-iteriert StringTemplate automatisch, wenn ein referenzierter Wert eine
-Liste ist - dies funktioniert auch bei Template-Aufrufen. Hier kann auch
-ein Separator angegeben werden, der dann zwischen den Elementen
-steht. Es gibt auch die Möglichkeit, bei der Verarbeitung einer Liste
-abwechselnd zwei oder mehr Templates aufzurufen - dies wird
+Vergleichsoperatoren benutzen können. "`Anonyme Templates"' (analog zu
+anonymen Funktionen) entsprechen einem Quote - es ist allerdings auch
+möglich, extern definierte Templates aufzurufen. Statt der Bereitstellung
+eines Konstruktes wie \icode{foreach} iteriert StringTemplate
+automatisch, wenn ein referenzierter Wert eine Liste ist - dies
+funktioniert auch bei Template-Aufrufen. Hier kann zusätzlich ein
+Separator-String angegeben werden, der dann jeweils zwischen den
+Elementen steht. Es gibt auch die Möglichkeit, bei der Verarbeitung
+einer Liste abwechselnd zwei oder mehr Templates aufzurufen - dies wird
 beispielsweise für sich abwechselnde Farben von Zeilen in HTML-Tabellen
 benötigt.
 
 Der hier verfolgte Ansatz funktioniert in der Praxis wohl sehr gut und
-erreicht tatsächlich eine sauberere Aufteilung der Module sowie
-übersichtlichere Template-Dateien als andere Engines. Der einzige
-Schwachpunkt tritt auf, wenn Berechnungen durchgeführt werden müssten,
-die eigentlich nicht ins Modell, sondern ins View gehören, wie
+erreicht tatsächlich im Vergelich zu anderen Engines eine sauberere
+Aufteilung der Module sowie übersichtlichere Template-Dateien. Der
+einzige Schwachpunkt tritt auf, wenn Berechnungen durchgeführt werden
+müssten, die eigentlich nicht ins Modell, sondern ins View gehören, wie
 beispielsweise ein rotes Einfärben von negativen Werten. Hierfür müsste
 ein zusätzliches Attribut \icode{isRed} im Modell bereitgestellt werden,
 wodurch die Trennung wiederum verletzt wäre. Für solche Fälle wäre es
 hilfreich, wenn StringTemplate das Definieren von Helper-Klassen, deren
 Methoden aus den Templates aufgerufen werden können, unterstützen würde.
+
+\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}}
+\todo{Ausgabetypisierung Makro vs. Template} \cpp{}-Templates bieten die
+Möglichkeit, Klassen oder Funktionen unter anderen durch Typnamen zu
+parametrisieren, um so generische Konstrukte woe Collection-Klassen
+definieren zu können. Die bekannten Java-Generics \cite{todo} wurden
+Templates nachempfunden und haben eine ähnliche Syntax - diese sind
+allerdings simpler und weniger mächtig. Neben Typen können auch manche
+Werte wie Integer sowie andere Templates übergeben werden. Der Aufruf
+des Templates erfolgt durch die Übergabe des konkreten Typnamens oder
+Wertes in spitzen Klammern bei Benutzung der entsprechenden Klasse oder
+Funktion. Mit \cpp{}-Templates lässt sich sehr viel mehr konstruieren
+als lediglich generische Collection-Klassen - beispielsweise zeigt
+\abb{cpp-fibonacci} die Berechnung von Fibonacci-Zahlen zur
+Kompilationszeit. Weitere kreative Verwendungsmöglichkeiten von
+Templates finden sich in der Bibliothek Boost\cite{Boost}. 
+\begin{figure}
+  \centering
+  \begin{code}
+template<int N> class Fib {
+  static const int result = fib<N-1>::result + fib<N-2>::result;
+};
+
+class fib<0> {
+  static const int result = 0;
+};
+
+class fib<1> {
+  static const int result = 1;
+};
+}
+
+// fib<10>::result  ==> 55
+  \end{code}
+  \caption{Die Fibonacci-Folge mit \cpp{}-Templates}
+  \label{magicl:fig:cpp-fibonacci}
+\end{figure}
+Da aber nur sehr primitive Eingabemodelle zugelassen sind und komplexere
+Berechnungen nicht möglich sind, ist das System weit weniger mächtig als
+andere in diesem Abschnitt. Eine Model-View-Trennung ist ebenfalls nicht
+möglich, ohne komplexe Modelle aber auch nicht notwendig. Da Aufrufe von
+Templates über eine spezielle Syntax erfolgen, handelt es sich hier
+nicht um Makros.
+\todo{Schachtelung}
+
+\lsubsection[cgen:templates:temphask]{Template Haskell}
+
+\todo{Quote-Beispiel, Code für Tupel-Beispiel, Komponententrennung, Template-Gen}
+
+Template Haskell ist eine Compiler-Erweiterung für Haskell, die die
+Grundidee von \cpp{}-Templates als "`funktionale
+Kompilationszeit-Sprache"' aufgreift und vervollständigt, um so ein
+maximal mächtiges System zu bekommen. Eingabemodelle können beliebige
+Haskell-Datentypen sein, die Ausgabe beliebiger Haskell-Code. Templates
+sind selbst Haskell-Funktionen, so dass Metasprache und generierte
+Sprache identisch sind und Templates somit Turing-vollständig und
+Typsicher werden. In Quelldateien kann Meta-Code mit normalen Code
+gemischt werden - zudem bietet Template Haskell Reification, d.h. in
+Templates können Meta-Informationen wie Typen über Code in derselben
+Datei abgefragt werden, was enorme Möglichkeiten eröffnet.
+
+Da Templates Funktionen sind, können diese komplett programmatisch
+erzeugt werden. Darüber hinaus gibt es auch eine Syntax für Quote und
+Unquote, wodurch kürzerer und lesbarer Meta-Code ermöglicht wird. Das
+Quote ist allerdings nicht umfassend, es gibt also Templates, die nur
+auf programmatische Art erzeugt werden können. Beispielsweise zeigt
+\abb{ths-tuple} ein Template, das eine Zahl $n$ als Eingabe bekommt und
+den Haskell-Code für ein $n$-äres Tupel mit den Zahlen $1$ bis $n$
+zurückliefert. Dieses Template kann nicht mittels Quote implementiert
+werden, da ein Tupel variabler Länge syntaktisch in Haskell selbst nicht
+repräsentierbar ist. Deswegen muss auf Funktionen wie
+... zurückgegriffen werden, was die Komplexität leider deutlich
+erhöht.
+
+Allgemein wächst der Aufwand für \cgen{} mit der Komplexität des
+Ausgabemodells. Soll die Generierung typsicher sein, ist das Modell
+desto umfangreicher, je aufwändiger die Syntax der zu generierenden
+Sprache ist. Obwohl Haskell im Vergleich zu Sprachen wie \cpp{} bereits
+eine sehr einfache Syntax besitzt, erweist sich diese im obigen Beispiel
+bereits als Problem. In einer String-basierten Generierung von
+Haskell-Code ist die Flexibilität größer, so dass hier ein
+entsprechendes Quote möglich gewesen wäre - zum Preis von möglichen
+Syntaxfehlern und verschleierter Struktur.
+
+Ein Mittelweg wäre eine Repräsentation von Haskell-Code in \sexps{} oder
+XML, die vom Framework anschließend in eine typisierte Repräsentation
+überführt und schließlich zur endgültigen Generation verwendet
+wird. Diese Variante hätte folgende Vorteile:
+\begin{itemize}
+\item Das Ausgabemodell von Templates ist einfach, aber explizit
+  strukturiert.
+\item Quotes können für jedes Template benutzt werden.
+\item Es kann kein Code mit Syntaxfehlern erzeugt werden, da das
+  Sexp-Modell bei der Umwandlung in ein typisiertes Objekt validiert wird.
+\end{itemize}
+Dieser Weg wird im in \cref{magicl} vorgestellten Framework gewählt.
 
 \lsubsection[cgen:templates:cprep]{Der C-Präprozessor}
 \begin{itemize}
@@ -779,33 +976,29 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \item gensym fehlt, tatsächliche Berechnung zur Kompilierzeit
 \end{itemize}
 
-\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}}
+Name entscheidet über Funktionsaufruf vs. Macro
 
+Dies kann man positiv und negativ sehen: Meist ist es für einen
+Programmierer angenehm, nicht wissen zu müssen, ob ein Befehl ein Makro
+oder eine Funktion ist - insbesondere wenn ein Makro nur aus
+Optimierungsgründen existiert, obwohl eine Funktion an der gleichen
+Stelle auch ginge. Auf der anderen Seite verschleiern Makros die
+Semantik und können zu unangenehmen Fehlern wie Konflikte bei
+Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
+
+\lsubsection[cgen:templates:xslt]{XSLT}
 \begin{itemize}
-\item Vorbild für Java-Generics (Generics aber viel weniger mächtig)
-\item "`Funktionale Sprache zur Compilationszeit"'
-\item Berechnungen im Typsystem
-\item Syntax
-\item Beispiele
-\end{itemize}
-
-\lsubsection[cgen:templates:temphask]{Template Haskell}
-
-\begin{itemize}
-\item Compiler-Erweiterung für Haskell
-\item Ziele ähnlich \cpp{}-Templates / Makro-Prozessor
-\item BQ und Slice
-\item Meta-Code können normale Haskell-Funktionen sein
-\item Reification (Reflection)
-\item Statische Prüfung (nötig? Runtime gleich Compiletime)
-\item Problem: Haskell-Syntax
+\item XPath: Adressieren, z.B. \icode{//chapter[@title=Einleitung"]/paragraph}
+  (alle Absätze aus Kap. ``Einleitung'')
+\item XSLT: Turing-Vollständige Baum-Transformationssprache in XML
   \begin{itemize}
-  \item BQ kann nicht alles darstellen, z.B. $n$-äre Tupel
-  \item spezielle Konstruktoren nötig $\Rightarrow$ komplex, Metaprogramm
-    nicht ähnlich Programm
-  \item Bei Lisp wäre das nicht passiert $\Rightarrow$ Andere Sprachen
-    in Lisp-Notation sinnvoll
+  \item template: Matcher in XPath
+  \item Schleifen, sortierung, if-Abfragen
+  \item Nachvolger der DSSSL (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
+  \item Keine ``richtige'', praktische Programmiersprache
+  \item $\rightarrow$ oft wird für komplexere Operationen andere Sprache benutzt
   \end{itemize}
+\item Für viele Sprachen generierbare XML-Serializer
 \end{itemize}
 
 \lsubsection[cgen:templates:lisp]{Lisp}
@@ -852,20 +1045,21 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 \begin{sidewaysfigure}[htp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|l|} \hline
-\bf Tool             &\bf PHP        &\bf StringTemplate          &\bf Templates in \cpp{}    &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp         \\\hline\hline
-\bf Eingabe              &Objekt         &String                      &Typ/Wert/Template          &Objekt          &Code            &XML      &\sexp{}     \\\hline
+\bf Tool             &\bf PHP        &\bf StringTemplate          &\bf Templates in \cpp{}    &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp        \\\hline\hline
+\bf Eingabe              &Objekt         &Objekt als String           &Typname/Wert/Template     &Objekt          &Code            &XML      &\sexp{}     \\\hline
 \bf Typisierung Eingabe  &hoch           &minimal                     &maximal                    &maximal         &mittel          &mittel   &mittel      \\\hline
 \bf Ausgabe              &String         &String                      &Code für Funktion/Klasse   &Code-Objekt     &Code            &XML      &\sexp{}     \\\hline
-\bf Typisierung Ausgabe  &minimal        &minimal                     &mittel                     &maximal         &mittel          &mittel   &mittel      \\\hline
-\bf implizit Quotiert    &ja             &ja                          &nein                       &nein            &nein            &nein     &nein        \\\hline
-\bf Quote                &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &\icode{`( )}\\\hline
-\bf Unquote              &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &\icode{,}   \\\hline
+\bf Typisierung Ausgabe  &minimal        &minimal                     &stark                      &maximal         &schwach         &mittel   &mittel      \\\hline
+\bf implizites Quote     &ja             &ja                          &nein                       &nein?           &nein            &nein     &nein        \\\hline
+\bf Quote-Syntax         &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &\icode{`( )}\\\hline
+\bf Unquote-Syntax       &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &\icode{,}   \\\hline
+\bf umfassendes Quote    &ja             &ja                          &nein                       &nein            &                &         &ja          \\\hline
 \bf Code-Objekt verfügbar&String         &nein                        &nein                       &ja              &nein            &nein     &ja          \\\hline
-\bf Template-Aufruf      &nein           &\icode{wert:template(args)} &\icode{token<args>}        &                &                &         &            \\\hline
-\bf Sprachmächtigkeit    &maximal        &minimal                     &mittel                     &maximal         &gering          &hoch     &maximal     \\\hline
-\bf Komponententrennung  &möglich        &stark                       &                           &                &                &         &            \\\hline
-\bf Templates generierbar&nein           &nein                        &                           &nein?           &                &ja       &ja          \\\hline
-\bf Kontrollfluss        &               &                            &                           &                &                &         &            \\\hline
+\bf Sprachmächtigkeit    &maximal        &minimal                     &schwach                    &maximal         &gering          &hoch     &maximal     \\\hline
+\bf Template-Aufruf      &nur über Engine&\icode{wert:template(args)} &\icode{token<args>}        &funktional      &                &         &            \\\hline
+\bf Macros               &nein           &nein                        &nein                       &nein            &                &         &            \\\hline
+\bf Komponententrennung  &möglich        &stark                       &keine                      &möglich         &                &         &            \\\hline
+\bf Template-Generierung &schwer         &schwer                      &                           &nein?           &                &ja       &ja          \\\hline
 %bf                      &               &                            &                           &                &                &         &            \\\hline
 \end{tabular}
 \caption{Vergleich der Verarbeitungsprozesse von Werkzeugen zur Code-Generierung}
@@ -892,7 +1086,7 @@ LALR(1)-Parser
  Basiert auf Monaden
  Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
 
-\lsubsection[cgen:parser:sum]{Zusammenfasseung}
+\lsubsection[cgen:parser:sum]{Zusammenfassung}
 
 \lchapter[sexy]{Objektorientierte Ruby-Implementation}
 
