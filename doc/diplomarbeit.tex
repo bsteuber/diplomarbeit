@@ -191,11 +191,16 @@
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
 \acro{GUI}{Graphical User Interface}
 \acro{HTML}{Hypertext Markup Language}
+\acro{JVM}{Java Virtual Machine}
 \acro{MDA}{Model Driven Architecture}
 \acro{PHP}{PHP: Hypertext Preprocessor}
 \acro{UML}{Unified Modelling Language}
 \acro{XML}{Extensible Markup Language}
 \acro{XML-RPC}{XML Remote Procedure Call}
+\acro{XPath}{XML Path Language}
+\acro{XSL}{Extesible Stylesheet Language}
+\acro{XSL-FO}{XSL - Formatting Objects}
+\acro{XSLT}{XSL Transformation}
 \acro{W3C}{World Wide Web Consortium}
 \end{acronym}
 
@@ -349,6 +354,7 @@ Vorteile:
   Programmiersprachkenntnisse, Backend austauschbar
 ``Ist die Sprache an die Problemdomäne angepasst, muss man das Problem
 nicht in die Sprache zwängen''
+\item Erweiterung bestehender Sprachen um neue Konzepte
 \item Produktivität - DRY-Prinzip spart u.U. viel Zeit
 \item Qualität - ist der Generator fehlerfrei, gibt es keine Probleme
   bei neuen Modellen
@@ -366,14 +372,16 @@ Nachteile:
 \lsection[cgen:model]{Modellrepräsentation}
 
 Es gibt im Wesentlichen drei Arten, ein Modell zu repräsentieren: Als
-rohe Zei- chenkette, als getyptes Objekt oder durch eine universelle
-Notation wie XML.  In diesem Abschnitt werden diese drei Ansätze, sowie
-die weiteren Notationssprachen UML, JSON und S-Expressions vorgestellt
-und anhand vorher zu bestimmenden Kriterien bewertet.
+rohe Zeichenkette, als typisiertes Objekt oder durch eine ungetypte
+Baumrepräsentation wie \sexps{}, XML oder JSON. In diesem Abschnitt
+werden diese drei Ansätze sowie die graphische Repräsentationssprache
+UML vorgestellt und anhand vorher zu bestimmenden Kriterien bewertet.
 
 \lsubsection[cgen:model:crit]{Vergleichskriterien}
 
 \lsubsubsection[cgen:model:crit:type]{Typisierung}
+
+\todo{lieber Validierung schreiben}
 
 Das wohl wesentliche Merkmal einer Modellrepräsentation ist seine
 Typisierung. Es gibt auf der einen Seite gänzlich untypisierte
@@ -383,8 +391,6 @@ bringen. Auf der anderen Seite stehen statisch getypte Objekte, die
 komfortablen Zugriff und Typsicherheit garantieren, im Gegenzug aber
 sehr unflexibel sind. Dazwischen stehen unverselle Notationen wie XML,
 die eine Struktur, aber keine Typisierung, besitzen.
-
-\todo{low-level immer benötigt f. Serialisierung, universell bzw. keine neue Def. nötig}
 
 \lsubsubsection[cgen:model:crit:univ]{Universalität} Manche
 Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
@@ -427,25 +433,28 @@ Unterknoten repräsentieren.
 \lsubsection[cgen:model:string]{Strings}
 
 Zeichenketten stehen auf der niedrigsten Stufe der Datenrepräsentation -
-prinzipiell unterscheiden sie sich nicht von Bit-Streams. Da Strings
-keinerlei Struktur oder Typisierung ermöglichen, ist eine Repräsentation
-als String für die Verarbeitung von Modellen eher ungeeignet. Nützlich
-ist diese dagegen, wenn ein Modell persistent abgespeichert oder über
-das Netzwerk verschickt werden sollen. Anschließend kann aus dem String
-über einen Parser wieder ein strukturiertes Modell erzeugt werden. Eine
-graphische Darstellung besitzen Strings nicht, wenn man von der Anzeige
-als Text absieht.
+schließlich sind sie lediglich Bitfolgen. Damit sind Strings immer dann
+erforderlich, wenn Modelle zur persistenten Speicherung oder
+Kommunikation serialisiert werden müssen.
+
+Da Zeichenketten keinerlei Struktur oder Typisierung ermöglichen, ist
+eine String-Repräsentation für die Erzeugung und Bearbeitung sowie
+komplexere Verarbeitung von Modellen eher ungeeignet. Vor der
+Verarbeitung sollte ein String deshalb vom Parser in ein strukturiertes
+Modell umgewandelt werden. Eine graphische Darstellung besitzen Strings
+nicht, wenn man von der Anzeige als Text absieht.
 
 \lsubsection[cgen:model:object]{Objekte}
 
-Das Wort ``Objekt'' wird in dieser Arbeit nicht ausschließlich im objektorientierten
-Sinn verwendet - vielmehr ist eine beliebige Datentypinstanz einer
-Programmiersprache gemeint. Objekte bieten den höchsten Typisierungsgrad
-und die damit verbundene Sicherheit\footnote{Eine weitere Steigerung
-  wäre über Typen hinausgehende Validierung von Modellen.}. Hier kann
-allerdings zwischen Objekten in statisch und dynamisch getypten Sprachen
-unterschieden werden, denn in dynamischen Typsystemen werden Typfehler
-erst beim Zugriff, bei \cgen{} also vermutlich erst im
+Das Wort ``Objekt'' wird in dieser Arbeit nicht ausschließlich im
+objektorientierten Sinn verwendet - vielmehr ist hier "`Datentypinstanz
+einer Programmiersprache"' gemeint, so dass auch nicht objektorientierte
+Sprachen einbezogen werden. Objekte bieten den höchsten Typisierungsgrad
+und die damit verbundene Sicherheit\footnote{Eine weitere Steigerung der
+  Sicherheit wäre über Typen hinausgehende Validierung von
+  Modellen.}. Es wird zwischen Objekten in statisch und dynamisch
+getypten Sprachen unterschieden werden, denn in dynamischen Typsystemen
+werden Typfehler erst beim Zugriff, bei \cgen{} also vermutlich erst im
 Übersetzungsvorgang erkannt. In den meisten Sprachen gibt es Attribute
 für Objekten sowie einen Listen- oder Arraydatentyp. Unbenannte
 Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
@@ -643,42 +652,46 @@ Objektdiagramm.
 
 \lsubsection[cgen:model:sum]{Zusammenfassung}
 
-Es gibt im wesentlichen drei Arten, ein Modell zu repräsentieren:
-\begin{itemize}
-\item Als unstrukturierten, untypisierten String/Bitstream
-\item Als strukturierten, untypisierten Baum
-\item Als strukturiertes, typisiertes Objekt
-\end{itemize}
+Es gibt im wesentlichen drei Arten, ein Modell zu repräsentieren, die
+alle ihre Daseinsberechtigung haben und über Parser, Generatoren und
+Compiler ineinander umgewandelt werden können.
 
-\begin{sidewaysfigure}[htp]
+Strings sind immer nötig, wenn ein Modell dauerhaft gespeichert oder
+verschickt werden soll. Für alle anderen Zwecke sind diese dagegen eher
+unpraktisch.
+
+Für eine aufwändigere Verarbeitung, die komplexe Rechnungen oder
+Algorithmen erfordert, eignen sich Objekte am besten. Fehler werden vor
+allem bei statisch typisierten Objekten frühstmöglich erkannt. Dafür ist
+es allerdings nötig, spezielle Klassen bzw. Datentyp-Definition für
+diese Modelle zu definieren. Zudem ist eine Übertragbarkeit zwischen
+Programmiersprachen im Allgemeinen nicht gegeben.
+
+Untypisierte Baumrepräsentation eignen sich aufgrund ihrer Struktur und
+Flexibilität besonders für die Erzeugung und Bearbeitung von Modellen -
+mit einem geeigneten universellen Editor könnten Benutzer komfortabel
+und ohne nervige Syntaxfehler Modelle beliebiger Domänen erzeugen, ohne
+dass der Editor vorher Informationen über Syntax oder Semantik der
+Modelle benötigt. Auch die maschinelle Erzeugung von Modellen ist in
+einer Baumrepräsentation am einfachsten. Simple Verarbeitungsprozesse
+können mit Bäumen ebenfalls gut durchgeführt werden.
+
+\begin{sidewaysfigure}[tp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|}\hline
-\bf Modell                 & \bf String & \bf Objekt         & \bf \sexps{} & \bf XML & \bf JSON & \bf UML \\
-\hline\hline
-\bf Typisiert              & nein       & ja                 & nein         & nein    & nein     & nein    \\\hline
-\bf Universell             & ja         & Klasse erforderlich& ja           & ja      & ja       & ja      \\\hline
-\bf Sprachunabhängig       & ja         & nein               & ja           & ja      & ja       & ja      \\\hline
-\bf Graphische Darstellung & Text       & Baum               & Baum         & Baum    & Baum     & Graph   \\\hline
-\bf Unterknoten            & nein       & nach Sprache       & ja           & ja      & nein     & ja      \\\hline
-\bf Attribute              & nein       & ja                 & nein         & ja      & ja       & ja      \\\hline
-\bf Listen                 & nein       & ja                 & nein         & nein    & ja       & nein    \\\hline
-\bf Feature-Anzahl         & minimal    & nach Sprache       & minimal      & mittel  & klein    & groß    \\\hline
+\bf Modell                 & \bf String & \bf Objekt           & \bf \sexps{} & \bf XML & \bf JSON & \bf UML         \\\hline\hline
+\bf Validierung            & gering     & sehr hoch            & mittel       & mittel  & mittel   & relativ hoch    \\\hline
+\bf Universell             & ja         & Klasse erforderlich  & ja           & ja      & ja       & ja              \\\hline
+\bf Sprachunabhängig       & ja         & nein                 & ja           & ja      & ja       & ja              \\\hline
+\bf Graphische Darstellung & Text       & Baum                 & Baum         & Baum    & Baum     & Graph           \\\hline
+\bf Unterknoten            & nein       & nach Sprache         & ja           & ja      & nein     & ja              \\\hline
+\bf Attribute              & nein       & ja                   & nein         & ja      & ja       & ja              \\\hline
+\bf Listen                 & nein       & ja                   & nein         & nein    & ja       & nein            \\\hline
+\bf Feature-Anzahl         & minimal    & nach Sprache         & minimal      & mittel  & klein    & groß            \\\hline
 \end{tabular}
   \caption{Vergleich verscheidener Modellrepräsentationen}
-  \label{magicl:fig:model}
+  \label{magicl:fig:model_sum}
 \end{sidewaysfigure}
-
-Alle drei haben ihre Daseinsberechtigung: Strings sind immer nötig, wenn
-ein Modell dauerhaft gespeichert oder verschickt werden
-soll. Untypisierte Baumrepräsentation hingegen sind praktisch für die
-Bearbeitung von Modellen, da sie sowohl Struktur als auch Universalität
-anbieten. Auch für eine simple, untypisierte Verarbeitung von Modellen
-sind Baumrepräsentationen gut geeignet. Für eine aufwändigere
-Verarbeitung, die komplexe Rechnungen oder Algorithmen erfordert, eignen
-sich typisierte Objekte am besten. Dafür ist es allerdings nötig, eine
-spezielle Klasse bzw. andere Datentyp-Definition für dieses Modell zu
-definieren. Zudem ist eine Übertragbarkeit zwischen Programmiersprachen
-im Allgemeinen nicht gegeben.
 
 \abb{model} zeigt eine tabellarische Zusammenfassung des in diesem
 Abschnitt erfolgten Vergleichs von Stings, Objekten, den
@@ -686,8 +699,9 @@ Baumrepräsentationssprachen \sexps{}, XML und JSON sowie der graphischen
 Modellierungssprache UML. Den \sexps{} fällt unter den
 Baumrepräsentationen eine besondere Rolle zu, da diese im Gegensatz zu
 beispielsweise XML minimal und redundanzfrei definiert sind, ohne an
-Ausdrucksmächtigkeit zu verlieren. Aus diesem Grund widmet sich diese
-Arbeit vor allem \sexp-gestützter Code-Generierung.
+Ausdrucksmächtigkeit zu verlieren. Damit gibt es in Tools, die \sexps{}
+benutzen, keinerlei unnötige Komplexität. Aus diesem Grund widmet sich
+diese Arbeit hauptsächlich \sexp-gestützter Code-Generierung.
 
 \lsection[cgen:comp]{Template-basierte \cgen{}}
 
@@ -713,32 +727,35 @@ dieser Kriterien verglichen und bewertet.
 
 Template-Engines unterscheiden sich sowohl in den Eingabe-, als auch in
 den Ausgabemodellen. Möglich sind Zeichenketten, typisierte Objekte
-sowie untypisierte Bäume wie \sexps{} oder XML \sees{cgen:model}.
+sowie untypisierte Bäume wie \sexps{} oder XML \sees{cgen:model}. Auch
+die generierbaren Zielsprachen unterscheiden sich - manche Generatoren
+können jede Sprache generieren, während andere nur eine einzige oder
+eine Menge von Sprachen unterstützen.
 
 \lsubsubsection[cgen:comp:crit:def]{Template-Definition}
 
-Die Definition von Templates lässt sich Anhand der Operationen Quote und
-Unquote erläutern, welche aus dem Lisp-Umfeld stammen\footnote{Üblich
-  sind unter Lisp-Programmierern statt des Begriffs "`Quote"' meist
-  "`Backquote"' oder "`Quasiquote"', während ein Quote komplett statisch
-  ist. Da es aber immer möglich ist, kein Unquote zu verwenden und so
-  komplett statische Blöcke zu bauen, ist dieser Begriff unnötig,
-  weshalb in dieser Arbeit alles als Quote bezeichnet wird.}.  
+Die Definition von Templates lässt sich Anhand der Operationen
+Quasiquote\footnote{Neben Quasiquote ist auch der Begriff Backquote
+  üblich. Neben dem Quasiquote gibt es in Lisp-Sprachen auch ein
+  einfaches Quote, welches einen komplett statischen Bereich erzeugt,
+  ohne darin auf Unquotes zu achten.} und Unquote erläutern, welche aus
+dem Lisp-Umfeld stammen.
 
-Ein Quote erzeugt ein Template, und das innere eines Quotes wird als
-statisch interpretiert, solange darin kein Unquote auftritt. Nicht
-überall sind Quotes explizit - oft interpretieren Anwendungen auch
-automatisch die äußerste Ebene einer Template-Datei als quotiert. Manche
-Tools zur \cgen{} besitzen kein umfassendes Quote, mit dem sich wirklich
-jede gewünschte, Quellcode erzeugende Funktion ausdrücken lässt. Aus
-syntaktischen Gründen könnte es beispielsweise nicht möglich sein, eine
-variable Anzahl an Statements zu erzeugen.
+Ein Quasiquote erzeugt ein Template, und das innere eines Quasiquotes
+wird als statisch interpretiert, solange darin kein Unquote
+auftritt. Nicht überall sind Quasiquotes explizit - oft interpretieren
+Anwendungen auch automatisch die äußerste Ebene einer Template-Datei als
+quotiert. Manche Tools zur \cgen{} besitzen kein universelles
+Quasiquote, mit dem sich wirklich jede gewünschte, Quellcode erzeugende
+Funktion ausdrücken lässt. Aus syntaktischen Gründen könnte es
+beispielsweise nicht möglich sein, eine variable Anzahl an Statements zu
+erzeugen.
 
-Ein Unquote, welches nur innerhalb eines Quote auftauchen darf, erzeugt
+Ein Unquote, welches nur innerhalb eines Quasiquote auftauchen darf, erzeugt
 einen dynamischen Unterabschnitt, welcher meist in einer
 Programmiersprache beschrieben ist. Hier werden die Parameter verwendet,
 die beim Aufruf an das Template übergeben werden. Je nach Anwendung kann
-innerhalb eines Unquote eventuell wieder ein Quote vorkommen, so dass
+innerhalb eines Unquote eventuell wieder ein Quasiquote vorkommen, so dass
 ein Sub-Template erzeugt wird. Manche Systeme benutzen auch ein
 implizites Unquote was dann durchgeführt wird, wenn ein Token mit dem
 Namen eines Template-Parameters übereinstimmt.
@@ -750,7 +767,7 @@ Template-Engine eine Funktion definiert wird, die mit String-Operationen
 arbeitet, letztlich aber die gleiche Aufgabe erfüllt wie ein
 Template. Manche Tools bieten neben Templates ebenfalls die
 programmatische Erzeugung von Code an. Normalerweise jedoch ist, wenn
-möglich, die Erzeugung mittels Quote und Unquote zu bevorzugen, da hier
+möglich, die Erzeugung mittels Quasiquote und Unquote zu bevorzugen, da hier
 der generierende Code dem generierten ähnelt, was eine bessere
 Lesbarkeit mit sich bringt.
 
@@ -759,8 +776,9 @@ Lesbarkeit mit sich bringt.
 Die Bandbreite bei der Sprachmächtigkeit in Unquote-Bereichen ist hoch:
 Es gibt Tools, die überhaupt keine Berechnungen, sondern lediglich das
 Einfügen der Parameter zulassen. Auf der anderen Seite stehen
-vollständige (Meta-)Programmiersprachen. Zwischenstufen sind ebenfalls
-möglich.
+vollständige (Meta-)Programmiersprachen - Zwischenstufen sind ebenfalls
+möglich. Zudem gibt es Unterschiede beim mit einem Metaprogramm
+verbundenen Schreibaufwand.
 
 \lsubsubsection[cgen:comp:crit:contr]{Kontrollfluss}
 
@@ -802,36 +820,39 @@ eine ungewöhnliche Aufgabe andere Wege erfordert.
 
 \lsubsubsection[cgen:comp:crit:gentemp]{Generierung von Templates}
 
-Manchmal ist es von Vorteil, nicht nur Code der Zielsprache, sondern
-auch Templates selbst programmatisch generieren zu können. Dies ist der
-Fall, wenn sich viele Templates nur geringfügig unterscheiden, diese
-aber dennoch nicht zu einem einzigen Template zusammengefasst werden
-können oder sollen, etwa wenn kein zusätzlicher Parameter gewünscht ist.
+\cgen{} bietet generell die Möglichkeit, eine Programmiersprache um neue
+Abstraktionen zu erweitern, indem die neuen Konzepte vom Generator auf
+bestehende abgebildet werden. Manchmal ist es aber von Nutzen, die
+Metasprache selbst erweitern zu können. Dies lässt sich unter anderem
+erreichen, indem der Template-Code selbst generierbar ist.
 
-Die Möglichkeit, Templates von Templates zu konstruieren, stellt oft ein
-syntaktisches Problem dar, da nicht ohne weiteres klar ist, ob sich
-beispielsweise ein Unquote auf das Meta-Template oder das generierte
-Template bezieht. Dies muss meist über aufwändige Escape-Sequenzen
-umgangen werden - nur wenige Frameworks dagegen unterstüzen hingegen
-explizit die Generierung von Templates.
+Manche Engines können nur Code einer speziellen Zielsprache generieren,
+die nicht mit der Metasprache übereinstimmt - hier sind Templates
+offensichtlich nicht generierbar. Aber auch Frameworks, die prinzipiell
+jede Sprache generieren können, haben oft Probleme, wenn Metasprache und
+Zielsprache übereinstimmen. Soll beispielsweise ein Unquote in der
+Zielsprache generiert werden, wird es ohne weitere Maßnahmen fälschlich
+als Unquote der Metasprache interpretiert werden, was zu einem Fehler
+führt. Stattdessen muss dieses Unquote auf eine umständliche Weise,
+z.B. durch Escape-Sequenzen, erzeugt werden.
 
 \lsubsection[cgen:templates:php]{PHP}
 
 Die Scriptsprache PHP ist von vornherein als Template-System
-konstruiert. Viele Web-Frameworks benutzen eine PHP ähnelnde Syntax, um
-Templates für HTML-Dateien zu beschreiben. PHP-Code muss immer von
-\phpo{} und \phpc{} umgeben sein, was praktisch ein Unquote
-darstellt. Parameter in PHP sind dynamisch typisierte Objekte. Das
-Ergebnis der PHP-Blöcke wird als String in die Ausgabedatei eingefügt,
-die ansonsten aus den implizit quotierten Nicht-PHP-Bereichen der
-Template-Datei besteht. Die Unquote-Syntax ist an XML angelehnt, da PHP
-hauptsächlich für die Erzeugung von HTML-Dokumenten verwendet
-wird. Statt eines direkten Template-Aufrufs gibt es die Möglichkeit,
-über die Funktion \icode{include} eine andere PHP-Datei
-einzubinden. Eine Trennung von Model und View wird von PHP nicht
-speziell unterstützt oder gefordert, ist aber möglich. Eine Generierung
-von PHP-Dateien wird nicht speziell unterstützt und ist deswegen
-aufwändig umzusetzen.
+konstruiert, womit Code beliebiger Sprachen generiert werden kann. Viele
+Web-Frameworks benutzen eine PHP ähnelnde Syntax, um Templates für
+HTML-Dateien zu beschreiben. PHP-Code muss immer von \phpo{} und \phpc{}
+umgeben sein, was praktisch ein Unquote darstellt. Parameter in PHP sind
+dynamisch typisierte Objekte. Das Ergebnis der PHP-Blöcke wird als
+String in die Ausgabedatei eingefügt, die ansonsten aus den implizit
+quotierten Nicht-PHP-Bereichen der Template-Datei besteht. Die
+Unquote-Syntax ist an XML angelehnt, da PHP hauptsächlich für die
+Erzeugung von HTML-Dokumenten verwendet wird. Statt eines direkten
+Template-Aufrufs gibt es die Möglichkeit, über die Funktion
+\icode{include} eine andere PHP-Datei einzubinden. Eine Trennung von
+Model und View wird von PHP nicht speziell unterstützt oder gefordert,
+ist aber möglich. Generierung von PHP-Dateien selbst wird nicht speziell
+unterstützt und ist deswegen schwer umzusetzen.
 
 \lsubsection[cgen:templates:stringtemplate]{StringTemplate}
 
@@ -851,7 +872,7 @@ Template-Aufrufe sowie \icode{if}-Abfragen erlaubt, wobei letztere nur
 zwischen \icode{true} und \icode{false} bzw. nicht \icode{null} und
 \icode{null} unterscheiden können - aber keine Berechnungen oder
 Vergleichsoperatoren benutzen können. "`Anonyme Templates"' (analog zu
-anonymen Funktionen) entsprechen einem Quote - es ist allerdings auch
+anonymen Funktionen) entsprechen einem Quasiquote - es ist allerdings auch
 möglich, extern definierte Templates aufzurufen. Statt der Bereitstellung
 eines Konstruktes wie \icode{foreach} iteriert StringTemplate
 automatisch, wenn ein referenzierter Wert eine Liste ist - dies
@@ -873,21 +894,23 @@ wodurch die Trennung wiederum verletzt wäre. Für solche Fälle wäre es
 hilfreich, wenn StringTemplate das Definieren von Helper-Klassen, deren
 Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 
-\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}}
-\todo{Ausgabetypisierung Makro vs. Template} \cpp{}-Templates bieten die
-Möglichkeit, Klassen oder Funktionen unter anderen durch Typnamen zu
-parametrisieren, um so generische Konstrukte woe Collection-Klassen
-definieren zu können. Die bekannten Java-Generics \cite{todo} wurden
-Templates nachempfunden und haben eine ähnliche Syntax - diese sind
-allerdings simpler und weniger mächtig. Neben Typen können auch manche
-Werte wie Integer sowie andere Templates übergeben werden. Der Aufruf
-des Templates erfolgt durch die Übergabe des konkreten Typnamens oder
-Wertes in spitzen Klammern bei Benutzung der entsprechenden Klasse oder
-Funktion. Mit \cpp{}-Templates lässt sich sehr viel mehr konstruieren
-als lediglich generische Collection-Klassen - beispielsweise zeigt
-\abb{cpp-fibonacci} die Berechnung von Fibonacci-Zahlen zur
-Kompilationszeit. Weitere kreative Verwendungsmöglichkeiten von
-Templates finden sich in der Bibliothek Boost\cite{Boost}. 
+\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}} \cpp{}-Templates
+bieten die Möglichkeit, Klassen oder Funktionen unter anderen durch
+Typnamen zu parametrisieren, um so generische Konstrukte wie
+Collection-Klassen definieren zu können. Die bekannten Java-Generics
+\cite{todo} wurden Templates nachempfunden und haben eine ähnliche
+Syntax - diese sind allerdings simpler und weniger mächtig. Templates
+werden direkt vom \cpp{}-Compiler ausgewertet, so dass es kein
+sichtbares oder verfügbares Ausgabemodell gibt. Neben Typen können auch
+manche Werte wie Integer sowie andere Templates übergeben werden. Der
+Aufruf des Templates erfolgt durch die Übergabe des konkreten Typnamens
+oder Wertes in spitzen Klammern bei Benutzung der entsprechenden Klasse
+oder Funktion. Mit \cpp{}-Templates lässt sich sehr viel mehr
+konstruieren als lediglich generische Collection-Klassen -
+beispielsweise zeigt \abb{cpp-fibonacci} die Berechnung von
+Fibonacci-Zahlen zur Kompilationszeit. Weitere kreative
+Verwendungsmöglichkeiten von Templates finden sich in der Bibliothek
+Boost\cite{Boost}.
 \begin{figure}
   \centering
   \begin{code}
@@ -914,37 +937,61 @@ Berechnungen nicht möglich sind, ist das System weit weniger mächtig als
 andere in diesem Abschnitt. Eine Model-View-Trennung ist ebenfalls nicht
 möglich, ohne komplexe Modelle aber auch nicht notwendig. Da Aufrufe von
 Templates über eine spezielle Syntax erfolgen, handelt es sich hier
-nicht um Makros.
-\todo{Schachtelung}
+nicht um Makros. Templates werden direkt vom Compiler ausgewertet und
+nicht etwa einem eigenständigen Präprozessor. Deswegen ist es nicht
+möglich, Templates selbst zu generieren.
 
 \lsubsection[cgen:templates:temphask]{Template Haskell}
 
-\todo{Quote-Beispiel, Code für Tupel-Beispiel, Komponententrennung, Template-Gen}
-
 Template Haskell ist eine Compiler-Erweiterung für Haskell, die die
 Grundidee von \cpp{}-Templates als "`funktionale
-Kompilationszeit-Sprache"' aufgreift und vervollständigt, um so ein
-maximal mächtiges System zu bekommen. Eingabemodelle können beliebige
-Haskell-Datentypen sein, die Ausgabe beliebiger Haskell-Code. Templates
-sind selbst Haskell-Funktionen, so dass Metasprache und generierte
-Sprache identisch sind und Templates somit Turing-vollständig und
-Typsicher werden. In Quelldateien kann Meta-Code mit normalen Code
-gemischt werden - zudem bietet Template Haskell Reification, d.h. in
-Templates können Meta-Informationen wie Typen über Code in derselben
-Datei abgefragt werden, was enorme Möglichkeiten eröffnet.
+Kompilationszeit-Sprache"' aufgreift und erweitert, um ein sehr
+mächtiges System zu erhalten. Eingabemodelle können beliebige
+Haskell-Datentypen sein, die Ausgaben einzelner Templates sind Objekte
+eines speziellen Datentyps, der Haskell-Code beschreibt. Templates sind
+selbst Haskell-Funktionen, so dass Metasprache und generierte Sprache
+identisch sind und Templates somit Turing-vollständig und Typsicher
+werden. In Quelldateien kann Meta-Code mit normalen Code gemischt werden
+- zudem bietet Template Haskell Reification, d.h. in Templates können
+Meta-Informationen wie Typen über Code in derselben Datei abgefragt
+werden, was enorme Möglichkeiten eröffnet.
 
 Da Templates Funktionen sind, können diese komplett programmatisch
-erzeugt werden. Darüber hinaus gibt es auch eine Syntax für Quote und
-Unquote, wodurch kürzerer und lesbarer Meta-Code ermöglicht wird. Das
-Quote ist allerdings nicht umfassend, es gibt also Templates, die nur
-auf programmatische Art erzeugt werden können. Beispielsweise zeigt
+erzeugt werden - deswegen ist auch eine beliebige Modularisierung
+möglich. Darüber hinaus gibt es auch eine Syntax für Quasiquote und Unquote,
+wodurch kürzerer und lesbarer Meta-Code ermöglicht wird. Quotierung und
+programmatische Erzeugung können beliebig kombiniert werden. Die
+Quelldatei kann als implizit quotiert aufgefasst werden, da überall ein
+Unquote benutzt werden kann, um auf die Meta-Ebene zu gelangen. Der
+quotierte Bereich wird allerdings übernommen - schließlich kann auch
+"`normaler Code"' von Meta-Code aufgerufen werden, so dass dieser auch
+als Meta-Code verwendet werden kann. Wie in \cpp{} werden die Templates
+direkt vom Compiler ausgewertet, so dass keine Generierung von Templates
+selbst möglich ist.
+
+Das Quasiquote ist allerdings nicht umfassend, es gibt also Templates, die
+nur auf programmatische Art erzeugt werden können. Beispielsweise zeigt
 \abb{ths-tuple} ein Template, das eine Zahl $n$ als Eingabe bekommt und
 den Haskell-Code für ein $n$-äres Tupel mit den Zahlen $1$ bis $n$
-zurückliefert. Dieses Template kann nicht mittels Quote implementiert
-werden, da ein Tupel variabler Länge syntaktisch in Haskell selbst nicht
-repräsentierbar ist. Deswegen muss auf Funktionen wie
-... zurückgegriffen werden, was die Komplexität leider deutlich
-erhöht.
+zurückliefert. Dieses Template kann nicht mittels Quasiquote implementiert
+werden, da Tupel variabler Länge syntaktisch in Haskell selbst nicht
+repräsentierbar sind. Zudem muss Code für Literale wie Zahlen typisiert
+erzeugt werden, wenn die Zahl selbst nicht vorn vornherein feststeht uns
+so ein Quasiquote benutzt werden kann. Deswegen muss auf Konstruktoren wie
+TupE und LitE zurückgegriffen werden, wodurch die Ähnlichkeit von
+Template und generiertem Code verschwindet und die Komplexität leider
+deutlich erhöht wird.
+
+\begin{figure}
+  \centering
+  \begin{code}
+tupleNums n = TupE [LitE (IntegerL i) | i <- [1..n]]
+
+$(tupleNums 5) -- ergibt (1, 2, 3, 4, 5)
+  \end{code} %$
+  \caption{Generierung von Tupeln dynamischer Länge in Template Haskell}
+  \label{magicl:fig:ths-tuple}
+\end{figure}
 
 Allgemein wächst der Aufwand für \cgen{} mit der Komplexität des
 Ausgabemodells. Soll die Generierung typsicher sein, ist das Modell
@@ -953,117 +1000,364 @@ Sprache ist. Obwohl Haskell im Vergleich zu Sprachen wie \cpp{} bereits
 eine sehr einfache Syntax besitzt, erweist sich diese im obigen Beispiel
 bereits als Problem. In einer String-basierten Generierung von
 Haskell-Code ist die Flexibilität größer, so dass hier ein
-entsprechendes Quote möglich gewesen wäre - zum Preis von möglichen
+entsprechendes Quasiquote möglich gewesen wäre - zum Preis von möglichen
 Syntaxfehlern und verschleierter Struktur.
 
-Ein Mittelweg wäre eine Repräsentation von Haskell-Code in \sexps{} oder
-XML, die vom Framework anschließend in eine typisierte Repräsentation
-überführt und schließlich zur endgültigen Generation verwendet
-wird. Diese Variante hätte folgende Vorteile:
+Ein Mittelweg wäre eine \sexp{}-Syntax für Haskell, die vom Framework
+zunächst in eine typisierte Repräsentation überführt und daraufhin zur
+Generierung verwendet wird. Diese Variante hätte folgende Vorteile:
 \begin{itemize}
 \item Das Ausgabemodell von Templates ist einfach, aber explizit
   strukturiert.
-\item Quotes können für jedes Template benutzt werden.
+\item Quasiquotes können für jedes Template benutzt werden.
 \item Es kann kein Code mit Syntaxfehlern erzeugt werden, da das
   Sexp-Modell bei der Umwandlung in ein typisiertes Objekt validiert wird.
 \end{itemize}
-Dieser Weg wird im in \cref{magicl} vorgestellten Framework gewählt.
+Wenn nun standardmäßig die \sexp{}-Notation verwendet wird, ist auch
+weiterhin die Metasprache mit der Zielsprache identisch. Dieser Weg
+wird im in \cref{magicl} vorgestellten Framework gewählt.
 
-\lsubsection[cgen:templates:cprep]{Der C-Präprozessor}
-\begin{itemize}
-\item C-Makros seit ca. 1975
-\item Keine komplette Programmiersprache (if, define, aber nicht goto, funktionen)
-\item gensym fehlt, tatsächliche Berechnung zur Kompilierzeit
-\end{itemize}
+\lsubsection[cgen:templates:cprep]{C-Präprozessor}
 
-Name entscheidet über Funktionsaufruf vs. Macro
+Der C-Präprozessor wird unter anderem verwendet, um Abhängigkeiten
+zwischen Quellcode-Dateien über bedingte Includes zu verwalten. Er läuft
+als eigenes Programm vor dem C-Compiler und kann deshalb auch in
+Kombination mit anderen Sprachen benutzt werden. Mit dem Befehl
+\icode{#define} können Makros auf Textersetzungsbasis sowie
+Compiler-Konstanten definiert werden. \abb{c-loop2d} zeigt
+beispielsweise ein Makro, mit dessen Hilfe sich zwei verschachtelte
+Iterationen über Zahlen komfortabler Notieren lassen.
+\begin{figure}
+  \centering
+  \begin{code}
+#define loop2d(xmax, ymax)   \
+  for(int x=0; x<xmax; x++)  \
+   for(int y=0; y<ymax; y++)
 
-Dies kann man positiv und negativ sehen: Meist ist es für einen
+loop2d(2, 3) {
+  printf("(%d-%d) ", x, y);
+}
+// Ergibt "(0-0) (0-1) (0-2) (1-0) (1-1) (1-2) "
+  \end{code}
+\caption{Ein simples C-Makro für zwei verschachtelte Schleifen}
+  \label{magicl:fig:c-loop2d}
+\end{figure}
+Ein explizites Unquote wird hier nicht benötigt - statt dessen wird nach
+Parameternamen entschieden. Makros auf Textersetzungsbasis ermöglichen
+viele zusätzliche Fehlerquellen wie Namenskonflikte. Beispielsweise
+funktioniert \icode{loop2d} nicht, wenn es noch andere Variablen
+\icode{x} oder \icode{y} gibt, die im innern verwendet werden.
+
+Zusätzlich bietet der Präprozessor die Möglichkeit, mittels \icode{#if}
+einfache Abfragen auf Compiler-Konstanten wie das Vorhandensein oder
+simple, ganzzahlige Berechnungen und Vergleiche durchzuführen und davon
+abhängig Zeilen einzubinden oder wegzulassen. Darüber hinaus sind
+keinerlei Berechnungen im Präprozessor möglich.
+
+Da es sich im Makros handelt, werden diese Templates nicht über eine
+spezielle Syntax aufgerufen - ein Makro-Aufruf gleicht statt dessen
+einem Funktionsaufruf und die Unterscheidung zwischen beiden erfolgt
+durch die Prüfung, ob ein Makro dieses Namens vorhanden ist. Dies kann
+man sowohl positiv als auch negativ sehen: Meist ist es für einen
 Programmierer angenehm, nicht wissen zu müssen, ob ein Befehl ein Makro
 oder eine Funktion ist - insbesondere wenn ein Makro nur aus
 Optimierungsgründen existiert, obwohl eine Funktion an der gleichen
 Stelle auch ginge. Auf der anderen Seite verschleiern Makros die
-Semantik und können zu unangenehmen Fehlern wie Konflikte bei
-Variablennamen führen, wenn sie nicht mit Bedacht genutzt werden.
+Semantik - wenn ein Programmierer beispielsweise sorglos ein Makro
+verwendet im Glauben, es handele sich um eine Funktion, können
+unerwartete Fehler wie Namenskonflikte auftreten.
 
-\lsubsection[cgen:templates:xslt]{XSLT}
+\lsubsection[cgen:templates:xsl]{XSL}
+
+\todo{Literatur}
+
+Die Extensible Stylesheet Language (XSL) ist eine Sprachfamilie, mit der
+XML-Dokumente unter anderem in graphische Repräsentationen überführt
+werden können. XSL besteht aus drei XML-basierten Sprachen:
 \begin{itemize}
-\item XPath: Adressieren, z.B. \icode{//chapter[@title=Einleitung"]/paragraph}
-  (alle Absätze aus Kap. ``Einleitung'')
-\item XSLT: Turing-Vollständige Baum-Transformationssprache in XML
-  \begin{itemize}
-  \item template: Matcher in XPath
-  \item Schleifen, sortierung, if-Abfragen
-  \item Nachvolger der DSSSL (Scheme-Dialekt $\rightarrow$ \sexp{}-basiert)
-  \item Keine ``richtige'', praktische Programmiersprache
-  \item $\rightarrow$ oft wird für komplexere Operationen andere Sprache benutzt
-  \end{itemize}
-\item Für viele Sprachen generierbare XML-Serializer
+\item XSL - Formatting Objects (XSL-FO) zur Beschreibung des graphischen Layouts von Seiten
+\item XML Path Language (XPath) zum Adressieren von Elementen in XML-Dokumenten
+\item XSL Transformation (XSLT) als Transformationssprache für XML-Dokumente
 \end{itemize}
+XSL-FO spielt für die abstrakte Betrachtung von \cgen{} keine Rolle und
+wird hier nicht näher behandelt.
+
+Mit XPath können komfortabel Knotenmengen in XML-Bäumen referenziert
+werden. Beispielsweise selektiert der Ausdruck
+\icode{//chapter[@title="Einleitung"]/paragraph} alle Elemente mit Namen
+\icode{paragraph}, die direkte Kinder eines Elements mit Namen
+\icode{chapter} und dem Attribut \icode{title} mit Wert
+\icode{Einleitung} sind, wobei der Knoten \icode{chapter} an einer
+beliebigen Stelle im Baum stehen darf.
+
+XSLT ist eine Template-basierte Transformationssprache, mit der ein
+XML-Dokument in ein anderes überführt werden kann - wobei reiner
+ASCII-Text als "einelementiger XML-Baum" ebenfalls erzeugt werden
+kann. XSLT ist Turing-vollständig und relativ umfangreich - so sind
+unter anderem Konstrukte zur Iteration, Sortierung und bedingten
+Ausführung enthalten. \abb{xlst-addr} zeigt beispielsweise ein Template,
+das eine Adressdatenbank nach Nachnamen sortiert und in eine
+HTML-Tabelle umwandelt.
+\begin{figure}
+  \centering
+  \begin{code}
+Datenbank:
+<adressen>
+  <person vorname="Heinz" nachname="Schulz" />
+  <person vorname="Walter" nachname="Meier" />
+</adressen>
+
+Template:
+<xsl:template match="/adressen">
+  <table>
+    <xsl:for-each select="person">
+      <xsl:sort select="@nachname" order="ascending" data-type="text" />
+        <tr>
+          <td><xsl:value-of select="@vorname" /></td>
+          <td><xsl:value-of select="@nachname" /></td>
+        <tr>
+      </xsl:sort>
+    </xsl:for-each>
+  </table>
+</xsl:template>    
+
+Ausgabe:
+<table>
+  <tr>
+    <td>Walter</td>
+    <td>Meier</td>
+  </tr>
+  <tr>
+    <td>Heinz</td>
+    <td>Schulz</td>
+  </tr>
+</table>    
+  \end{code} %"<
+  \caption{Ein XSLT-Template, das eine Adressdatenbank nach Nachnamen
+    sortiert und als HTML-Tabelle ausgibt}
+  \label{magicl:fig:xslt-addr}
+\end{figure}
+Zur Unterscheidung von Metasprache und generiertem Code wird der
+Namespace \icode{xsl} benutzt, der somit als Unquote fungiert. Templates
+können sowohl direkt als Funktionen aufgerufen werden sowohl als Makros,
+die über Pfad-Matching dem aktuell zu verarbeitenden Knoten zugeteilt
+werden. Ein funktionaler Aufruf erfolgt mit \icode{<xsl:call-template>},
+die alternative Kontrollübergabe an den Makro-Prozessor mit
+\icode{<xsl:apply-templates/>}. Beides kann allerdings nicht derart
+kombiniert werden, dass ein funktional aufgerufenes Template dennoch
+über Matcher überprüft ob es auf einen Knoten wirklich anwendbar ist.
+
+XSLT ist zwar so mächtig wie eine "`echte"' Programmiersprache,
+allerdings aufgrund der XML-Syntax mit deutlich mehr Schreibaufwand
+verbunden, so dass für komplexe Berechnungen oft auf eine andere Sprache
+zurückgegriffen wird. Einige XSLT-Prozessoren bieten dafür die
+Möglichkeit, externe Programme aus XSLT-Templates heraus
+aufzurufen. Eine Komponententrennung ist ohne diese Möglichkeit
+ebenfalls umständlich. Aufgrund der Übereinstimmung von Meta- und
+Zielsprache ist eine Generierung von XSLT-Dateien prizipiell
+möglich. Ein Problem ist allerdings wieder die Zuordnung der Unquotes -
+um beispielsweise ein \icode{<xsl:apply-templates/>} zu generieren, muss
+dieses umständlich entweder in einem CDATA-Abschnitt quotiert oder über
+das nachträgliche Ändern des Element-Namespace erzeugt werden.
 
 \lsubsection[cgen:templates:lisp]{Lisp}
 
-\begin{itemize}
-\item \cgen{} und Metaprogrammierung seit fast 50 Jahren
-\item homoikonisch wegen \sexps{}
-\item Einheitliche Syntax macht vieles leichter
-\end{itemize}
+Lisp ist eine der ältesten Programmiersprachfamilien der Welt, die unter
+anderem für ihre Möglichkeiten zur Metaprogrammierung bekannt ist. Neben
+alten, aber noch immer benutzten Sprachen wie Emacs Lisp, Scheme oder
+Common Lisp entstehen auch immer wieder neue Lisps wie
+Clujure\cite{Clojure}, welches auf der Java Virtual Machine (JVM)
+aufsetzt. Alle Lisp-Sprachen basieren auf \sexps{} und verzichten auf
+die meiste Syntax wie Infix-Operatoren - gleichzeitig sind \sexps{}
+selbst in jedem Lisp als Datenstrukturen verfügbar, so dass jedes
+Programm gleichzeitig ein Lisp-Objekt ist und entsprechend manipuliert
+werden kann\footnote{Ein C-Programm kann zwar auch ein anderes
+  C-Programm als String manipulieren - dies ist allerdings mit \sexps{},
+  die eine innerer Struktur besitzen, deutlich komfortabler als die
+  Arbeit mit rohen Strings}. Diese Eigenschaft sowie die Einfachheit von
+\sexps{} selbst machen Lisp für Metaprogrammierung sehr geeignet. Im
+folgenden beziehen sich alle Erklärungen auf die Sprache Common Lisp -
+andere Dialekte haben aber meist ähnliche Konstrukte.
 
-\begin{itemize}
-\item Backquote
-  \begin{itemize}
-  \item Spezialsyntax, damit ein \sexp{} nicht ausgewertet, sondern als
-    Liste\footnote{Es ist auch möglich, nur ein einzelnes Symbol zu
-      Quotieren - in diesem Fall ist das Ergebnis selbstverständlich
-      keine Liste.} gespeichert wird: \icode{`(foo 1 2 3)}
-  \item Unquote: \icode{`(foo 1 ,(x + 5) 3)} ergibt den Code \icode{(foo
-      1 42 3)}, falls \icode{x} den Wert 37 hat.
-  \item Splice fügt Liste ein: \icode{`(foo ,@rest)} ergibt \icode{(foo
-      1 2 3)}, wenn \icode{rest} die Liste \icode{(1 2 3)} ist.
-  \end{itemize}
-\item Makros
-  \begin{itemize}
-  \item Funktionen, die zur Compilierungszeit ausgewertet werden
-  \item Vollständige Lisp-Funktionalität steht bereit (vgl. C)
-  \item Parameter und Rückgabewert sind Code, nutzen entsprechend häufig Backquote
-  \item "`Incrementelle Compiler-Erweiterungen"', ermöglichen ganze
-    einbebettete Programmiersprachen (z.B. Prolog), die mit normalem
-    Lisp-Code gemischt werden können.
-  \item "`Name Capture"'
-    \begin{itemize}
-    \item Kann durch Nutzung von \icode{gensym} vermieden werden
-    \item Manchmal erwünscht - Beispiel \icode{aif}\cite{OnLisp}
-    \item Scheme benutzt "`hygienische Makros"', die Namenskonflikte ausschließen
-    \end{itemize}
-  \item Makros, die Makros erzeugen, sind möglich - allerdings werden
-    verschachtelte Backquotes kompliziert (Bsp.)
-  \end{itemize}
-\end{itemize}
+Mit der \icode{eval}-Funktion besitzt Lisp auch die Möglichkeit zur
+Laufzeit-Metaprogrammierung, welche hier allerdings nicht näher
+betrachtet wird - denn üblicher ist inzwischen die Benutzung von Makros,
+welche zur Kompilationszeit aufgerufen werden. Macros werden mittels
+\icode{(defmacro ..)} definiert und sind letzlich Funktionen, die Code
+als Parameter bekommen und Code (beides als \sexps{}) zurückliefern. Der
+Rückgabewert kann sowohl programmatisch als auch mittels Quasiquote
+erzeugt werden. Neben dem normalen Unquote gibt es auch ein Unquote mit
+"`Splicing"', welches alle Elemente einer Liste einzeln
+einfügt. \abb{lisp-quotes} zeigt drei kurze Verwendungsbeispiele, die
+alle Code zur Addition mehrerer Zahlen\footnote{In Lisp ist der Operator
+  \icode{+} nicht binär, sondern akzeptiert beliebig viele
+  Argumente. Dies ist ein Vorteil der Verwendung von \sexp{}-Syntax
+  anstelle von Infix-Operatoren - auch wenn dies zunächst
+  gewöhnungsbedürftig ist.} generieren.
+
+\begin{figure}
+  \centering
+  \begin{code}
+Einfaches Quasiquote ohne Unquote - ergibt (+ 1 2 3):
+
+ `(+ 1 2 3)
+
+
+Quasiquote mit Unquote - ergibt (+ 1 7 3) falls x=2:
+
+`(+ 1 ,(x + 5) 3)
+
+
+Unquote mit Splicing - ergibt (+ 1 2 3 4 5) falls input=(2 3 4):
+
+`(+ 1 ,@input 5)
+  \end{code}
+  \caption{Drei Beispiele für Quasiquotes in Common Lisp}
+  \label{magicl:fig:lisp-quotes}
+\end{figure}
+Mit diesen Operationen können beliebige \sexps{} erzeugt werden. Da das
+Template selbst aus Lisp-Code besteht und auch beliebigen anderen
+Lisp-Code aufrufen kann, ist die Metasprache mächtig, erweiterbar sowie
+modulisierbar und benötigt vergleichsweise kurze
+Metaprogramme. Lisp-Makros können nicht direkt aufgerufen werden,
+stattdessen wird ein \sexp{}-Knoten ähnlich wie bei C-Makros als
+Makroaufruf interpretiert, wenn der Knotenname mit einem Makronamen
+übereinstimmt. Hier stellt sich wieder die Frage, ob die äußere
+Ununterscheidbarkeit von Makros und Funktionsaufruf eher positiv oder
+negativ zu sehen ist. Positiv ist, dass die konkrete Implementation
+einer \sexp{}-Sprache so versteckt wird und nachträglich verändert
+werden kann. Negativ sind unerwünschtes Verhalten wie Mehrfachevaluation
+oder Namenskonflikte - im Gegensatz zu C stellt Lisp allerdings
+Möglichkeiten bereit, um diese zu vermeiden. Beispielsweise kann mit dem
+\icode{gensym}-Befehl ein global eindeutiger Variablenname erzeugt
+werden. Manchmal aber ist die Erzeugung von nicht-eindeutigen
+Variablennamen aber auch erwünscht - so zeigt \abb{lisp-aif} das
+"`anaphorische"' Makro \icode{aif}\cite{OnLisp}, welches ein
+\icode{if}-Konstrukt ermöglicht, das die Variable \icode{it} an die
+abgefragte Bedingung bindet. Dies ist praktisch, da \icode{if} nicht
+zwischen true und false, sondern zwischen \icode{nil} und nicht
+\icode{nil} unterscheidet, welshalb die Bedingung selbst Information
+enthalten kann. Die Abbildung zeigt dies am Beispiel einer einfachen
+Datenbankabfrage, die sich mittels \icode{aif} kürzer schreiben lässt.
+\begin{figure}[htp]
+  \centering
+  \begin{code}
+Makro:
+
+(defmacro aif (condition then-part else-part)
+
+  ;; Mit let werden Variablen an Werte gebunden.
+  `(let ((it condition,))             
+
+      ;; Beim if-Operator ist der erste Parameter eine Bedingung,
+      ;; der zweite die Anweisung, falls die Bedingung stimmt,
+      ;; der dritte die anderweitige Anweisung.
+      (if it ,then-part ,else-part)))
+
+
+Abfrage:
+
+(aif (find-matching-record "Schulz")
+  (print-address it)            ; Diese Zeile entspricht dem "then-Teil",
+  (error "No address found"))   ; diese dem "else-Teil".
+
+
+Wird kompiliert nach:
+
+(let ((it (find-matching-record "Schulz")))
+  (if it
+      (get-address it)
+      (error "No address found")))    
+  \end{code}
+  \caption{Das Makro \icode{aif} und seine Verwendung}
+  \label{magicl:fig:lisp-aif}
+\end{figure}
+
+Makros können als kleine, aber mächtige "`Compiler-Plugins"' aufgefasst
+werden, mit denen die Sprache direkt erweitert bzw. DSLs integriert
+werden können. Beispielsweise lässt sich damit ein nach Lisp
+kompilierendes Prolog\cite{NorvigProlog} - selbstverständlich in
+\sexp{}-Syntax - konstruiert werden, welches beliebig mit Lisp-Code
+gemischt werden kann. Auch Makro-schreibende Makros sind in Lisp möglich
+- hier ergibt sich allerdings wieder das Problem, ob sich ein Unquote
+auf das innere oder äußere Quasiquote bezieht. In Common Lisp bezieht
+sich ein Unquote immer auf das innerste Quasiquote - die Aufhebung eines
+äußeren Quasiquote ist dagegen sehr trickreich und gewöhnungsbedürftig,
+wie \abb{lisp-macrogen} zeigt. Der Lösungsansatz benutzt zwischen neben
+zwei Unquotes ein Quote mit Syntax \icode{'()} verwendet, welches nicht
+mit den Unquotes interagiert.
+
+\begin{figure}
+  \centering
+  \begin{code}
+Definition eines "Meta-Makros":
+
+(defmacro metamacro (name cmd)
+  `(defmacro ,name (x)
+     `(,',cmd ,x)))    
+
+
+Beispiel-Aufruf:
+
+(metamacro mymacro print)
+
+
+Wird kompiliert nach:
+
+(defmacro mymacro (x)
+  `(print ,x))
+  \end{code}
+  \caption{Ein Makro-erzeugendes Makro in Common Lisp}
+  \label{magicl:fig:lisp-macrogen}
+\end{figure}
 
 \lsubsection[cgen:comp:sum]{Zusammenfassung}
 
-\begin{sidewaysfigure}[htp]
-  \centering
-\begin{tabular}{|l|l|l|l|l|l|l|l|} \hline
-\bf Tool             &\bf PHP        &\bf StringTemplate          &\bf Templates in \cpp{}    &\bf Template Haskell&\bf C-Makros&\bf XSLT &\bf Lisp        \\\hline\hline
-\bf Eingabe              &Objekt         &Objekt als String           &Typname/Wert/Template     &Objekt          &Code            &XML      &\sexp{}     \\\hline
-\bf Typisierung Eingabe  &hoch           &minimal                     &maximal                    &maximal         &mittel          &mittel   &mittel      \\\hline
-\bf Ausgabe              &String         &String                      &Code für Funktion/Klasse   &Code-Objekt     &Code            &XML      &\sexp{}     \\\hline
-\bf Typisierung Ausgabe  &minimal        &minimal                     &stark                      &maximal         &schwach         &mittel   &mittel      \\\hline
-\bf implizites Quote     &ja             &ja                          &nein                       &nein?           &nein            &nein     &nein        \\\hline
-\bf Quote-Syntax         &nein           &\icode{\{args | code\}}     &\icode{template<args> code}&                &\icode{#define} &         &\icode{`( )}\\\hline
-\bf Unquote-Syntax       &\phpo{} \phpc{}&\icode{$ $} oder \icode{< >}&implizit                   &                &implizit        &         &\icode{,}   \\\hline
-\bf umfassendes Quote    &ja             &ja                          &nein                       &nein            &                &         &ja          \\\hline
-\bf Code-Objekt verfügbar&String         &nein                        &nein                       &ja              &nein            &nein     &ja          \\\hline
-\bf Sprachmächtigkeit    &maximal        &minimal                     &schwach                    &maximal         &gering          &hoch     &maximal     \\\hline
-\bf Template-Aufruf      &nur über Engine&\icode{wert:template(args)} &\icode{token<args>}        &funktional      &                &         &            \\\hline
-\bf Macros               &nein           &nein                        &nein                       &nein            &                &         &            \\\hline
-\bf Komponententrennung  &möglich        &stark                       &keine                      &möglich         &                &         &            \\\hline
-\bf Template-Generierung &schwer         &schwer                      &                           &nein?           &                &ja       &ja          \\\hline
-%bf                      &               &                            &                           &                &                &         &            \\\hline
+In dieser Sektion wurde eine Reihe von Template-basierten
+Code-Generatoren miteinander verglichen. \abb{comp_sum} zeigt eine
+tabellarische Übersicht dieses Vergleichs. String-basierte Systeme 
+
+\begin{sidewaysfigure}[tp]
+\subfloat{
+\begin{tabular}{|l|l|l|l|l|} \hline
+\bf Tool                    &\bf PHP                    &\bf C-Makros    &\bf StringTemplate                 &\bf Templates in \cpp{}         \\\hline\hline  
+\bf Eingabemodell           &Objekt                     &String          &Objekt als String                  &Typname/Wert/Template           \\\hline                      
+\bf Eingabevalidierung      &relativ stark              &schwach         &stark                              &stark                           \\\hline       
+\bf Ausgabemodell           &String                     &String          &String                             &Code für Funktion/Klasse        \\\hline     
+\bf Ausgabevalidierung      &minimal                    &minimal         &minimal                            &unklar, da Compiler-intern      \\\hline      
+\bf Zielsprache             &beliebig                   &beliebig        &beliebig                           &\cpp{}                          \\\hline      
+\bf Quasiquote              &implizit                   &\icode{#define} &implizit / \icode{\{args | ..\}}   &\icode{template<args> ..}       \\\hline
+\bf Unquote                 &\phpo{}\icode{ .. }\phpc{} &implizit        &\icode{$ .. $} oder \icode{< .. >} &implizit                        \\\hline
+\bf universelles Quasiquote &ja                         &nein            &ja                                 &nein                            \\\hline
+\bf Code-Objekt verfügbar   &String                     &nein            &nein                               &nein                            \\\hline
+\bf Sprachmächtigkeit       &maximal                    &sehr gering     &minimal                            &gering                          \\\hline
+\bf Metaprogrammlänge       &relativ kurz               &kurz            &sehr kurz                          &lang                            \\\hline
+\bf Template-Aufruf         &nur über Engine-Aufruf     &Makro           &\icode{wert:template(args)}        &\icode{token<args>}             \\\hline
+\bf Komponententrennung     &möglich                    &nein            &stark                              &keine                           \\\hline
+\bf Template-Generierung    &aufwändig                  &nein            &aufwändig                          &nein                            \\\hline
+\end{tabular} 
+}\\
+\subfloat{
+\begin{tabular}{|l|l|l|l|} \hline
+\bf Tool                    &\bf Template Haskell         &\bf XSLT                    &\bf Lisp              \\\hline\hline    
+\bf Eingabemodell           & Objekt                      &XML                         &\sexp{}               \\\hline           
+\bf Eingabevalidierung      & stark                       &mittel                      &mittel                \\\hline      
+\bf Ausgabemodell           & Code als Objekt             &XML                         &\sexp{}               \\\hline      
+\bf Ausgabevalidierung      & stark                       &mittel                      &mittel                \\\hline      
+\bf Zielsprache             & Haskell                     &besliebig                   &Lisp                  \\\hline      
+\bf Quasiquote              & implizit /\icode{[| .. |]}  &\icode{<xsl:template> ..}   &\icode{`( .. )}       \\\hline   
+\bf Unquote                 & \icode{$( .. )}             &über \icode{xsl}-Namespace  &\icode{, .. }         \\\hline %$
+\bf vollständiges Quasiquote& nein                        &ja                          &ja                    \\\hline      
+\bf Code-Objekt verfügbar   & ja                          &nein                        &ja                    \\\hline      
+\bf Sprachmächtigkeit       & maximal                     &maximal                     &maximal               \\\hline      
+\bf Metaprogrammlänge       & relativ kurz                &sehr lang                   &kurz                  \\\hline
+\bf Template-Aufruf         & Funktion                    &Funktion / Makro            &Makro                 \\\hline      
+\bf Komponententrennung     & möglich                     &umständlich                 &möglich               \\\hline      
+\bf Template-Generierung    & nein                        &aufwändig                   &etwas kompliziert     \\\hline      
 \end{tabular}
+}
 \caption{Vergleich der Verarbeitungsprozesse von Werkzeugen zur Code-Generierung}
-\label{magicl:tab:comp}
+\label{magicl:fig:comp_sum}
 \end{sidewaysfigure}
 
 \lsection[cgen:parser]{Parser}
@@ -2536,7 +2830,7 @@ wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
 
 MagicL ist der Prototyp eines
 universellen Frameworks für den Entwurf von Programmier- und
-Auszeichnungssprachen. Es gibt dem Meta-Programmierer praktische
+Auszeichnungssprachen. Es gibt dem Metaprogrammierer praktische
 Werkzeuge für das Parsing und Übersetzen neuer sowie für Generierung von
 Code bestehender Sprachen an die Hand, wobei insbesondere (jedoch
 nicht ausschließlich) aus \sexps{} aufgebaute Sprachen unterstützt
