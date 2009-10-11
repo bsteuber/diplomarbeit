@@ -186,6 +186,7 @@
 \chapter*{Abkürzungsverzeichnis}
 \begin{acronym}
 %\setlength{\itemsep}{-\parsep}
+\acro{ASCII}{TODO}
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
@@ -958,8 +959,11 @@ werden, was enorme Möglichkeiten eröffnet.
 
 Da Templates Funktionen sind, können diese komplett programmatisch
 erzeugt werden - deswegen ist auch eine beliebige Modularisierung
-möglich. Darüber hinaus gibt es auch eine Syntax für Quasiquote und Unquote,
-wodurch kürzerer und lesbarer Meta-Code ermöglicht wird. Quotierung und
+möglich. Darüber hinaus gibt es auch Syntax für Quasiquote und Unquote,
+wodurch kürzerer und lesbarer Meta-Code ermöglicht wird. Es gibt
+verschiedene Quasiquote-Arten für Befehle, Patterns und
+Toplevel-Definitionen, wodurch die Typsicherheit verstärkt wird - dies
+bringt allerdings eine höhere Komplexität mit sich. Quotierung und
 programmatische Erzeugung können beliebig kombiniert werden. Die
 Quelldatei kann als implizit quotiert aufgefasst werden, da überall ein
 Unquote benutzt werden kann, um auf die Meta-Ebene zu gelangen. Der
@@ -1315,7 +1319,7 @@ Wird kompiliert nach:
 
 In dieser Sektion wurde eine Reihe von Template-basierten
 Code-Generatoren miteinander verglichen. \abb{comp_sum} zeigt eine
-tabellarische Übersicht dieses Vergleichs. String-basierte Systeme 
+tabellarische Übersicht dieses Vergleichs. 
 
 \begin{sidewaysfigure}[tp]
 \subfloat{
@@ -1359,6 +1363,51 @@ tabellarische Übersicht dieses Vergleichs. String-basierte Systeme
 \caption{Vergleich der Verarbeitungsprozesse von Werkzeugen zur Code-Generierung}
 \label{magicl:fig:comp_sum}
 \end{sidewaysfigure}
+
+String-basierte Systeme sind vermutlich am einfachsten in der Benutzung
+und unterstützen direkt ohne Zusatzaufwand jede Zielsprache - auf der
+anderen Seite sind sie allerdings für die Vermeidung von Syntaxfehlern
+ungeeignet. Während PHP eine mächtige Meta-Sprache bietet, erzwingt
+StringTemplate eine starke Komponententrennung durch Reduzierung
+dieser. C-Makros besizen nur wenige Features, bieten aber als
+Makro-System direkte, von Funktionen äußerlich ununterscheidbare
+Spracherweiterungen - auch wenn diese Gefahren wie Namenskonflikte mit
+sich bringen.
+
+\cpp{}-Templates sowie Template Haskell erweitern die Compiler je einer
+Sprache um die Möglichkeit von Template-Aufrufen über eine spezielle
+Syntax. Während Metasprache und Einsatzmöglichkeiten in \cpp{} recht
+eingeschränkt sind, besitzt Template Haskell die komplette Sprachmächtigkeit
+von Haskell - ergänzt um die Möglichkeit, über Reifikation
+Meta-Informationen über Quellcode derselben Datei abzufragen. Template
+Haskell erzeugt aufgrund der starken Typisierung garantiert Code, der
+frei von Syntaxfehlern ist - dies hat allerdings zum Preis, dass nicht
+jedes Template durch die verschiedenen Quasiquotes ausdrückbar ist, was
+die Lesbarkeit des Meta-Codes senkt.
+
+XSLT und Lisp arbeiten auf untypisierten Baumstrukturen und bieten so
+einen Kompromiss zwischen Flexibilität und Typsicherheit. In beiden
+Systemen ist die Metasprache selbst ebenfalls auf diese Weise
+repräsentiert, wodurch die Möglichkeit zur Generierung und somit auch
+Erweiterung der Metasprache sebst gegeben ist. Die Generierung von
+Quasiquotes bringt allerdings das generelle Problem der Zuordnung eines
+inneren Unquotes mit sich. In XML kann dieses nur umständlich erreicht
+werden, während die Lisp-Lösung sehr kurz, aber etwas kompliziert
+ist. Während XSLT neben XML auch beliebige ASCII-Formate ausgeben kann,
+beschränkt sich der Lisp-Makroprozessor auf \sexps{}. Beide Frameworks
+haben eine Turing-vollständige Metasprache - komplexe Algorithmen lassen
+sich in XSLT allerdings aufgrund der umständlichen Syntax nur mühsam
+ausdrücken, so dass für diese meist auf eine externe Programmiersprache
+zurückgegriffen wird - Lisp-Programme dagegen sind oft kurz und
+elegant. Makro-gesteuerte Template-Aufrufe sind ebenfalls in beiden
+Systemen möglich, wobei XSLT komplexere Patterns sowie alternativ
+funktionale Makro-Aufrufe unterstützt. Ein weiterer Unterschied ist der
+Aufwand für eine neue Spracherweiterung: In XSLT muss dafür eine eigene
+Template-Datei mitsamt zusätzlichem Kompilationsaufruf angelegt
+werden. Lisp dagegen erlaubt sogar die direkte Mischung von Makros und
+Code, wodurch praktisch Compiler-Plugins mit minimalem Aufwand erzeugt
+werden können. Dadurch lassen sich in Lisp leicht mächtige, voll
+integrierte DSLs konstruieren.
 
 \lsection[cgen:parser]{Parser}
 
