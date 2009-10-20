@@ -13,15 +13,17 @@ import Haskell2Code
 
 
 quoteCases = [ ( "(' 42)"
-               , "(symbol \"42\")" )
+               , "([symbol \"42\"])" )
+             , ( "(' 1 2 3)"
+               , "([symbol \"1\"] ++ [symbol \"2\"] ++ [symbol \"3\"])" )
              , ( "(' (+ 1 2))"
-               , "(namedNode \"+\" ([symbol \"1\"] ++ [symbol \"2\"]))" )
+               , "([node ([symbol \"+\"] ++ [symbol \"1\"] ++ [symbol \"2\"])])" )
              , ( "(' (, 1))"
-               , "1" )
+               , "([1])" )
              , ( "(' (+ a (, (+ b c))))"
-               , "(namedNode \"+\" ([symbol \"a\"] ++ [b + c]))" )
+               , "([node ([symbol \"+\"] ++ [symbol \"a\"] ++ [b + c])])" )
              , ( "(' (+ 1 (,@ args) 2))"
-               , "(namedNode \"+\" ([symbol \"1\"] ++ args ++ [symbol \"2\"]))" )
+               , "([node ([symbol \"+\"] ++ [symbol \"1\"] ++ args ++ [symbol \"2\"])])" )
              ]
 
 globalCases = [ ( "foo"
@@ -35,7 +37,7 @@ globalCases = [ ( "foo"
 testComp name mac cases = 
     (testCompiler 
      name 
-     (((toIO mac :: IOArrow [Sexp] Sexp) >>> arr single >>>
+     (((toIO mac :: IOArrow [Sexp] [Sexp]) >>>
        (compile  :: IOArrow [Sexp] H.Expr) >>>
        (compile  :: IOArrow H.Expr Code)) :: IOArrow [Sexp] Code)
      cases)

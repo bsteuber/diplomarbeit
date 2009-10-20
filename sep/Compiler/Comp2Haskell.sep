@@ -1,0 +1,63 @@
+(haskell  
+  (module Comp2Haskell 
+     (Prelude (hiding lines words take))
+     Control.Arrow
+     Util
+     Arrows
+     Sexp
+     Parser
+     Model)
+ 
+  (type compQuote LispMacro)
+  (= compQuote (macro (Str ') (>>^ inners single))
+    (where 
+      (= inner (<+> unquote procSymbol procNode))           
+      (= procSymbol                                      
+         (>>> takeSymbol
+              (arr quoteSymbol)))
+      (= procNode                  
+         (>>> (compNode inners)
+              (arr quoteNode)))
+      (= inners                     
+         (>>> (many (<+> unquoteAll 
+                         (>>> inner 
+                              (arr (namedNode (Str List))))))
+              (arr (namedNode (Str ++)))))
+      (= unquote   
+         (macro (Str ,) (>>^ take single)))
+      (= unquoteAll     
+         (macro (Str ,@) take))
+      (= (quoteSymbol str)
+         (' (symbol (Str (, (symbol str))))))
+      (= (quoteNode nod)
+         (' (node (, nod))))))
+
+  (type compQuote1 LispMacro)
+  (= compQuote1 (macro (Str '1) (>>^ inners single))
+    (where 
+      (= inner (<+> unquote procSymbol procNode))           
+      (= procSymbol                                      
+         (>>> takeSymbol
+              (arr quoteSymbol)))
+      (= procNode                  
+         (>>> (compNode inners)
+              (arr quoteNode)))
+      (= inners                     
+         (>>> (many (<+> unquoteAll 
+                         (>>> inner 
+                              (arr (namedNode (Str List))))))
+              (arr (namedNode (Str ++)))))
+      (= unquote   
+         (macro (Str ,1) (>>^ take single)))
+      (= unquoteAll     
+         (macro (Str ,@1) take))
+      (= (quoteSymbol str)
+         (' (symbol (Str (, (symbol str))))))
+      (= (quoteNode nod)
+         (' (node (, nod))))))
+
+
+(type comp2haskell LispMacro)
+(= comp2haskell (simpleTraverse (List compQuote compQuote1)))
+ 
+)

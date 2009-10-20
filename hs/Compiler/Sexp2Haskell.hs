@@ -10,7 +10,7 @@ import Sexp
 import Haskell
 
 isOp :: String -> Bool
-isOp = all (`elem` "!$%&/=?*+-.:<|>")
+isOp = all (`elem` "!$%&/=?*+-.:<|>^")
 
 instance Compilable (SexpParser Haskell) [Sexp] Haskell where
     comp = macro "haskell" (liftA2 Haskell comp comp)
