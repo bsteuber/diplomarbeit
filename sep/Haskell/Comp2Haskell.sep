@@ -8,7 +8,7 @@
      Parser
      Model)
  
-  (type compQuote (SexpParser Sexp))
+  (type compQuote LispMacro)
   (= compQuote (macro (Str ') inner)
     (where 
       (= inner (<+> unquote procSymbol procNode))           
@@ -36,7 +36,7 @@
                     (List (singleNode (Str Str) (symbol lbl))
                           inner)))))
 
-(type comp2haskell (SexpParser (List Sexp)))
+(type comp2haskell LispMacro)
 (= comp2haskell (simpleTraverse (List compQuote)))
-
+ 
 )

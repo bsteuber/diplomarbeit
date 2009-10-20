@@ -21,7 +21,7 @@ data Sexp = Symbol { symbolName :: String }
             deriving (Eq)
 
 type SexpParser a = ExecFunParser Sexp a
-type LispMacro = SexpParser Sexp
+type LispMacro = SexpParser [Sexp]
 
 sexp2either (Symbol s)   = Left s
 sexp2either (Node sexps) = Right sexps
@@ -96,12 +96,11 @@ testMacro name mac testCases = testCompiler name ((toIO mac >>> compile) :: IOAr
 sexpCompiler mac = compiler ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
 
 -- gives a lisp-like macro expansion system - but without recursive expansion
-simpleTraverse :: [LispMacro] -> SexpParser [Sexp]
+simpleTraverse :: [LispMacro] -> LispMacro
 simpleTraverse macs = combinedMacs
-    where combinedMacs = many (foldr (<+>) defaultMac macs)
-          defaultMac   = ((takeSymbol >>> arr symbol) <+> 
-                          (compNode combinedMacs >>> arr node) <+>
-                          take) --should not happen
+    where combinedMacs = many (foldr (<+>) defaultMac macs) >>> arr concat
+          defaultMac   = ((takeSymbol >>> arr (single . symbol)) <+> 
+                          (compNode combinedMacs >>> arr (single . node)))
 
 -- Pretty Print sexps
 
