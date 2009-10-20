@@ -106,6 +106,8 @@ exprCases = [ ( "(Str 42)"
                 , "\"a b c\"" )
               , ( "(List a b (Str c))"
                 , "[a, b, \"c\"]" )
+              , ( "(foo a (bar b c) d)"
+                , "(foo a (bar b c) d)" )
               , ( "(map + myList)"
                 , "(map (+) myList)" )
               ]

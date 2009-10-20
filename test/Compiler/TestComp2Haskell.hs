@@ -1,23 +1,44 @@
 module TestComp2Haskell where
-import Parser
-import Compiler
-import qualified Haskell2Code as H
+--import Parser
+import Util
+import Control.Arrow
+import Arrows
+import Model
+import Sexp
+import Code
+import qualified Haskell as H
 import Comp2Haskell
+import Sexp2Haskell
+import Haskell2Code
 
 
 quoteCases = [ ( "(' 42)"
                , "(symbol \"42\")" )
              , ( "(' (+ 1 2))"
-               , "(Sexp \"+\" ([(symbol \"1\")] ++ [(symbol \"2\")]))" )
+               , "(node \"+\" ([symbol \"1\"] ++ [symbol \"2\"]))" )
              , ( "(' (, 1))"
                , "1" )
              , ( "(' (+ a (, (+ b c))))"
-               , "(Sexp \"+\" ([(symbol \"a\")] ++ [(b + c)]))" )
+               , "(node \"+\" ([symbol \"a\"] ++ [b + c]))" )
              , ( "(' (+ 1 (,@ args) 2))"
-               , "(Sexp \"+\" ([(symbol \"1\")] ++ args ++ [(symbol \"2\")]))" )
+               , "(node \"+\" ([symbol \"1\"] ++ args ++ [symbol \"2\"]))" )
              ]
 
-testComp name mac cases = testMacro name (parseOutput mac H.compExpr) cases
+globalCases = [ ( "foo"
+                , "foo" )
+              , ( "()" 
+                , "()" )
+              , ( "(list me (now))"
+                , "(list me (now))" )
+              ]
 
-main = do 
-  testComp "quote" quote quoteCases
+testComp name mac cases = 
+    (testCompiler 
+     name 
+     (((toIO mac :: IOArrow [Sexp] Sexp) >>> arr single >>>
+       (compile  :: IOArrow [Sexp] H.Expr) >>>
+       (compile  :: IOArrow H.Expr Code)) :: IOArrow [Sexp] Code)
+     cases)
+
+main = do testComp "quote" compQuote quoteCases
+          testMacro "comp2haskell" comp2haskell globalCases

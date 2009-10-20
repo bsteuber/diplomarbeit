@@ -1,9 +1,2 @@
-(compiler BaseCompiler
-
-  (macro escapeLang escapeLang eatAny)
-
-  (macro ignore ignore
-     (eatDrop (Node (str returnAll)
-                    (List))))
-)
-
+(haskell 
+  (= res (' (42 64))))

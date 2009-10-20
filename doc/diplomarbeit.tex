@@ -323,10 +323,6 @@ XML-Werkzeuge vorgestellt.
 
 \lsection[cgen:intro]{Überblick}
 
-\begin{itemize}
-\item Runtime (eval) vs Compiletime (macro)
-\end{itemize}
-
 \todo{Definition} was \cgen{} bedeutet:
 Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
 Unterschiede zwischen \cgen{}swerkzeugen. \todo{quelle}
@@ -1315,6 +1311,8 @@ Wird kompiliert nach:
   \label{magicl:fig:lisp-macrogen}
 \end{figure}
 
+\todo{Warum kann nicht beliebiger Code generiert werden? Letzlich Upcase}
+
 \lsubsection[cgen:comp:sum]{Zusammenfassung}
 
 In dieser Sektion wurde eine Reihe von Template-basierten
@@ -1409,7 +1407,19 @@ Code, wodurch praktisch Compiler-Plugins mit minimalem Aufwand erzeugt
 werden können. Dadurch lassen sich in Lisp leicht mächtige, voll
 integrierte DSLs konstruieren.
 
-\lsection[cgen:parser]{Parser}
+\lsection[cgen:parser]{Parser-Generatoren}
+
+Parser sind für die Umwandlung von Zeichenketten in typisierte Modelle
+verantwortlich und werden deshalb für Code-Generatoren benötigt, die
+ihre Eingaben aus Text-Dateien beziehen. Parser selbst werden oft nicht
+von Hand in einer allgemeinen Programmiersprache entwickelt, sondern aus
+einer EBNF-ähnlichen Notation generiert. Dafür gibt es eine Reihe von
+Frameworks, von denen eine kleine Auswahl in diesem Abschnitt
+vorgestellt und verglichen wird.
+
+\lsubsection[cgen:parser:crit]{Vergleichskriterien}
+
+
 
 \lsubsection[cgen:parser:yacc]{Lex / Yacc}
 Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
@@ -1431,113 +1441,137 @@ LALR(1)-Parser
 
 \lsubsection[cgen:parser:sum]{Zusammenfassung}
 
-\lchapter[sexy]{Objektorientierte Ruby-Implementation}
+\begin{figure}
+  \centering
+  \begin{tabular}{|l|l|l|l|l|} \hline
+\bf Parser-Generator  & \bf Lex / Yacc & \bf JavaCC  & \bf Treetop & \bf Parsec        \\\hline\hline
+\bf Art               & LALR(1)        & LL(k)       & PEG         & monadisch         \\\hline 
+\bf Getrennter Lexer  & ja             &             &             &                   \\\hline  
+\bf Sprachklasse      &                &             &             & kontextsensitiv   \\\hline 
+\bf Lookahead         &                &             &             & beliebig          \\\hline 
+\bf Ausgabeformat     &                & Java-Objekt & Ruby-Objekt & Haskell-Objekt    \\\hline 
+\bf Metasprache       &                &             &             & Haskell           \\\hline 
+\bf Aufwand           & hoch           &             &             &                   \\\hline 
+\bf Performance       &                &             &             &                   \\\hline 
+%bf                   &                &             &             &                   \\\hline     
+  \end{tabular}
+  \caption{Tabellarischer Vergleich von Parser-Generatoren}
+  \label{magicl:fig:parser_comp}
+\end{figure}
 
-\todo{überarbeiten}
+% \lchapter[sexy]{Objektorientierte Ruby-Implementation}
 
-\sexy{} ist das erste im Rahmen dieser Arbeit entworfene
-\sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
+% \todo{überarbeiten}
 
-\sref{sexy:arch} erläutert die objektorientierte
-Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
-\sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
-Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
-dienen die Definitionen der Sprachen, in denen das System selbst
-geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
-Ansatzes und liefert die Motivation für eine neue Version.
+% \sexy{} ist das erste im Rahmen dieser Arbeit entworfene
+% \sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
 
-\lsection[sexy:reqs]{Anforderungen}
+% \sref{sexy:arch} erläutert die objektorientierte
+% Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
+% \sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
+% Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
+% dienen die Definitionen der Sprachen, in denen das System selbst
+% geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
+% Ansatzes und liefert die Motivation für eine neue Version.
 
-\begin{itemize}
-\item
-\end{itemize}
+% \lsection[sexy:reqs]{Anforderungen}
 
-\lsection[sexy:ruby]{Ruby}
+% Minimalistescher \textit{Proof of Concept} der Möglichkeit, einen
+% \sexp{}-basierten Makroprozessor ähnlich Lisp mit einer anderen
+% Metasprache und beliebigen Zielsprachen zu implementieren.
 
-Ruby ist eine dynamisch getypte, interpretierte Programmiersprache, die
-sowohl funktional als auch objektorientiert ist und eine relativ
-einfache Syntax benutzt\footnote{Die Ruby-Syntax ist einfach im
-  Vergleich zu Sprachen wie C - aber natürlich noch immer um ein
-  Vielfaches komplexer als Lisp-Syntax}, mit der viele
-Schleifenkonstrukte durch die Übergabe von sogenannten Blöcken an
-Funktionen realisiert werden können.  Unter Anderem aufgrund des
-erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
-auch außerhalb seines Herkunftslandes Japan recht beliebt.
+% Groß-/Kleinschreibung von Symbolen reicht schon für
+% Zielsprachenunabhängigkeit, solange erzeugte Symbole in Datei geschrieben können werden.
+   
+% Metasprache Ruby aufgrund Möglichkeit zur Laufzeit-Metaprogrammierung,
+% wodurch Makros direkt nach Definition benutzt werden können.
 
-\lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften}
+% \lsection[sexy:ruby]{Ruby}
 
-Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
-  interpretierten Sprache ist das Bereitstellen einer
-  \icode{eval}-Funktion deutlich leichter - schließlich gibt es diese im
-Interpreter bereits, so dass im Wesentlichen nur noch die Schnittstelle
-erstellt werden muss.} hat Ruby wie Lisp die
-Möglichkeit, über eine \icode{eval}-Funktion Code zur Laufzeit zu
-evaluieren, was viele interessante Möglichkeiten mit sich bringt:
-Beispielsweise lassen sich so Anwendungen erstellen, die durch eine
-mitgelieferte Skriptsprache (Ruby selbst) erweitert werden können.
+% Ruby ist eine dynamisch getypte, interpretierte Programmiersprache, die
+% sowohl funktional als auch objektorientiert ist und eine relativ
+% einfache Syntax benutzt\footnote{Die Ruby-Syntax ist einfach im
+%   Vergleich zu Sprachen wie C - aber natürlich noch immer um ein
+%   Vielfaches komplexer als Lisp-Syntax.}, mit der viele
+% Schleifenkonstrukte durch die Übergabe von sogenannten Blöcken an
+% Funktionen realisiert werden können.  Unter Anderem aufgrund des
+% erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
+% auch außerhalb seines Herkunftslandes Japan recht beliebt.
 
-Das Wegfallen der Kompilationsphase hat sowohl Vor- als auch Nachteile:
-Eine Übersetzung in Maschinensprache kostet Zeit, andererseits Laufen
-kompilierte Programme meist schneller und sind sparender mit
-Resourcen. In \textit{Ruby on Rails} beispielsweise muss eine Programm-
-oder Template-Datei nur gespeichert werden, damit beim nächsten Aufruf
-der Webseite bereits die neue Version in Kraft tritt, was sehr praktisch
-zum Entwickeln ist. Allerdings haben Rails-Anwendungen einen hohen
-Speicherverbrauch und sind vergleichsweise langsam\footnote{Die
-  vergleichsweise schlechte Performance liegt allerdings nicht nur an
-  der interpretierten Sprache, sondern auch an der Komplexität des
-  Frameworks. Beispielsweise sind php-Anwendungen meist schneller,
-  obwohl die Sprache ebenfalls interpretiert ist}.
+% \lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften}
 
-Ähnllich verhält es sich mit der dynamischen Typisierung: Das Wegfallen
-von Variablen-Deklarationen beschleunigt den Entwicklungsvorgang -
-Stichwort "`Rapid Prototyping"' - und vereinfacht Refactorings. Im
-Gegenzug fällt die nützliche statische Prüfung weg, so dass viele Fehler
-erst unerwartet zur Laufzeit auftreten und deren Ursache möglicherweise
-schwerer zu lokalisieren ist. Größere Ruby-Projekte verwenden deshalb meist
-besonders viele \textit{Unit Tests} - welche natürlich auch bei statisch
-typisierten Sprachen nützlich sind.
+% Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
+%   interpretierten Sprache ist das Bereitstellen einer
+%   \icode{eval}-Funktion deutlich leichter - schließlich gibt es diese im
+% Interpreter bereits, so dass im Wesentlichen nur noch die Schnittstelle
+% erstellt werden muss.} hat Ruby wie Lisp die
+% Möglichkeit, über eine \icode{eval}-Funktion Code zur Laufzeit zu
+% evaluieren, was viele interessante Möglichkeiten mit sich bringt:
+% Beispielsweise lassen sich so Anwendungen erstellen, die durch eine
+% mitgelieferte Skriptsprache (Ruby selbst) erweitert werden können.
 
-\lsubsection[sexy:ruby:classes]{Klassen und Methoden}
+% Das Wegfallen der Kompilationsphase hat sowohl Vor- als auch Nachteile:
+% Eine Übersetzung in Maschinensprache kostet Zeit, andererseits Laufen
+% kompilierte Programme meist schneller und sind sparender mit
+% Resourcen. In \textit{Ruby on Rails} beispielsweise muss eine Programm-
+% oder Template-Datei nur gespeichert werden, damit beim nächsten Aufruf
+% der Webseite bereits die neue Version in Kraft tritt, was sehr praktisch
+% zum Entwickeln ist. Allerdings haben Rails-Anwendungen einen hohen
+% Speicherverbrauch und sind vergleichsweise langsam\footnote{Die
+%   vergleichsweise schlechte Performance liegt allerdings nicht nur an
+%   der interpretierten Sprache, sondern auch an der Komplexität des
+%   Frameworks. Beispielsweise sind php-Anwendungen meist schneller,
+%   obwohl die Sprache ebenfalls interpretiert ist}.
 
-\lsubsection[sexy:ruby:blocks]{Blöcke}
+% Ähnllich verhält es sich mit der dynamischen Typisierung: Das Wegfallen
+% von Variablen-Deklarationen beschleunigt den Entwicklungsvorgang -
+% Stichwort "`Rapid Prototyping"' - und vereinfacht Refactorings. Im
+% Gegenzug fällt die nützliche statische Prüfung weg, so dass viele Fehler
+% erst unerwartet zur Laufzeit auftreten und deren Ursache möglicherweise
+% schwerer zu lokalisieren ist. Größere Ruby-Projekte verwenden deshalb meist
+% besonders viele \textit{Unit Tests} - welche natürlich auch bei statisch
+% typisierten Sprachen nützlich sind.
 
-\lsection[sexy:arch]{Architektur}
+% \lsubsection[sexy:ruby:classes]{Klassen und Methoden}
 
-\begin{itemize}
-\item Sexp
-  \begin{itemize}
-  \item als Liste
-  \item \icode{<>} Notation für Kommentare, Strings usw.
-  \item Parser mit Treetop
-  \end{itemize}
-\item Compiler als Klasse, Vererbung
-\item 3 Stufen: Base, Ruby, Comp
-\item metazirkulär
-\item Formatierung: Fremder Ruby Formatter
-\end{itemize}
+% \lsubsection[sexy:ruby:blocks]{Blöcke}
 
-\lsection[sexy:macros]{Makros}
+% \lsection[sexy:arch]{Architektur}
 
-\begin{itemize}
-\item Rekursive Expansion
-\item Implementation als Funktion, unterscheidung von Compiler-Funktionen
-\item Laufzeitevaluation (\icode{compiler_eval_return})
-\item backquote (besserer Ansatz mit Zahlen)
-\item \icode{default_macro}
-\end{itemize}
-\lsection[sexy:examples]{Beispiele}
+% \begin{itemize}
+% \item Sexp
+%   \begin{itemize}
+%   \item als Liste
+%   \item \icode{<>} Notation für Kommentare, Strings usw.
+%   \item Parser mit Treetop
+%   \end{itemize}
+% \item Compiler als Klasse, Vererbung
+% \item 3 Stufen: Base, Ruby, Comp
+% \item metazirkulär
+% \item Formatierung: Fremder Ruby Formatter
+% \end{itemize}
 
-\lsection[sexy:disc]{Diskussion}
+% \lsection[sexy:macros]{Makros}
 
-\begin{itemize}
-\item Operatoren, Sonderzeichen $\Rightarrow$ Andere
-  Repräsentation oder Codierung
-\item Scheme vs CL defun/defmacro - Scheme kanonischer (siehe ...)
-\item \icode{<>} unnötig
-\item Parser versagt bei fehlerhaften Input
-\item Genereller Pretty-Printer für andere Sprachen nötig
-\end{itemize}
+% \begin{itemize}
+% \item Rekursive Expansion
+% \item Implementation als Funktion, unterscheidung von Compiler-Funktionen
+% \item Laufzeitevaluation (\icode{compiler_eval_return})
+% \item backquote (besserer Ansatz mit Zahlen)
+% \item \icode{default_macro}
+% \end{itemize}
+% \lsection[sexy:examples]{Beispiele}
+
+% \lsection[sexy:disc]{Diskussion}
+
+% \begin{itemize}
+% \item Operatoren, Sonderzeichen $\Rightarrow$ Andere
+%   Repräsentation oder Codierung
+% \item Scheme vs CL defun/defmacro - Scheme kanonischer (siehe ...)
+% \item \icode{<>} unnötig
+% \item Parser versagt bei fehlerhaften Input
+% \item Genereller Pretty-Printer für andere Sprachen nötig
+% \end{itemize}
 
 \lchapter[magicl]{Arrow-basierte Implementation in Haskell}
 

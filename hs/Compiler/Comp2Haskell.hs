@@ -5,39 +5,42 @@ import Util
 import Arrows
 import Sexp
 import Parser
-import Compiler
+import Model
 
-compQuote :: SexpParser () Sexp
+compQuote :: SexpParser Sexp
 compQuote = macro "'" inner
     where inner                  = unquote <+> procSymbol <+> procNode
           procSymbol             = takeSymbol >>> arr quoteSymbol
-          procNode               = takeAnySexp (arr snd &&& (voidArrow >>> inners)) >>> arr quoteSexp
-          inners                 = many (unquoteAll <+> (inner >>> arr (singleNode "List"))) >>> arr (Sexp "++")
+          procNode               = compNode (takeSymbol &&& inners) >>> arr quoteNode
+          inners                 = many (unquoteAll <+> (inner >>> arr (singleNode "List"))) >>> arr (namedNode "++")
           unquote                = macro "," take
           unquoteAll             = macro ",@" take
-          quoteSymbol            = singleNode "symbol" . singleNode "str" . symbol
-          quoteSexp (lbl, inner) = Sexp "Sexp" [singleNode "str" (symbol lbl), inner]
+          quoteSymbol            = singleNode "symbol" . singleNode "Str" . symbol
+          quoteNode (lbl, inner) = namedNode "namedNode" [singleNode "Str" (symbol lbl), inner]
 
-compMac :: SexpParser () Sexp
-compMac = macro "mac" ((takeSymbol &&& take &&& optional compWhere) >>> buildMac)
-    where compWhere
-    where buildMac (name, (body, whereClause)) =
-              Sexp "=" ([symbol name,
-                         Sexp "macro" [singleNode "str" name,
-                                       body]]
-                        ++ whereClause
+comp2haskell :: SexpParser [Sexp]
+comp2haskell = simpleTraverse [compQuote]
 
-compiler = macro "compiler" ((takeSymbol &&& many compMac) >>> buildCompiler)
-    where buildcompiler (name, macs) = 
-              (Sexp "haskell" (Sexp "module" [name, 
-                                              Sexp "Prelude" [Sexp "hiding" [lines, words, take]],
-                                              symbol "Control.Arrow",
-                                              symbol "Util",
-                                              symbol "Arrows",
-                                              symbol "Sexp",
-                                              symbol "Parser",
-                                              symbol "Compiler"]
-                               : macs))
+-- compMac :: SexpParser () Sexp
+-- compMac = macro "mac" ((takeSymbol &&& take &&& optional compWhere) >>> buildMac)
+--     where compWhere = undefined
+--           buildMac (name, (body, whereClause)) =
+--               Sexp "=" ([symbol name,
+--                          Sexp "macro" [singleNode "Str" name,
+--                                        body]]
+--                         ++ whereClause)
+
+-- comp2haskell = macro "compiler" ((takeSymbol &&& many compMac) >>> buildCompiler)
+--     where buildcompiler (name, macs) = 
+--               (Sexp "haskell" (Sexp "module" [name, 
+--                                               Sexp "Prelude" [Sexp "hiding" [lines, words, take]],
+--                                               symbol "Control.Arrow",
+--                                               symbol "Util",
+--                                               symbol "Arrows",
+--                                               symbol "Sexp",
+--                                               symbol "Parser",
+--                                               symbol "Compiler"]
+--                                : macs))
                                
                                
                                               
