@@ -88,11 +88,11 @@ build = do
           "gen" </> "sep" </> "Haskell"]
   ghc $ "hs" </> "Prog" </> "Format"
   ghc "hs/Prog/HS2C"
-  -- hs2c "sep/Haskell/Comp2Haskell.sep" "gen/hs/Comp2Haskell.hs"
   ghc "hs/Prog/CMP2HS"
-  cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
-  hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
-
+  -- cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
+  -- hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
+  -- cmp2hs "sep/Compiler/Comp2Haskell.sep" "gen/sep/Haskell/Comp2Haskell.sep"
+  hs2c "sep/Haskell/Comp2Haskell.sep" "hs/Comp2Haskell.hs"
 
 main = do args  <- getArgs
           case args of

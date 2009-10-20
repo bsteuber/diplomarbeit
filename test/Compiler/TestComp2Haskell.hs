@@ -15,13 +15,13 @@ import Haskell2Code
 quoteCases = [ ( "(' 42)"
                , "(symbol \"42\")" )
              , ( "(' (+ 1 2))"
-               , "(node \"+\" ([symbol \"1\"] ++ [symbol \"2\"]))" )
+               , "(namedNode \"+\" ([symbol \"1\"] ++ [symbol \"2\"]))" )
              , ( "(' (, 1))"
                , "1" )
              , ( "(' (+ a (, (+ b c))))"
-               , "(node \"+\" ([symbol \"a\"] ++ [b + c]))" )
+               , "(namedNode \"+\" ([symbol \"a\"] ++ [b + c]))" )
              , ( "(' (+ 1 (,@ args) 2))"
-               , "(node \"+\" ([symbol \"1\"] ++ args ++ [symbol \"2\"]))" )
+               , "(namedNode \"+\" ([symbol \"1\"] ++ args ++ [symbol \"2\"]))" )
              ]
 
 globalCases = [ ( "foo"

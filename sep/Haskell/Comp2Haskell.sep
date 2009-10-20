@@ -1,73 +1,42 @@
-(haskell
-  (module
-      Comp2Haskell
-      Control.Monad
-      Util
-      Sexp      
-      Eater
-      Macro
-  )
+(haskell 
+  (module Comp2Haskell 
+     (Prelude (hiding lines words take))
+     Control.Arrow
+     Util
+     Arrows
+     Sexp
+     Parser
+     Model)
+ 
+  (type compQuote (SexpParser Sexp))
+  (= compQuote (macro (Str ') inner)
+    (where 
+      (= inner (<+> unquote procSymbol procNode))           
+      (= procSymbol                                      
+         (>>> takeSymbol
+              (arr quoteSymbol)))
+      (= procNode                  
+         (>>> (compNode (&&& takeSymbol inners))
+              (arr quoteNode)))
+      (= inners                     
+         (>>> (many (<+> unquoteAll 
+                         (>>> inner 
+                              (arr (singleNode (Str List))))))
+              (arr (namedNode (Str ++)))))
+      (= unquote   
+         (macro (Str ,) take))
+      (= unquoteAll     
+         (macro (Str ,@) take))
+      (= quoteSymbol     
+         (. (singleNode (Str symbol))
+            (singleNode (Str Str))
+            symbol))
+      (= (quoteNode (Tuple lbl inner)) 
+         (namedNode (Str namedNode) 
+                    (List (singleNode (Str Str) (symbol lbl))
+                          inner)))))
 
-  (= escapeLang (eatNodeNamed (str escapeLang) eatAny))
+(type comp2haskell (SexpParser (List Sexp)))
+(= comp2haskell (simpleTraverse (List compQuote)))
 
-  (= oldQuote (eatNodeNamed (str ') eatInner)
-     (where (= eatInner
-               (eatOrs (List
-                 (eatSymbolFun quoteSymbol)
-                 (eatNodeNamed (str ,) eatAny)
-                 (eatNodeFun (fun name (do
-                                         (<- inners eatInners)
-                                         (return (quoteNode name (List inners)))))))))
-            (= eatInners
-              (liftM (Node (str ++)) (manySexp (eatOr 
-                                       (eatNodeNamed (str ,@) eatAny)
-                                       (liftM (Node (str List)) (liftM single eatInner))))))
-     ))
-
-
-  (= quote (eatNodeNamed (str ') eatInner)
-     (where (type eatInner (SexpEater Sexp))
-            (= eatInner
-               (eatOrs (List
-                 (eatSymbolFun Symbol)
-                 (eatNodeNamed (str ,) eatAny)
-                 (eatNodeFun (fun name (do
-                                         (<- inners eatInners)
-                                         (return (Node name inners))))))))
-            (type eatInners (SexpEater Stream))
-            (= eatInners
-              (liftM concat (eatMany (eatOr 
-                                       (eatNodeNamed (str ,@) eatRest)
-                                       (liftM single eatInner)))))
-     ))
-
-  (= eatHeader (eatSymbolFun (fun sym 
-                               (Node (str module)
-                                          (map Symbol
-                                            (List
-                                              sym
-                                              (str Control.Monad)
-                                              (str Util)
-                                              (str Sexp)
-                                              (str Eater)
-                                              (str Macro)))))))
-                                              
-
-  (= eatMacro (eatNodeNamed (str macro)
-                 (do (<- macName eatAnySymbol)
-                     (<- macMatcher eatAnySymbol)
-                     (<- macBody eatAny)
-                     (return (Node (str =)
-                                   (List (Symbol macName)
-                                         (Node (str eatNodeNamed)
-                                               (List (Node (str str) (List (Symbol macMatcher)))
-                                                     macBody))))))))
-                                         
-
-  (= comp2haskell (eater2singleTrans
-                    (eatNodeNamed (str compiler)
-                      (liftM (Node (str haskell)) (do
-                        (<- header eatHeader)
-                        (<- macs (manySexp (eatMacro)))
-                        (return (: header macs)))))))
 )
