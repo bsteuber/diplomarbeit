@@ -72,6 +72,8 @@ takeSymbol :: SexpParser String
 takeSymbol =
     takeSexp >>> (id ||| (arr (show >>> ("Symbol expected: "++)) >>> fail))
 
+compSymbol = takeSymbol >>^ symbol
+
 instance Compilable (SexpParser String) [Sexp] String where
     comp = takeSymbol
 

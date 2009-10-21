@@ -1,4 +1,5 @@
 import Data.Char
+import Data.List
 import Data.Maybe
 import Control.Monad
 import System
@@ -29,8 +30,14 @@ sysList cmds = do when debug (print cmd)
                   system cmd
     where cmd = unwords cmds
 
-ghcLoadPath = "-ihs" </> "Base:hs" </> "Compiler:hs" </> "Model:hs" </> "Arrow:gen" </> "hs"
-ghciLoadPath = ghcLoadPath ++ ":test" </> "Compiler"
+joinPaths = concat . intersperse ":"
+
+ghcLoadPath = "-i" ++ joinPaths ["gen" </> "hs" </> "Compiler",
+                                 "hs" </> "Base",
+                                 "hs" </> "Compiler",
+                                 "hs" </> "Model",
+                                 "hs" </> "Arrow"]
+ghciLoadPath = joinPaths [ghcLoadPath, "test" </> "Compiler"]
 
 
 ghcCall = "ghc --make " ++ ghcLoadPath ++ " -outputdir gen" </> "ghc"
@@ -48,6 +55,7 @@ runCompiler comp inFile outFile =
      outFile
      (sysList ["gen" </> "bin" </> comp, "<", inFile, "2>&1", ">", outFile] ))
 
+prep   = runCompiler "prep"
 hs2c   = runCompiler "hs2c"
 cmp2hs = runCompiler "cmp2hs"
 
@@ -85,14 +93,18 @@ build = do
   mkDirs ["gen" </> "bin", 
           "gen" </> "ghc", 
           "gen" </> "hs" </> "Compiler", 
-          "gen" </> "sep" </> "Haskell"]
-  ghc $ "hs" </> "Prog" </> "Format"
-  ghc "hs/Prog/HS2C"
-  ghc "hs/Prog/CMP2HS"
-  -- cmp2hs "sep/Compiler/BaseCompiler.sep" "gen/sep/Haskell/BaseCompiler.sep"
-  -- hs2c "gen/sep/Haskell/BaseCompiler.sep" "gen/hs/BaseCompiler.hs"
-  cmp2hs "sep/Compiler/Comp2Haskell.sep" "gen/sep/Haskell/Comp2Haskell.sep"
-  hs2c "gen/sep/Haskell/Comp2Haskell.sep" "gen/hs/Compiler/Comp2Haskell.hs"
+          "gen" </> "sep" </> "Hask",
+          "gen" </> "sep" </> "Comp"
+         ]
+  ghc $  "hs" </> "Prog" </> "Format"
+  ghc    "hs/Prog/HS2C"
+  ghc    "hs/Prog/CMP2HS"
+  cmp2hs "sep/Comp/Preprocessor.sep"         "gen/sep/Hask/Preprocessor.sep"
+  hs2c   "gen/sep/Hask/Preprocessor.sep"     "gen/hs/Compiler/Preprocessor.hs"
+  ghc    "hs/Prog/Prep"
+  prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
+  cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
+  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"  
 
 main = do args  <- getArgs
           case args of

@@ -49,6 +49,7 @@ liftA0 c = constArrow c
 liftA1 fun f = f >>^ fun
 liftA2 fun f g = (f &&& g) >>^ uncurry fun
 liftA3 fun f g h = (f &&& g &&& h) >>^ \ (x, (y, z)) -> fun x y z
+liftA4 fun f g h i = (f &&& g &&& h &&& i) >>^ \ (w, (x, (y, z))) -> fun w x y z
 
 constArrow :: (Arrow ar) => b -> ar a b
 constArrow = arr . const

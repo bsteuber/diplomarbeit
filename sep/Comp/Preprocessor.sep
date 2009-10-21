@@ -1,0 +1,16 @@
+(haskell 
+ (module Preprocessor
+         (Prelude (hiding lines words take))
+         Control.Arrow
+         Util
+         Arrows
+         Sexp
+         Parser
+         Model)
+ (type compComment LispMacro)
+ (= compComment (looseMacro (Str comment) nilArrow))
+
+ (type preprocess LispMacro)
+ (= preprocess (simpleTraverse (List compComment)))
+
+)

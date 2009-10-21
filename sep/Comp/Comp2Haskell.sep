@@ -8,6 +8,16 @@
      Parser
      Model)
  
+  (type compMac LispMacro)
+  (= compMac (macro (Str mac) 
+                    (liftA4 gen compSymbol compSymbol comp2haskell comp2haskell))            
+     (where (= (gen fun sym cmd cmds)
+               (' (type (, fun) LispMacro)
+                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
+
+
+(comment  (mac genQuotes quotes undefined))
+
   (type compQuote LispMacro)
   (= compQuote (macro (Str ') (>>^ inners single))
     (where 
@@ -58,6 +68,6 @@
 
 
 (type comp2haskell LispMacro)
-(= comp2haskell (simpleTraverse (List compQuote compQuote1)))
+(= comp2haskell (simpleTraverse (List compQuote compQuote1 compMac)))
  
 )
