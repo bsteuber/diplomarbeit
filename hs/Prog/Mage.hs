@@ -38,11 +38,11 @@ sysList cmds = do when debug (print cmd)
 
 joinPaths = concat . intersperse ":"
 
-ghcLoadPath = "-i" ++ joinPaths ["gen" </> "hs" </> "Compiler",
-                                 "hs" </> "Base",
+ghcLoadPath = "-i" ++ joinPaths ["hs" </> "Base",
                                  "hs" </> "Compiler",
                                  "hs" </> "Model",
-                                 "hs" </> "Arrow"]
+                                 "hs" </> "Arrow",
+                                 "gen" </> "hs" </> "Compiler"]
 ghciLoadPath = joinPaths [ghcLoadPath, "test" </> "Compiler"]
 
 
@@ -93,6 +93,10 @@ genDoc = do
 
 clean = sysCall "rm -rf gen"
 
+deploy = do 
+  sysCall "mv hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs.sav"
+  sysCall "mv gen/hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs"
+
 build = do
   sysCall "rm -rf gen/sep gen/hs"
   mkDirs ["gen" </> "bin", 
@@ -109,7 +113,8 @@ build = do
   ghc    "hs/Prog/Prep"
   prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
   cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
-  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "hs/Compiler/Comp2Haskell.hs"  
+  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"  
+--  deploy
 
 main = do args  <- getArgs
           case args of
@@ -119,6 +124,7 @@ main = do args  <- getArgs
             [comp, inFile, outFile] -> runCompiler comp inFile outFile
             ["clean"]               -> clean
             ["doc"]                 -> genDoc
+            ["deploy"]              -> deploy
             [] -> do
 --              clean
               putStrLn "Building"
