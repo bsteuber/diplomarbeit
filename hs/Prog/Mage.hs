@@ -26,8 +26,14 @@ whenNewer inFile outFile action =
             (do putStrLn $ "Compiling " ++ inFile ++ " to " ++ outFile
                 action ))
 
+sysCall str = do
+  res <- system str
+  (case res of 
+     ExitFailure _ -> fail "An Error occurred"
+     ExitSuccess   -> return ExitSuccess) 
+
 sysList cmds = do when debug (print cmd)
-                  system cmd
+                  sysCall cmd
     where cmd = unwords cmds
 
 joinPaths = concat . intersperse ":"
@@ -59,7 +65,7 @@ prep   = runCompiler "prep"
 hs2c   = runCompiler "hs2c"
 cmp2hs = runCompiler "cmp2hs"
 
-runBin = system . (("gen" </> "bin") </>)
+runBin = sysCall . (("gen" </> "bin") </>)
 
 testCompiler comp = do
   ghc    $ "test" </> "Compiler" </> "Test" ++ comp
@@ -78,18 +84,17 @@ compLatex filename = (whenNewer
 
 genDoc = do
   setCurrentDirectory "doc/images"
-  system "find -name \"*.eps\" -exec epstopdf {} \\;"
+  sysCall "find -name \"*.eps\" -exec epstopdf {} \\;"
   setCurrentDirectory ".."
   compLatex "diplomarbeit"
   compLatex "slides"
   setCurrentDirectory ".."
   return ExitSuccess   
 
-clean = system "rm -rf gen"
-
+clean = sysCall "rm -rf gen"
 
 build = do
-  system "rm -rf gen/sep gen/hs"
+  sysCall "rm -rf gen/sep gen/hs"
   mkDirs ["gen" </> "bin", 
           "gen" </> "ghc", 
           "gen" </> "hs" </> "Compiler", 
@@ -104,13 +109,13 @@ build = do
   ghc    "hs/Prog/Prep"
   prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
   cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
-  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"  
+  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "hs/Compiler/Comp2Haskell.hs"  
 
 main = do args  <- getArgs
           case args of
             ["ghci"]                -> ghci
             ["test"]                -> test >> return ExitSuccess
---            "repl" : _              -> system "rlwrap gen/bin/repl"
+--            "repl" : _              -> sysCall "rlwrap gen/bin/repl"
             [comp, inFile, outFile] -> runCompiler comp inFile outFile
             ["clean"]               -> clean
             ["doc"]                 -> genDoc

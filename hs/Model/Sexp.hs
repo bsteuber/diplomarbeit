@@ -7,6 +7,7 @@ import Control.Arrow
 import Control.Monad (liftM)
 import System.Environment (getArgs)
 import System.IO
+import System.IO.Unsafe
 import Util
 import Arrows
 import FailFunctor
@@ -20,7 +21,7 @@ data Sexp = Symbol { symbolName :: String }
           | Node   { children   :: [Sexp] }
             deriving (Eq)
 
-type SexpParser a = ExecFunParser Sexp a
+type SexpParser a = IOParser Sexp () a
 type LispMacro = SexpParser [Sexp]
 
 sexp2either (Symbol s)   = Left s
@@ -68,7 +69,6 @@ readSexps = compile
 
 takeSexp = take >>^ sexp2either
 
-takeSymbol :: SexpParser String
 takeSymbol =
     takeSexp >>> (id ||| (arr (show >>> ("Symbol expected: "++)) >>> fail))
 
@@ -117,7 +117,7 @@ layoutSexps :: SexpParser Code
 layoutSexps = customLayoutSexps zeroArrow
 
 customPrintSexps :: SexpParser Code -> SexpParser String
-customPrintSexps f = customLayoutSexps f >>> lift comp
+customPrintSexps f = customLayoutSexps f >>> arr comp
 
 printSexps :: SexpParser String
 printSexps = customPrintSexps zeroArrow
@@ -126,4 +126,6 @@ instance Compilable (SexpParser Code) [Sexp] Code where
     comp = layoutSexps
 
 instance Show Sexp where
-    show = execFail (execParser printSexps) . single
+    show = unsafePerformIO . (runKleisli
+                              (arr single >>>
+                               toIO printSexps))
