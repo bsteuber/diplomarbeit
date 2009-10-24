@@ -38,11 +38,13 @@ sysList cmds = do when debug (print cmd)
 
 joinPaths = concat . intersperse ":"
 
-ghcLoadPath = "-i" ++ joinPaths ["hs" </> "Base",
+ghcLoadPath = "-i" ++ joinPaths [--"gen" </> "hs" </> "Compiler",
+                                 "hs" </> "Base",
                                  "hs" </> "Compiler",
                                  "hs" </> "Model",
-                                 "hs" </> "Arrow",
-                                 "gen" </> "hs" </> "Compiler"]
+                                 "hs" </> "Arrow"
+                                ,"gen" </> "hs" </> "Compiler"
+                                ]
 ghciLoadPath = joinPaths [ghcLoadPath, "test" </> "Compiler"]
 
 
@@ -91,7 +93,7 @@ genDoc = do
   setCurrentDirectory ".."
   return ExitSuccess   
 
-clean = sysCall "rm -rf gen"
+clean = sysCall "rm -rf gen/bin"
 
 deploy = do 
   sysCall "mv hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs.sav"
@@ -113,10 +115,7 @@ build = do
   ghc    "hs/Prog/Prep"
   prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
   cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
-  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"  
-  -- hs2c   "sep/Test.sep"     "gen/hs/Compiler/Test.hs"  
-
---  deploy
+  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"
 
 main = do args  <- getArgs
           case args of
@@ -129,11 +128,15 @@ main = do args  <- getArgs
             ["doc"]                 -> genDoc
             ["deploy"]              -> deploy
             [] -> do
---              clean
+              clean
               putStrLn "Building"
               buildRes <- build
               (if buildRes == ExitSuccess then
                    do putStrLn "Testing"
-                      test
+                      testRes <- test
+                      (if testRes == ExitSuccess then
+                           deploy
+                       else
+                           return testRes)
                else
                    return buildRes)

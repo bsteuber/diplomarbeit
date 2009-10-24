@@ -15,7 +15,11 @@ compMac = (macro "mac" (liftA4 gen compSymbol compSymbol take comp2haskell))
 
 genQuotes :: LispMacro
 
-genQuotes = (macro "quotes" undefined)
+genQuotes = (macro "quotes" (constArrow qts))
+  where
+    qts = (concatMap (genQt . mkSyms) ["", "1", "2", "3"])
+    mkSyms s = ("'" ++ s, "," ++ s, ",@" ++ s)
+    genQt (symQuote, symUnquote, symUnquoteAll) = ([node ([symbol "mac"] ++ [symbol "compQuote"] ++ [symbol "'"] ++ [node ([symbol ">>^"] ++ [symbol "inners"] ++ [symbol "single"])] ++ [node ([symbol "where"] ++ [node ([symbol "="] ++ [symbol "inner"] ++ [node ([symbol "<+>"] ++ [symbol "unquote"] ++ [symbol "procSymbol"] ++ [symbol "procNode"])])] ++ [node ([symbol "="] ++ [symbol "procSymbol"] ++ [node ([symbol ">>>"] ++ [symbol "takeSymbol"] ++ [node ([symbol "arr"] ++ [symbol "quoteSymbol"])])])] ++ [node ([symbol "="] ++ [symbol "procNode"] ++ [node ([symbol ">>>"] ++ [node ([symbol "compNode"] ++ [symbol "inners"])] ++ [node ([symbol "arr"] ++ [symbol "quoteNode"])])])] ++ [node ([symbol "="] ++ [symbol "inners"] ++ [node ([symbol ">>>"] ++ [node ([symbol "many"] ++ [node ([symbol "<+>"] ++ [symbol "unquoteAll"] ++ [node ([symbol ">>>"] ++ [symbol "inner"] ++ [node ([symbol "arr"] ++ [node ([symbol "namedNode"] ++ [node ([symbol "Str"] ++ [symbol "List"])])])])])])] ++ [node ([symbol "arr"] ++ [node ([symbol "namedNode"] ++ [node ([symbol "Str"] ++ [symbol "++"])])])])])] ++ [node ([symbol "mac"] ++ [symbol "unquote"] ++ [symbol ","] ++ [node ([symbol ">>^"] ++ [symbol "take"] ++ [symbol "single"])])] ++ [node ([symbol "mac"] ++ [symbol "unquoteAll"] ++ [symbol ",@"] ++ [symbol "take"])] ++ [node ([symbol "="] ++ [node ([symbol "quoteSymbol"] ++ [symbol "str"])] ++ [node ([symbol "'1"] ++ [node ([symbol "symbol"] ++ [node ([symbol "Str"] ++ [node ([symbol ",1"] ++ [node ([symbol "symbol"] ++ [symbol "str"])])])])])])] ++ [node ([symbol "="] ++ [node ([symbol "quoteNode"] ++ [symbol "nod"])] ++ [node ([symbol "'1"] ++ [node ([symbol "node"] ++ [node ([symbol ",1"] ++ [symbol "nod"])])])])])])])
 
 compQuote :: LispMacro
 

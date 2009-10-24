@@ -16,7 +16,7 @@
 
 (mac genQuotes quotes (constArrow qts)
        (where (= qts 
-                 (concatMap (. getQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
+                 (concatMap (. genQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
               (= (mkSyms s)
                  (Tuple (++ (Str ') s) (++ (Str ,) s) (++ (Str ,@) s)))
               (= (genQt (Tuple symQuote symUnquote symUnquoteAll))

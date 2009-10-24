@@ -3,6 +3,7 @@
 .#*
 semantic.cache
 .emacs.desktop*
+*.sav
 *.o
 *.hi
 *.log
