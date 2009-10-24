@@ -97,10 +97,11 @@ testMacro name mac testCases = testCompiler name ((toIO mac >>> compile) :: IOAr
 
 sexpCompiler mac = compiler ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
 
--- gives a lisp-like macro expansion system - but without recursive expansion
+-- gives a lisp-like macro expansion system
 simpleTraverse :: [LispMacro] -> LispMacro
 simpleTraverse macs = combinedMacs
-    where combinedMacs = many (foldr (<+>) defaultMac macs) >>> arr concat
+    where combinedMacs = many (foldr (<+>) defaultMac recMacs) >>> arr concat
+          recMacs      = map (\m -> applyParser m combinedMacs) macs
           defaultMac   = ((takeSymbol >>> arr (single . symbol)) <+> 
                           (compNode combinedMacs >>> arr (single . node)))
 

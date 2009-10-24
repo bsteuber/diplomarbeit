@@ -93,14 +93,18 @@ genDoc = do
   setCurrentDirectory ".."
   return ExitSuccess   
 
-clean = sysCall "rm -rf gen/bin"
+clean = sysCall "rm -rf gen"
 
 deploy = do 
   sysCall "mv hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs.sav"
   sysCall "mv gen/hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs"
 
+reploy = do 
+  sysCall "mv hs/Compiler/Comp2Haskell.hs.sav hs/Compiler/Comp2Haskell.hs"
+
 build = do
-  sysCall "rm -rf gen/sep gen/hs"
+--  sysCall "rm -rf gen/sep gen/hs"
+  clean
   mkDirs ["gen" </> "bin", 
           "gen" </> "ghc", 
           "gen" </> "hs" </> "Compiler", 
@@ -127,6 +131,7 @@ main = do args  <- getArgs
             ["clean"]               -> clean
             ["doc"]                 -> genDoc
             ["deploy"]              -> deploy
+            ["reploy"]              -> reploy
             [] -> do
               clean
               putStrLn "Building"
