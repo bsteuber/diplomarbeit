@@ -86,6 +86,9 @@ failUnless pred = ifArrow (arr pred) id (constArrow "failUnless failed" >>> fail
 optional :: (ArrowPlus ar) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
 
+optList :: (ArrowPlus ar) => ar a b -> ar a [b]
+optList f = (f >>^ single) <+> nilArrow
+
 many :: (ArrowPlus ar) => ar a b -> ar a [b]
 many f = many1 f <+> nilArrow
 

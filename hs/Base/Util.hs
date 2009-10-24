@@ -1,9 +1,11 @@
 {-# OPTIONS -fglasgow-exts #-}
 module Util where
+import Data.Char
 import Data.Typeable
 import Control.Exception
+import System.IO
 
-debugging = False
+debugging = True
 
 type Failable a = Either String a
 
@@ -14,6 +16,8 @@ instance Show MagicError where
     show (MagicError msg) = msg
 
 instance Exception MagicError
+
+debugPrint = hPutStrLn stderr
 
 magicError = throw . MagicError
 

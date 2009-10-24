@@ -1,15 +1,41 @@
-(haskell  
-  (module Comp2Haskell 
-     (Prelude (hiding lines words take))
-     Control.Arrow
-     Util
-     Arrows
-     Sexp
-     Parser
-     Model)
- 
+(expandCompiler Comp2Haskell 
+
+(type regMacs (IORef (List Sexp)))
+(= regMacs (unsafePerformIO (newIORef [])))
+
+(= addMac (ioToParser (fun m
+                           (do (modifyIORef regMacs (fun ms (: m ms)))
+                               (return m)))))
+
+(= getMacs (ioToParser (const (readIORef regMacs))))
+
+(mac compExpandCompiler expandCompiler 
+     (liftA2 gen 
+             (>>> compSymbol 
+                  (&&& id (arr symbolToLower)))
+             (many take))
+     (where
+      (= (gen (Tuple name lowerName) defs)
+         (' (module (, name)
+                    (Prelude (hiding id lines words take))
+                    Data.IORef
+                    (Control.Category (only id))
+                    Control.Arrow
+                    System.IO.Unsafe
+                    Util
+                    Arrows
+                    Sexp
+                    Parser
+                    Model)
+            (,@ defs)
+            (type (, lowerName) LispMacro)
+            (= (, lowerName) (simpleTraverse (allMacs)))))))                       
+
+(mac compAllMacs allMacs (>>^ getMacs listMacs)
+     (where (= (listMacs ms) (' (List (,@ ms))))))
+                               
 (mac compMac mac 
-     (liftA4 gen compSymbol compSymbol take (many take))
+     (liftA4 gen (>>> compSymbol addMac) compSymbol take (many take))
      (where (= (gen fun sym cmd cmds)
                (' (type (, fun) LispMacro)
                   (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
@@ -39,7 +65,7 @@
                                           (>>> inner 
                                                (arr (namedNode (Str List))))))
                                (arr (namedNode (Str ++)))))
-                       (mac unquote (, symUnquote) (>>^ take single))
+                       (= unquote (macro (Str (, symUnquote)) (>>^ take single)))
                        (= unquoteAll (macro (Str (, symUnquoteAll)) take))
                        (= (quoteSymbol str)
                           ('1 (symbol (Str (,1 (symbol str))))))
@@ -48,12 +74,4 @@
 
 (quotes)
 
-(type comp2haskell LispMacro)
-(= comp2haskell (simpleTraverse (List genQuotes 
-                                      compQuote 
-                                      compQuote1 
-                                      compQuote2
-                                      compQuote3
-                                      compMac)))
- 
 )

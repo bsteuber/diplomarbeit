@@ -3,10 +3,10 @@
 module Parser where
 import Prelude hiding (id, (.), take, fail, Functor)
 import Data.Typeable
+import Data.IORef
 import Control.Exception (Exception, throw)
 import Control.Category
 import Control.Arrow
-import System.IO
 import Util
 import Arrows
 import FailFunctor
@@ -20,6 +20,9 @@ type IOParser    t a b = ParseFunctor t IOArrow a b
 type ExecParser ar t b = ParseFunctor t ar () b
 type ExecFunParser t b = ExecParser (->) t b
 type ExecIOParser  t b = ExecParser IOArrow t b
+
+ioToParser :: (a -> IO b) -> IOParser t a b
+ioToParser = lift . Kleisli
 
 instance (ArrowChoice ar) => Category (ParseFunctor t ar) where
     id = arr id
@@ -79,15 +82,24 @@ applyParser getInner (P parseInner) = (id &&& getInner) >>> P (withState parseIn
 debug :: String -> IOParser t a a
 debug msg = if debugging then 
                 lift $ Kleisli $ \ x -> do
-                  hPutStrLn stderr msg
+                  debugPrint msg
                   return x
             else
                 id
 
+debugIORef :: (Show a) => IORef a -> IOParser t b b
+debugIORef ref = if debugging then 
+                     lift $ Kleisli $ \ x -> do
+                       val <- readIORef ref
+                       debugPrint (show val)
+                       return x
+                 else
+                     id
+
 debugArrow :: IOParser t String ()
 debugArrow = if debugging then 
                  lift $ Kleisli $ \ msg -> do
-                   hPutStrLn stderr msg
+                   debugPrint msg
                    return ()
              else
                  voidArrow

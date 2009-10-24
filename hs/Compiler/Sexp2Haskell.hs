@@ -1,7 +1,9 @@
 {-# OPTIONS -fglasgow-exts #-}
 module Sexp2Haskell where
 import Prelude hiding (lines, words)
+import Data.IORef
 import Control.Arrow
+import System.IO.Unsafe
 import Util
 import Arrows
 import Model
@@ -13,7 +15,7 @@ isOp :: String -> Bool
 isOp = all (`elem` "!$%&/=?*+-.:<|>^")
 
 instance Compilable (SexpParser Haskell) [Sexp] Haskell where
-    comp = macro "haskell" (liftA2 Haskell comp comp)
+    comp = liftA2 Haskell comp comp
 
 instance Compilable (SexpParser Module) [Sexp] Module where
     comp = macro "module" (liftA3 Module comp comp comp)

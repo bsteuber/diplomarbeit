@@ -2,6 +2,7 @@
 {-# LANGUAGE OverlappingInstances, UndecidableInstances #-}
 module Sexp where
 import Prelude hiding (id, (.), take, lines, fail, Functor)
+import Data.Char
 import Control.Category
 import Control.Arrow
 import Control.Monad (liftM)
@@ -40,6 +41,8 @@ isNode (Symbol _) = False
 
 isSymbol (Node _)   = False
 isSymbol (Symbol _) = True
+
+symbolToLower (Symbol x) = Symbol (map toLower x)
 
 labelEq name = (name==) . label
 

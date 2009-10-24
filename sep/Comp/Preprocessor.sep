@@ -1,5 +1,4 @@
-(haskell 
- (module Preprocessor
+(module Preprocessor
          (Prelude (hiding lines words take))
          Control.Arrow
          Util
@@ -12,5 +11,3 @@
 
  (type preprocess LispMacro)
  (= preprocess (simpleTraverse (List compComment)))
-
-)
