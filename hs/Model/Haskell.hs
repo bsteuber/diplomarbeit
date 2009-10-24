@@ -46,7 +46,7 @@ data Where = Where [Toplevel]
 data Pattern = ListPattern [Pattern]
              | TuplePattern [Pattern]
              | StringPattern String
-             | CallPattern Call
+             | CallPattern Call                          
 
 data Call = ConstCall String
           | ConstOpCall String

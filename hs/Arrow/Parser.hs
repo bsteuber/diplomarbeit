@@ -6,6 +6,7 @@ import Data.Typeable
 import Control.Exception (Exception, throw)
 import Control.Category
 import Control.Arrow
+import System.IO
 import Util
 import Arrows
 import FailFunctor
@@ -74,10 +75,27 @@ forceParser = P . StateF . forceFail . runStateF . runP
 applyParser :: (ArrowChoice ar) => ParseFunctor t ar a [t] -> ParseFunctor t ar a b -> ParseFunctor t ar a b
 applyParser getInner (P parseInner) = (id &&& getInner) >>> P (withState parseInner)
 
+
 debug :: String -> IOParser t a a
-debug msg = P $ lift $ lift $ lift $ Kleisli $ \ x -> do
-              putStrLn msg
-              return x
+debug msg = if debugging then 
+                lift $ Kleisli $ \ x -> do
+                  hPutStrLn stderr msg
+                  return x
+            else
+                id
+
+debugArrow :: IOParser t String ()
+debugArrow = if debugging then 
+                 lift $ Kleisli $ \ msg -> do
+                   hPutStrLn stderr msg
+                   return ()
+             else
+                 voidArrow
+
+debugNextToken :: (Show t) => IOParser t a a
+debugNextToken = (take >>> arr show >>> debugArrow >>> constArrow "" >>> fail) <+> id
+
+debugWithNextToken str = debug (str ++ ": [") >>> debugNextToken >>> debug "]"
 
 empty :: (Show t, ArrowChoice ar) => ParseFunctor t ar a a
 empty = (get &&& id) >>> (ifArrow
@@ -86,11 +104,31 @@ empty = (get &&& id) >>> (ifArrow
                           (arr fst >>> arr errorMsg >>> fail))
     where errorMsg x = "Empty stream expected: " ++ show x
 
+many :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a [b]
+many f = many1 f <+> nilArrow  --(empty >>> nilArrow) <+> 
+         
+
+many1 :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a [b]
+many1 f = consArrow f (many f)
+
+skipMany :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a a
+skipMany = skip . many
+
+skipMany1 :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a a
+skipMany1 = skip . many1
+
+sepBy :: (Show t, ArrowChoice ar) => 
+         ParseFunctor t ar a c -> ParseFunctor t ar a b -> ParseFunctor t ar a [b]
+sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
+
 take :: (ArrowChoice ar) => ParseFunctor t ar a t
 take = get >>> (ifArrow
                  (arr $ not . null)
                  (skip (arr tail >>> put) >>> arr head)
                  (constArrow "Nonempty stream expected" >>> fail))
+
+push :: (ArrowChoice ar) => ParseFunctor t ar t ()
+push = (id &&& get) >>> arr (uncurry (:)) >>> put
 
 takeWhen :: (ArrowChoice ar) => (t -> Bool) -> (t -> String) -> ParseFunctor t ar a t
 takeWhen pred errorMsg =

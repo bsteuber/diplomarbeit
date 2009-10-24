@@ -13,8 +13,8 @@
     (where (= (gen fun sym cmd cmds)
               (' (type (, fun) LispMacro)
                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
-  
-  (mac genQuotes quotes (constArrow qts)
+
+(comment  (mac genQuotes quotes (constArrow qts)
        (where (= qts 
                  (concatMap (. getQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
               (= (mkSyms s)
@@ -41,6 +41,52 @@
                           ('1 (symbol (Str (,1 (symbol str))))))
                        (= (quoteNode nod)
                           ('1 (node (,1 nod))))))))))
+)
+  (mac genQuotes quotes (constArrow qts)
+       (where 
+              (= (genQt (Tuple symQuote symUnquote symUnquoteAll))
+                 (' (mac compQuote '
+                         (>>^ inners single)
+                      (where 
+                       (= inner (<+> unquote procSymbol procNode))
+                       (= procSymbol                                      
+                          (>>> takeSymbol
+                               (arr quoteSymbol)))
+                       (= procNode                  
+                          (>>> (compNode inners)
+                               (arr quoteNode)))
+                       (= inners                     
+                          (>>> (many (<+> unquoteAll 
+                                          (>>> inner 
+                                               (arr (namedNode (Str List))))))
+                               (arr (namedNode (Str ++)))))
+                       (mac unquote    , (>>^ take single))
+                       (mac unquoteAll ,@ take)
+                       ))))))
+
+  (type compQuote LispMacro)
+  (= compQuote (macro (Str ') (>>^ inners single))
+    (where 
+      (= inner (<+> unquote procSymbol procNode))           
+      (= procSymbol                                      
+         (>>> takeSymbol
+              (arr quoteSymbol)))
+      (= procNode                  
+         (>>> (compNode inners)
+              (arr quoteNode)))
+      (= inners                     
+         (>>> (many (<+> unquoteAll 
+                         (>>> inner 
+                              (arr (namedNode (Str List))))))
+              (arr (namedNode (Str ++)))))
+      (= unquote   
+         (macro (Str ,) (>>^ take single)))
+      (= unquoteAll     
+         (macro (Str ,@) take))
+      (= (quoteSymbol str)
+         (' (symbol (Str (, (symbol str))))))
+      (= (quoteNode nod)
+         (' (node (, nod))))))
 
   (type compQuote1 LispMacro)
   (= compQuote1 (macro (Str '1) (>>^ inners single))

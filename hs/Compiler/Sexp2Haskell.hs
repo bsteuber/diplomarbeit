@@ -52,11 +52,16 @@ instance Compilable (SexpParser Def) [Sexp] Def where
     comp = macro "=" $ liftA3 Def comp comp comp
 
 instance Compilable (SexpParser Expr) [Sexp] Expr where
-    comp = 
-        (macro "fun" (liftA2 LambdaExpr (macro "args" comp <+> (comp >>^ single)) comp) <+>
-         liftA1 DoExpr (macro "do" comp)                                                  <+>
-         liftA1 TypeExpr comp                                                             <+>
-         liftA1 PatternExpr comp)
+    comp = (macro "fun" (liftA2 
+                         LambdaExpr 
+                         (macro "args" comp <+> (comp >>^ single)) 
+                         comp)
+            <+>
+            liftA1 DoExpr (macro "do" comp)
+            <+>
+            liftA1 TypeExpr comp
+            <+>
+            liftA1 PatternExpr comp)
 
 instance Compilable (SexpParser DoCmd) [Sexp] DoCmd where
     comp =

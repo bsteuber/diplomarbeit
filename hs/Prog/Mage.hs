@@ -114,11 +114,14 @@ build = do
   prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
   cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
   hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"  
+  -- hs2c   "sep/Test.sep"     "gen/hs/Compiler/Test.hs"  
+
 --  deploy
 
 main = do args  <- getArgs
           case args of
             ["ghci"]                -> ghci
+            ["build"]               -> build
             ["test"]                -> test >> return ExitSuccess
 --            "repl" : _              -> sysCall "rlwrap gen/bin/repl"
             [comp, inFile, outFile] -> runCompiler comp inFile outFile

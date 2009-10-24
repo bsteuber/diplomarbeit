@@ -171,7 +171,7 @@
 \begin{document}
 
 \begin{titlepage}
-\title{Prototypen universeller Frameworks für
+\title{Prototyp eines universellen Frameworks für
   \sexp{}-basierte \cgen{}}
 \author{Benjamin Teuber}
 \date{\today}
@@ -239,39 +239,40 @@ und Generieren von Code deutlich vereinfacht und darüber hinaus viele
 Fehlerquellen vermieden werden. Makros ermöglichen zudem eine
 inkrementelle, modulare Compiler-Entwicklung.
 
-Lisp-Programmierer, auf der anderen Seite, haben sich immer nur im die
+Lisp-Programmierer, auf der anderen Seite, haben sich immer nur um die
 Erzeugung von Lisp-Code selbst gekümmert und bis auf wenige Ausnahmen
 (siehe z.B. ParenScript \cite{TODO}, welches JavaScript aus \sexps{}
 generiert) andere Sprachen ignoriert. Zudem wird Lisp allgemein
-totgeschrieben, was teils an veraltetem Sprachdesign, hauptsächlich
-aber an der geringen Anzahl verfügbarer Bibliotheken im Vergleich zu
+totgeschrieben, was teils an veraltetem Sprachdesign, hauptsächlich aber
+an der geringen Anzahl verfügbarer Bibliotheken im Vergleich zu
 Mainstream-Sprachen liegt. Während viele andere Lisp-Konzepte wie
-Garbage Collection oder Konstrukte wie der REPL, eine
-Lisp-Kommandozeile zum interaktiven Programmieren und Testen, bereits
-von modernen Sprachen nachgeahmt wurden, stehen Makros\footnote{Der
-  C-Preprozessor bietet ebenfalls Makros an - diese sind allerdings
-  weniger mächtig als Lisp-Makros \sees{cgen:lisp:cprep}.} nur noch
-der kleinen Lisp-Community zur Verfügung. Es wäre also wünschenswert,
-diese oder etwas Vergleichbares im Rahmen moderner Sprachen für
-\cgen{} und -Verarbeitung nutzen zu können.
+Garbage Collection oder Konstrukte wie der REPL, eine Lisp-Kommandozeile
+zum interaktiven Programmieren und Testen, bereits von modernen Sprachen
+nachgeahmt wurden, stehen Makros\footnote{Der C-Preprozessor bietet
+  ebenfalls Makros an - diese sind allerdings weniger mächtig als
+  Lisp-Makros \sees{cgen:lisp:cprep}.} nur der kleinen Lisp-Community
+zur Verfügung. Es wäre also wünschenswert, diese oder etwas
+Vergleichbares im Rahmen moderner Sprachen für \cgen{} und -Verarbeitung
+nutzen zu können.
 
 \lsection[intro:goal]{Fragestellungen und Zielsetzung}
 
 Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
-Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich
-beliebige durch \sexps{} repräsentierte Sprachen damit komfortabel
-kompilierien und möglichst auch interpretieren lassen können? Es soll
-allerdings nicht zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros
-erfolgen, sondern vielmehr geprüft werden, welche Möglichkeiten es noch
-gibt und welche davon eventuell noch besser geeignet für den neuen,
-breiteren Kontext beliebiger Sprachen sind. Insbesondere soll die
-Implementation selbst nicht in Lisp, sondern einer modernen Sprache
-erfolgen. Dies hat eine gewisse Unabhängigkeit vom exakten Lisp-Ansatz
-und seinen Schwächen oder veralteten Designs zur Folge -
-beispielsweise die nicht vorhandene Unterscheidung von Groß- und
-Kleinschreibung in \sexps{}. Auch die Entwicklung von neuen Ideen wird
-so ermutigt.
+Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich beliebige
+durch \sexps{} repräsentierte Sprachen damit komfortabel kompilieren und
+möglichst auch interpretieren lassen können? Es soll allerdings nicht
+zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros erfolgen, sondern
+vielmehr geprüft werden, welche alternative Möglichkeiten es gibt und
+welche davon eventuell besser geeignet für den neuen, breiteren Kontext
+beliebiger Sprachen sind. Insbesondere soll die Implementation selbst
+nicht in Lisp, sondern einer modernen Sprache erfolgen. Dies hat eine
+gewisse Unabhängigkeit vom exakten Lisp-Ansatz und seinen Schwächen oder
+veralteten Designs zur Folge - beispielsweise die nicht vorhandene
+Unterscheidung von Groß- und Kleinschreibung in \sexps{}. Auch die
+Entwicklung von neuen Ideen wird so ermutigt.
+\todo{Begründung schwach}
 
+\todo{überarbeiten}
 Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
 für \sexps{} sowie ein \sexp{}-Parser erstellt werden, woraufhin eine
 Architektur für \sexp{}-Compiler angelegt wird, die einen inkrementellen
@@ -400,7 +401,7 @@ allerdings mit einem kleinen Mehraufwand verbunden ist.
 \lsubsubsection[cgen:model:crit:graphic]{Graphische Darstellung}
 
 Die Möglichkeit, ein Modell zu visualisieren oder gar mit einem GUI zu
-bearbeten, ist sehr praktisch für Doumentation, Übersichtlichkeit sowie
+bearbeten, ist sehr praktisch für Dokumentation, Übersichtlichkeit sowie
 Zusammenarbeit mit Domänenexperten, die das verwendete System nicht
 genau verstehen müssen.
 
@@ -416,7 +417,7 @@ können.
 
 Attribute sind benannte Komponenten eines Modells und nützlich, um
 spezielle Eigenschaften eines Modells festzuhalten. \todo{vgl. Slots,
-  OOP} Manche Modellrepräsentationen stellen direkt Attrbute bereit,
+  OOP} Manche Modellrepräsentationen stellen direkt Attribute bereit,
 andere wie \sexps{} können diese beispielsweise über Unterknoten
 simulieren.
 
@@ -463,12 +464,11 @@ Objekten kann als Baum mit benannnten Kanten erfolgen.
 \sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
 Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
 eine Liste von \sexps{}. Symbole sind Zeichenketten\footnote{Die meisten
-Lisp-Dialekte unterscheiden aufgrund ihres Alters nicht zwischen Groß-
-und Kleinbuchstaben in Symbolen - die im Rahmen dieser Arbeit
-entwickelten Frameworks allerdings schon.}, die keine
-Leerzeichen oder andere vom Lisp verwendeten Sonderzeichen
-enthalten. Listen werden in runde Klammern gesetzt - mit Leerzeichen als
-Trennsymbol. Beispiele für \sexps{} sind:
+  Lisp-Dialekte unterscheiden nicht zwischen Groß- und Kleinbuchstaben
+  in Symbolen - das im Rahmen dieser Arbeit entwickelte Frameworks
+  hingegen schon.}, die keine Leerzeichen oder andere vom Lisp
+verwendeten Sonderzeichen enthalten. Listen werden in runde Klammern
+gesetzt - mit Leerzeichen als Trennsymbol. Beispiele für \sexps{} sind:
 \begin{itemize}
 \item \icode{foo}
 \item \icode{(bar)}
@@ -519,7 +519,7 @@ repräsentiert werden können.
 
 \lsubsection[cgen:model:xml]{XML}
 
-XML ist die wohl derzeit meistverbreitete Markupsprache, weshalb hier
+XML ist die wohl derzeit meistverbreitete Markup-Sprache, weshalb hier
 auf eine detailierte Einführung verzichtet wird. Wie bei \sexps{}
 handelt es sich um eine strukturierte, ungetypte Repräsentation, die
 einem knotenbenannten Baum entspricht. XML unterscheidet sich von
@@ -866,14 +866,14 @@ im Modell, und nicht im Template selbst erfolgen.
 Neben der Referenzierung von Java-Objekten - hier wird automatisch
 \icode{toString()} aufgerufen - und deren Instanzvariablen sind nur
 Template-Aufrufe sowie \icode{if}-Abfragen erlaubt, wobei letztere nur
-zwischen \icode{true} und \icode{false} bzw. nicht \icode{null} und
-\icode{null} unterscheiden können - aber keine Berechnungen oder
+zwischen \icode{true} und \icode{false} bzw. \icode{null} und
+nicht-\icode{null} unterscheiden können - aber keine Berechnungen oder
 Vergleichsoperatoren benutzen können. "`Anonyme Templates"' (analog zu
-anonymen Funktionen) entsprechen einem Quasiquote - es ist allerdings auch
-möglich, extern definierte Templates aufzurufen. Statt der Bereitstellung
-eines Konstruktes wie \icode{foreach} iteriert StringTemplate
-automatisch, wenn ein referenzierter Wert eine Liste ist - dies
-funktioniert auch bei Template-Aufrufen. Hier kann zusätzlich ein
+anonymen Funktionen) entsprechen einem Quasiquote - es ist allerdings
+auch möglich, extern definierte Templates aufzurufen. Statt der
+Bereitstellung eines Konstruktes wie \icode{foreach} iteriert
+StringTemplate automatisch, wenn ein referenzierter Wert eine Liste ist
+- dies funktioniert auch bei Template-Aufrufen. Hier kann zusätzlich ein
 Separator-String angegeben werden, der dann jeweils zwischen den
 Elementen steht. Es gibt auch die Möglichkeit, bei der Verarbeitung
 einer Liste abwechselnd zwei oder mehr Templates aufzurufen - dies wird
@@ -1205,7 +1205,7 @@ Einfaches Quasiquote ohne Unquote - ergibt (+ 1 2 3):
 
 Quasiquote mit Unquote - ergibt (+ 1 7 3) falls x=2:
 
-`(+ 1 ,(x + 5) 3)
+`(+ 1 ,(+ x 5) 3)
 
 
 Unquote mit Splicing - ergibt (+ 1 2 3 4 5) falls input=(2 3 4):
@@ -1681,13 +1681,14 @@ Funktionen vor:
   addiert zwei reelle Zahlen und bildet anschließend den Betrag.
 \end{itemize}
 
-Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach} +"') lässt
-sich bilden, weil der Definitionsbereich von $\mathrm{abs}$ mit dem
-Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es lassen sich
-also zwei im Diagramm aufeinander folgende Pfeile zu einem direkten
-zusammenfassen. Die Kategorientheorie "`vergisst"' nun den Bezug zu
-Mengen und Funktionen und arbeitet statt dessen abstrakt mit Objekten
-und Morphismen.
+Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach}
++"') lässt sich bilden, weil der Definitionsbereich von $\mathrm{abs}$
+mit dem Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es
+lassen sich also zwei im Diagramm aufeinander folgende Pfeile zu einem
+direkten zusammenfassen. Die Kategorientheorie "`vergisst"' nun den
+Bezug zu Mengen und Funktionen und arbeitet statt dessen mit Objekten
+und Morphismen, welche vollkommen abstrakt definiert sind und mit
+bestimmten Operationen eine Kategorie bilden:
 
 \lsubsection[magicl:cats:cat]{Kategorien}
 
@@ -1720,12 +1721,16 @@ und $B$ identisch, bezeichnet man f auch als Endomorphismus.
 
 \fig{cat_simple}{Eine einfache Kategorie}
 
-Wie das Einführungsbeispiel erwarten lässt, bilden die Mengen und
-Funktionen eine Kategorie, genannt $\mathbf{Set}$. \abb{cat_simple} zeigt eine
-andere simple Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
-Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle Kompositionen
-dieser Morphismen sind wieder in $\mathrm{Mor}^{\mathbf{C}}$ - denn
-jede Kategorie ist selbstverständlich unter Komposition geschlossen.
+Wie das Einführungsbeispiel erwarten lässt, bilden Mengen und darauf
+definierte Funktionen Kategorien - die Kategorie, die alle denkbar
+möglichen Mengen und Funktionen enthält, heißt $\mathbf{Set}$. Das
+Einführungsbeispiel skizziert somit unvollständig eine Unterkategorie
+von $\mathbf{Set}$. \abb{cat_simple} zeigt eine andere simple
+Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
+Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle
+Kompositionen dieser Morphismen sind wieder in
+$\mathrm{Mor}^{\mathbf{C}}$ - denn jede Kategorie ist selbstverständlich
+unter Komposition geschlossen.
 
 \fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
 
@@ -2633,6 +2638,8 @@ ausgegeben, z.B.
 
 \lsection[magicl:sexp]{Parsen von \sexps{}}
 
+\todo{SexpParser Typ}
+
 Die Parser-Bibliothek an sich ist bereits nützlich, um Textdateien
 einlesen zu können. Das eigentliche Ziel aber ist die Verarbeitung von
 \sexps{}. Es lassen sich zwar bereits Streams von \sexps{} verarbeiten,
@@ -2655,9 +2662,11 @@ Ein Parser, der eine Liste von Namensstrings produzieren soll, würde mit
 der bisherigen Bibliothek so aussehen:
 
 \begin{code}
+parsePerson :: SexpParser String
 parsePerson = take >>^ proc >>> (fail ||| id)
-  where proc (Node (Symbol "person", Symbol x)) = Right x
-        pred _ = Left ("Not a person: " ++ show x)
+  where proc (Node [Symbol "person", Symbol x]) = Right x
+        proc _ = Left ("Not a person: " ++ show x)
+parsePersons :: SexpParser [String]
 parsePersons = many parsePerson
 \end{code} % <<
 

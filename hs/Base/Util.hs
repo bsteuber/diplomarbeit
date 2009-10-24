@@ -3,7 +3,7 @@ module Util where
 import Data.Typeable
 import Control.Exception
 
-debug = True
+debugging = False
 
 type Failable a = Either String a
 

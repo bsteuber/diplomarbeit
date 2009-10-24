@@ -7,6 +7,16 @@ import Sexp
 import Parser
 import Model
 
+compMac :: LispMacro
+
+compMac = (macro "mac" (liftA4 gen compSymbol compSymbol take comp2haskell))
+  where
+    gen fun sym cmd cmds = ([node ([symbol "type"] ++ [fun] ++ [symbol "LispMacro"])] ++ [node ([symbol "="] ++ [fun] ++ [node ([symbol "macro"] ++ [node ([symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
+
+genQuotes :: LispMacro
+
+genQuotes = (macro "quotes" undefined)
+
 compQuote :: LispMacro
 
 compQuote = (macro "'" (inners >>^ single))
@@ -35,4 +45,4 @@ compQuote1 = (macro "'1" (inners >>^ single))
 
 comp2haskell :: LispMacro
 
-comp2haskell = (simpleTraverse [compQuote, compQuote1])
+comp2haskell = (simpleTraverse [compQuote, compQuote1, compMac])
