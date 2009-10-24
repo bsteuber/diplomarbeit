@@ -9,7 +9,7 @@ import Model
 
 compMac :: LispMacro
 
-compMac = (macro "mac" (liftA4 gen compSymbol compSymbol take comp2haskell))
+compMac = (macro "mac" (liftA4 gen compSymbol compSymbol take (many take)))
   where
     gen fun sym cmd cmds = ([node ([symbol "type"] ++ [fun] ++ [symbol "LispMacro"])] ++ [node ([symbol "="] ++ [fun] ++ [node ([symbol "macro"] ++ [node ([symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
 

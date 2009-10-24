@@ -8,11 +8,11 @@
      Parser
      Model)
  
-  (mac compMac mac 
-       (liftA4 gen compSymbol compSymbol take comp2haskell)
-    (where (= (gen fun sym cmd cmds)
-              (' (type (, fun) LispMacro)
-                 (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
+(mac compMac mac 
+     (liftA4 gen compSymbol compSymbol take (many take))
+     (where (= (gen fun sym cmd cmds)
+               (' (type (, fun) LispMacro)
+                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
 
 (mac genQuotes quotes (constArrow qts)
        (where (= qts 
