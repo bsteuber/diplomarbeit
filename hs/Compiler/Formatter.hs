@@ -4,5 +4,5 @@ import Arrows
 import Parser
 import Sexp
 
-format :: (Show a) => ExecFunParser a [a]
+format :: ExecFunParser a [a]
 format = many take

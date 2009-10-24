@@ -104,23 +104,6 @@ empty = (get &&& id) >>> (ifArrow
                           (arr fst >>> arr errorMsg >>> fail))
     where errorMsg x = "Empty stream expected: " ++ show x
 
-many :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a [b]
-many f = many1 f <+> nilArrow  --(empty >>> nilArrow) <+> 
-         
-
-many1 :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a [b]
-many1 f = consArrow f (many f)
-
-skipMany :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a a
-skipMany = skip . many
-
-skipMany1 :: (Show t, ArrowChoice ar) => ParseFunctor t ar a b -> ParseFunctor t ar a a
-skipMany1 = skip . many1
-
-sepBy :: (Show t, ArrowChoice ar) => 
-         ParseFunctor t ar a c -> ParseFunctor t ar a b -> ParseFunctor t ar a [b]
-sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
-
 take :: (ArrowChoice ar) => ParseFunctor t ar a t
 take = get >>> (ifArrow
                  (arr $ not . null)

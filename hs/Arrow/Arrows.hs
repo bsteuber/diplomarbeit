@@ -86,8 +86,23 @@ failUnless pred = ifArrow (arr pred) id (constArrow "failUnless failed" >>> fail
 optional :: (ArrowPlus ar) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
 
+many :: (ArrowPlus ar) => ar a b -> ar a [b]
+many f = many1 f <+> nilArrow
+
+many1 :: (ArrowPlus ar) => ar a b -> ar a [b]
+many1 f = consArrow f (many f)
+
 skip :: (Arrow ar) => ar a b -> ar a a
 skip f = (f &&& id) >>^ snd
+
+skipMany :: (ArrowPlus ar) => ar a b -> ar a a
+skipMany = skip . many
+
+skipMany1 :: (ArrowPlus ar) => ar a b -> ar a a
+skipMany1 = skip . many1
+
+sepBy :: (ArrowPlus ar) => ar a c -> ar a b -> ar a [b]
+sepBy sep item = optional (consArrow item (many (skip sep >>> item))) >>^ unMaybeList
 
 -- test :: (Arrow ar) => ar a Bool -> ar a (Either a a)
 -- test f = (f &&& id) >>> (arr $ \ (b, x) -> if b then Left x else Right x)
