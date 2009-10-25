@@ -456,7 +456,7 @@ werden Typfehler erst beim Zugriff, bei \cgen{} also vermutlich erst im
 Übersetzungsvorgang erkannt. In den meisten Sprachen gibt es Attribute
 für Objekten sowie einen Listen- oder Arraydatentyp. Unbenannte
 Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
-Haskell-Datentypen \sees{magicl:haskell}. Eine Visualisierung von
+Haskell-Datentypen \sees{haskell}. Eine Visualisierung von
 Objekten kann als Baum mit benannnten Kanten erfolgen.
 
 \lsubsection[cgen:model:sexp]{\sexps}
@@ -1627,12 +1627,89 @@ Modelle, Parser und Compiler, die Teil von MagicL sind.
   \end{itemize}
 \end{itemize}
 
-\lsection[magicl:haskell]{Haskell}
+\lsection[haskell]{Die Sprache Haskell}
 
-\begin{itemize}
-\item Pur, Funktional
-\item Infix-Operatoren in Klammern
-\item Unit-Typ
+Haskell ist eine funktionale Programmiersprache, die generell sehr
+mathematisch inspiriert ist. Beispielsweise sind Funktionen hier
+grundsätzlich pur, d.h. ohne Nebeneffekte. Um dennoch mit Nebeneffekten
+umgehen zu können, welche für konkrete Anwendung nötig sind, wird das
+mächtige Konzept der Monaden bereitgestellt (siehe
+\sref{magicl:cats:monads} und \sref{magicl:cats_hask:monads}. Auch
+Objekte gibt es hier in der Form nicht - stattdessen wird mittels
+algebraischer Datentypen und Typklassen modelliert. Unterstützt wird
+dieser Ansatz durch ein statisches Typsystem, welches praktische
+Features wie Typinferenz oder abhängige Typen bereitstellt.
+
+\lsection[haskell:functions]{Funktionen}
+
+Funktionsaufrufe in Haskell benötigen keine Klammern, sondern werden
+einfach durch Leerzeichen in der Form \icode{funktion arg1 arg2 arg3}
+notiert. Definitionen von Funktionen erfolgen gewöhnlich über
+Gleichungen:
+\begin{code}
+addTwo :: Int -> Int
+addTwo x = x + 2  
+\end{code}
+Die erste Zeile deklariert den Typen von addTwo, welcher mit \icode{Int
+  -> Int} eine Funktion ist, die einen \icode{Int} als Eingabe bekommt
+und ebenfalls einen \icode{Int} zurückgibt. Typdeklarationen sind
+weitestgehend optional, da die Typinferenz diese fast immer
+selbstständig erschließen kann - andererseits bieten Typdeklarationen
+bereits eine gewisse Dokumentation für den Programmierer und werden
+deshalb meist verwendet.
+
+Typen von Funktionen mit mehreren Parametern erscheinen
+zunächst verwirrend:
+\begin{code}
+add :: Int -> Int -> Int
+add x y = x + y  
+\end{code}
+Der Typoperator \icode{->} ist rechtsassoziierend, weshalb \icode{Int ->
+  Int -> Int} äquivalent ist zu \icode{Int -> (Int -> Int)}. Streng
+genommen besitzt eine Funktion in Haskell nämlich immer nur genau einen
+Parameter - eine "`Funktion mit zwei Parametern"' ist deshalb in
+Wirklichkeit eine Funktion (mit einem Parameter), die eine zweite
+Funktion (mit ebenfalls einem Parameter) zurückgibt. Dieses Konzept wird
+als Currying bezeichnet und ermöglicht zusammen mit Funktionen höherer
+Ordnung sehr elegante Formulierungen von Algorithmen. Beispielsweise
+bekommt die Funktion \icode{map} mit Typsignatur \icode{(a -> b) -> [a]
+  -> [b]} eine Funktion und wendet diese Elementweise auf eine Liste an
+- \icode{a} und \icode{b} stehen hier für beliebige Typen. Um nun zu
+jedem Element einer Liste die Zahl 5 zu addieren, kann nun der Code
+\begin{code}
+map (add 5) [1, 2, 3, 4]  -- ergibt [6, 7, 8, 9]
+\end{code}
+verwendet werden - \icode{add 5} erzeugt also eine Funktion, die 5 zu
+ihrem Parameter addiert. Auch Funktionen können direkt auf diese Art
+definiert werden:
+\begin{code}
+addFiveToList :: [Int] -> [Int]
+addFiveToList = map (add 5)
+\end{code}
+
+Infixoperatoren wie \icode{+} können ebenfalls vom Programmierer selbst
+definiert werden. Mittels Klammern kann ein Infixoperator in eine
+Präfixfunktion umgewandelt werden, so dass z.B. \icode{(+) 2 3}
+geschrieben werden kann. Auch Infixoperatoren unterstützen direkt
+Currying, so dass beispielsweise mit \icode{(-2)} eine Funktion erzeugt
+wird, die vom Parameter 2 subtrahiert. Für die obige, sogenannte
+punktfreie Art der Funktionsdefinition mittels Currying ist auch der
+Kompositionsoperator \icode{.} sehr nützlich:
+\begin{code}
+(.) :: (b -> c) -> (a -> b) -> (a -> c)
+(g . f) x = g (f x)
+
+addFiveThenMultiplyByThree :: Int -> Int
+addFiveThenMultiplyByThree = (*3) . (+5)
+\end{code}
+
+\lsection[haskell:data]{Datentypen}
+
+
+
+
+ Unit-Typ
+
 Der parametrisierte Datentyp \icode{Maybe} beschreibt optionale Werte,
 die nicht vorhanden sein müssen:
 
@@ -1641,12 +1718,10 @@ data Maybe a = Nothing | Just a
 \end{code}
 
 \icode{Nothing} entspricht \icode{null} in anderen Sprachen.
-\item Typinferenz
-\item Currying
-\item Datentypen, newtype (Abstraktion f. Typklassen), type (Typvariablen)
-\item Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
-\item Hier: (...) => als auslassung
-\end{itemize}
+
+ Datentypen, newtype (Abstraktion f. Typklassen), type (Typvariablen)
+ Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
+ Hier: (...) => als auslassung
 
 \lsection[magicl:cats]{Kategorientheorie}
 
@@ -1928,7 +2003,7 @@ stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
 $\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
 Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
 Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
-Verknüpfen. Haskell (siehe \sref{magicl:haskell}) benutzt Monaden unter
+Verknüpfen. Haskell (siehe \sref{haskell}) benutzt Monaden unter
 anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
 einzubauen, wie \sref{magicl:cats_hask:monads} erklärt.
 
