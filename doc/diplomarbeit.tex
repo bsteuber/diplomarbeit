@@ -1640,7 +1640,7 @@ algebraischer Datentypen und Typklassen modelliert. Unterstützt wird
 dieser Ansatz durch ein statisches Typsystem, welches praktische
 Features wie Typinferenz oder abhängige Typen bereitstellt.
 
-\lsection[haskell:functions]{Funktionen}
+\lsubsection[haskell:functions]{Funktionen}
 
 Funktionsaufrufe in Haskell benötigen keine Klammern, sondern werden
 einfach durch Leerzeichen in der Form \icode{funktion arg1 arg2 arg3}
@@ -1688,13 +1688,15 @@ addFiveToList = map (add 5)
 \end{code}
 
 Infixoperatoren wie \icode{+} können ebenfalls vom Programmierer selbst
-definiert werden. Mittels Klammern kann ein Infixoperator in eine
+definiert werden - auch die Operatorpräzedenz kann angepasst werden,
+wobei Infixoperatoren grundsätzlich eine niedrigere Präzedenz als
+Präfixfunktionen haben. Mittels Klammerung kann ein Infixoperator in eine
 Präfixfunktion umgewandelt werden, so dass z.B. \icode{(+) 2 3}
 geschrieben werden kann. Auch Infixoperatoren unterstützen direkt
 Currying, so dass beispielsweise mit \icode{(-2)} eine Funktion erzeugt
-wird, die vom Parameter 2 subtrahiert. Für die obige, sogenannte
+wird, die vom Argument 2 subtrahiert. Für die obige, sogenannte
 punktfreie Art der Funktionsdefinition mittels Currying ist auch der
-Kompositionsoperator \icode{.} sehr nützlich:
+Kompositionsoperator \icode{.} nützlich:
 \begin{code}
 (.) :: (b -> c) -> (a -> b) -> (a -> c)
 (g . f) x = g (f x)
@@ -1703,23 +1705,119 @@ addFiveThenMultiplyByThree :: Int -> Int
 addFiveThenMultiplyByThree = (*3) . (+5)
 \end{code}
 
-\lsection[haskell:data]{Datentypen}
-
-
-
-
- Unit-Typ
-
-Der parametrisierte Datentyp \icode{Maybe} beschreibt optionale Werte,
-die nicht vorhanden sein müssen:
-
+Lokale Funktionen können über das Schlüsselwort \icode{where} definiert
+werden:
 \begin{code}
-data Maybe a = Nothing | Just a
+sumSquare x y = square (x + y)
+  where
+    square x = x * x
 \end{code}
 
-\icode{Nothing} entspricht \icode{null} in anderen Sprachen.
+\lsubsection[haskell:data]{Datentypen}
 
- Datentypen, newtype (Abstraktion f. Typklassen), type (Typvariablen)
+Es gibt in Haskell vier Arten von Typen: Zunächst gibt es primitive
+Typen wie \icode{Char}, \icode{Int} oder \icode{Float} sowie
+zusammengesetzte Typen wie Listen und Tupel (Schreibweise \icode{(a,
+  b)}. Eine Sonderrolle hat hier das leere Tupel \icode{()} - auch
+"`Unit"' genannt, welches dem Typ \icode{void} in C entspricht und in
+eine der beiden obigen Kategorien einzuordnen ist.
+
+Daneben gibt es Typaliase - beispielsweise ist der Typ String lediglich
+ein Alias für Listen von Buchstaben:
+\begin{code}
+type String = [Char]
+\end{code}
+
+Die letzte Kategorie sind algebraische Datentypen, welche mit dem
+\icode{data}-Schlüsselwort definiert werden:
+\begin{code}
+data Shape = Point
+           | Circle Float
+           | Rectangle Float Float
+\end{code}
+Hier sind \icode{Point}, \icode{Circle} und \icode{Rectangle}
+verscheidene Konstruktoren, mit denen Instanzen vom Typ Shape erzeugt
+werden können. Konstruktoren in Haskell können sowohl als Funktionen -
+z.B. \icode{Rectangle :: Float -> Float -> Shape} - als auch zum Pattern
+Matching verwendet werden:
+\begin{code}
+shapeArea :: Shape -> Float
+
+-- Pattern Matching in Gleichungen
+shapeArea Point           = 0
+shapeArea (Circle r)      = pi * r * r
+shapeArea (Rectangle x y) = x * y
+
+-- Alternative mit case-Syntax
+shapeArea s = case s of
+                Point         -> 0
+                Circle r      -> pi * r * r
+                Rectangle x y -> x * y
+\end{code}
+
+Datentypen können auch durch Typvariablen parametrisiert sein,
+beispielsweise beschreibt der eingebaute Typ \icode{Maybe} Werte, die
+nicht immer vorhanden sind:
+\begin{code}
+data Maybe a = Nothing | Just a
+
+tryFindRecord :: Database -> ID -> Maybe Record
+tryFindRecord db id = if hasRecord db id
+                      then
+                        Just (fetchRecord db id)
+                      else
+                        Nothing
+\end{code}
+\icode{Nothing} entspricht also in etwa \icode{null} in anderen Sprachen
+- mit dem Unterschied, dass in Haskell ganz klar definiert ist, wo dies
+vorkommen kann und wo nicht.
+
+Für den Fall, dass nur ein Konstruktor mit nur einem Argument benutzt
+wird, kann statt \icode{data} auch \icode{newtype} verwendet
+werden, welches vom Compiler effizienter behandelt wird, da es sich
+lediglich um eine Verpackung für einen bestehenden Typen handelt. Dies
+wird vor allem zusammen mit Typklassen benutzt.
+
+\lsubsection[haskell:typeclasses]{Typklassen}
+
+Oben wurden bereits Funktionen und Datentypen präsentiert, die auf
+beliebige Typen anwendbar sind. Oft ist es allerdings erforderlich, die
+Menge der möglichen Typen einzuschränken, beispielsweise auf Typen mit
+Plus-Operator oder solche, die in Strings umgewandelt werden
+können. Dies kann mit Hilfe von Typklassen erreicht werden, welche
+vergleichbar mit Interfaces in objektorientierten Sprachen sowie
+polymorphen Funktionen sind. Beispielsweise ist das Haskell-Äquivalent
+zu Javas \icode{toString()} die Typklasse \icode{Show} gegeben:
+\begin{code}
+class Show a where
+  show :: a -> String
+\end{code}
+Algebraische Datentypen (nicht aber Typaliase) können Typklassen mittels
+\icode{instance} implementieren:
+\begin{code}
+instance Show Shape where
+  show Point           = "point"
+  show (Circle r)      = "circle with radius " ++ show r
+  show (Rectangle x y) = "rectangle
+\end{code}
+\icode{++} ist der Haskell-Operator für Konkatenation von Listen.
+Arithmetische Operationen sind ebenfalls durch Typklassen definiert, so
+dass diese auch für beispielsweise komplexe Zahlen überladen werden
+können.
+
+Typvariablen können nun mittels \icode{=>} auf bestimmte Typklassen
+eingeschränkt werden:
+\begin{code}
+formatList :: (Show a) => [a] -> String
+formatList xs = "{" ++ concat listWithSeparators ++ "}"
+  where listWithSeparators :: [String]
+        listWithSeparators = intersperse " - " stringList
+        stringList :: [String]
+        stringList = map show xs
+
+showList [1, 2, 3] -- ergibt "{1 - 2 - 3}"
+\end{code}
+
  Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
  Hier: (...) => als auslassung
 
