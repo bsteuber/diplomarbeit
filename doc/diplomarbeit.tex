@@ -159,6 +159,7 @@
 
 \newcommand{\dref}[1]{Def. \ref{def:#1}}
 
+\newcommand{\seec}[1]{(siehe \cref{#1})}
 \newcommand{\sees}[1]{(siehe \sref{#1})}
 
 \newcommand{\sexy}{S-Exy}
@@ -255,74 +256,7 @@ zur Verfügung. Es wäre also wünschenswert, diese oder etwas
 Vergleichbares im Rahmen moderner Sprachen für \cgen{} und -Verarbeitung
 nutzen zu können.
 
-\lsection[intro:goal]{Fragestellungen und Zielsetzung}
-
-Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
-Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich beliebige
-durch \sexps{} repräsentierte Sprachen damit komfortabel kompilieren und
-möglichst auch interpretieren lassen können? Es soll allerdings nicht
-zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros erfolgen, sondern
-vielmehr geprüft werden, welche alternative Möglichkeiten es gibt und
-welche davon eventuell besser geeignet für den neuen, breiteren Kontext
-beliebiger Sprachen sind. Insbesondere soll die Implementation selbst
-nicht in Lisp, sondern einer modernen Sprache erfolgen. Dies hat eine
-gewisse Unabhängigkeit vom exakten Lisp-Ansatz und seinen Schwächen oder
-veralteten Designs zur Folge - beispielsweise die nicht vorhandene
-Unterscheidung von Groß- und Kleinschreibung in \sexps{}. Auch die
-Entwicklung von neuen Ideen wird so ermutigt.
-\todo{Begründung schwach}
-
-\todo{überarbeiten}
-Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
-für \sexps{} sowie ein \sexp{}-Parser erstellt werden, woraufhin eine
-Architektur für \sexp{}-Compiler angelegt wird, die einen inkrementellen
-und modularen Compiler-Entwurf ähnlich Lisp unterstützt. Damit soll eine
-\sexp{}-Version von X entstehen, welche sich nach X-Quelltext übersetzen
-lässt, so dass Werkzeuge, die X generieren wollen, nur noch deren
-syntaktisch einfachere \sexp{}-Variante erzeugen müssen. In dem Moment ist
-das Bootstrapping abgeschlossen, so dass von nun an ausschließlich mit
-\sexp{}-Sprachen programmiert werden könnte. Auch bestehender Quelltext
-kann nun durch aus \sexps{} genererierten Versionen ersetzt werden,
-wodurch ein metazirkulärer Compiler entsteht.
-
-Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
-(\sexp{}-basierte) DSL für Compilerdefinition gestaltet werden kann, in
-der sich die Übersetzung einfacher beschreiben lässt als in X
-oder deren \sexp{}-Schwester. Diese Sprache kann beispielsweise die
-Definition von Lisp-Makros ermöglichen.
-
-\lsection[intro:outline]{Aufbau dieser Arbeit}
-
-\cref{cgen} versucht, einen Überblick über den Stand der Technik in
-Sachen \cgen{} zu geben.
-
-In \cref{sexy} wird mit \sexy{} ein erster, in Ruby geschriebener Prototyp eines
-universellen Frameworks für \sexp{}-Compiler geschildert, welcher
-sich sehr dicht an den ursprünglichen Lisp-Makros
-orientiert.
-
-\cref{magicl} widmet sich MagicL, dem Kern dieser Arbeit. Diese
-Neuimplementation basiert auf einer Haskell-Umsetzung
-kategorientheoretischer Konzepte, mit deren Hilfe unter anderem sehr
-allgemeine und elegante \sexp{}-Parser konstruiert werden
-können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
-
-\cref{end} fasst zum Schluss die Ergebnisse zusammen und gibt
-einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
-Rahmen dieser Arbeit behandelt werden können.
-
-\lchapter[cgen]{Architektur von Code-Generatoren}
-
-Diese Kapitel soll einen Überblick über vorhandene Technologien zur
-\cgen{} liefern.  \sref{cgen:codegen} erläutert verschiedene
-Arten der \cgen{}. In \sref{cgen:parser} werden Werkzeuge für
-die Generierung von Parsern beschrieben. \sref{cgen:lisp} stellt die
-Programmiersprache Lisp und insbesondere \sexps{}, die universelle
-Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
-\sref{cgen:xml} mit der XML verglichen, außerdem werden dort
-XML-Werkzeuge vorgestellt.
-
-\lsection[cgen:intro]{Überblick}
+\lsubsection[cgen]{\cgen}
 
 \todo{Definition} was \cgen{} bedeutet:
 Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
@@ -367,17 +301,75 @@ Nachteile:
 \item Entwicklungsaufwand
 \end{itemize}
 
-\lsection[cgen:model]{Modellrepräsentation}
+\lsection[intro:goal]{Fragestellungen und Zielsetzung}
+
+Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
+Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich beliebige
+durch \sexps{} repräsentierte Sprachen damit komfortabel kompilieren und
+möglichst auch interpretieren lassen können? Es soll allerdings nicht
+zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros erfolgen, sondern
+vielmehr geprüft werden, welche alternative Möglichkeiten es gibt und
+welche davon eventuell besser geeignet für den neuen, breiteren Kontext
+beliebiger Sprachen sind. Insbesondere soll die Implementation selbst
+nicht in Lisp, sondern einer modernen Sprache erfolgen. Dies hat eine
+gewisse Unabhängigkeit vom exakten Lisp-Ansatz und seinen Schwächen oder
+veralteten Designs zur Folge - beispielsweise die nicht vorhandene
+Unterscheidung von Groß- und Kleinschreibung in \sexps{}. Auch die
+Entwicklung von neuen Ideen wird so ermutigt.
+\todo{Begründung schwach}
+
+\todo{überarbeiten}
+Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
+für \sexps{} sowie ein \sexp{}-Parser erstellt werden, woraufhin eine
+Architektur für \sexp{}-Compiler angelegt wird, die einen inkrementellen
+und modularen Compiler-Entwurf ähnlich Lisp unterstützt. Damit soll eine
+\sexp{}-Version von X entstehen, welche sich nach X-Quelltext übersetzen
+lässt, so dass Werkzeuge, die X generieren wollen, nur noch deren
+syntaktisch einfachere \sexp{}-Variante erzeugen müssen. In dem Moment ist
+das Bootstrapping abgeschlossen, so dass von nun an ausschließlich mit
+\sexp{}-Sprachen programmiert werden könnte. Auch bestehender Quelltext
+kann nun durch aus \sexps{} genererierten Versionen ersetzt werden,
+wodurch ein metazirkulärer Compiler entsteht.
+
+Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
+(\sexp{}-basierte) DSL für Compilerdefinition gestaltet werden kann, in
+der sich die Übersetzung einfacher beschreiben lässt als in X
+oder deren \sexp{}-Schwester. Diese Sprache kann beispielsweise die
+Definition von Lisp-Makros ermöglichen.
+
+\lsection[intro:outline]{Aufbau dieser Arbeit}
+
+\todo{überarbeiten}
+
+ \sref{cgen:codegen} erläutert verschiedene
+Arten der \cgen{}. In \sref{cgen:parser} werden Werkzeuge für
+die Generierung von Parsern beschrieben. \sref{cgen:lisp} stellt die
+Programmiersprache Lisp und insbesondere \sexps{}, die universelle
+Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
+\sref{cgen:xml} mit der XML verglichen, außerdem werden dort
+XML-Werkzeuge vorgestellt.
+
+\cref{magicl} widmet sich MagicL, dem Kern dieser Arbeit. Diese
+Neuimplementation basiert auf einer Haskell-Umsetzung
+kategorientheoretischer Konzepte, mit deren Hilfe unter anderem sehr
+allgemeine und elegante \sexp{}-Parser konstruiert werden
+können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
+
+\cref{end} fasst zum Schluss die Ergebnisse zusammen und gibt
+einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
+Rahmen dieser Arbeit behandelt werden können.
+
+\lchapter[model]{Repräsentation von Modellen}
 
 Es gibt im Wesentlichen drei Arten, ein Modell zu repräsentieren: Als
 rohe Zeichenkette, als typisiertes Objekt oder durch eine ungetypte
-Baumrepräsentation wie \sexps{}, XML oder JSON. In diesem Abschnitt
+Baumrepräsentation wie \sexps{}, XML oder JSON. In diesem Kapitel
 werden diese drei Ansätze sowie die graphische Repräsentationssprache
 UML vorgestellt und anhand vorher zu bestimmenden Kriterien bewertet.
 
-\lsubsection[cgen:model:crit]{Vergleichskriterien}
+\lsection[model:crit]{Vergleichskriterien}
 
-\lsubsubsection[cgen:model:crit:type]{Typisierung}
+\lsubsection[model:crit:type]{Typisierung}
 
 \todo{lieber Validierung schreiben}
 
@@ -390,7 +382,7 @@ komfortablen Zugriff und Typsicherheit garantieren, im Gegenzug aber
 sehr unflexibel sind. Dazwischen stehen unverselle Notationen wie XML,
 die eine Struktur, aber keine Typisierung, besitzen.
 
-\lsubsubsection[cgen:model:crit:univ]{Universalität} Manche
+\lsubsection[model:crit:univ]{Universalität} Manche
 Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
 sich in den festen Modellen wiederspiegelt. Andere verwenden Modelle,
 die bereits universell und direkt auf jede Domäne anwendbar
@@ -398,14 +390,14 @@ sind. Dazwischen liegen Systeme, in denen der Meta-Programmierer neue
 Modelle definieren kann, so dass eine Übertragbarkeit vorliegt, die
 allerdings mit einem kleinen Mehraufwand verbunden ist.
 
-\lsubsubsection[cgen:model:crit:graphic]{Graphische Darstellung}
+\lsubsection[model:crit:graphic]{Graphische Darstellung}
 
 Die Möglichkeit, ein Modell zu visualisieren oder gar mit einem GUI zu
 bearbeten, ist sehr praktisch für Dokumentation, Übersichtlichkeit sowie
 Zusammenarbeit mit Domänenexperten, die das verwendete System nicht
 genau verstehen müssen.
 
-\lsubsubsection[cgen:model:crit:compose]{Komposition}
+\lsubsection[model:crit:compose]{Komposition}
 
 Modelle lassen sich oft als Bäume beschreiben, in denen die Kinder eines
 Knotens als Untermodelle oder Komponenten aufgefasst werden. Dies
@@ -413,7 +405,7 @@ enspricht dem Entwurfsmuster Komposition\cite{TODO}. Eine
 Modellrepräsentation sollte deshalb das Konzept Unterknoten abbilden
 können.
 
-\lsubsubsection[cgen:model:crit:attrib]{Attribute}
+\lsubsection[model:crit:attrib]{Attribute}
 
 Attribute sind benannte Komponenten eines Modells und nützlich, um
 spezielle Eigenschaften eines Modells festzuhalten. \todo{vgl. Slots,
@@ -421,14 +413,14 @@ spezielle Eigenschaften eines Modells festzuhalten. \todo{vgl. Slots,
 andere wie \sexps{} können diese beispielsweise über Unterknoten
 simulieren.
 
-\lsubsubsection[cgen:model:crit:list]{Repräsentation von Listen}
+\lsubsection[model:crit:list]{Repräsentation von Listen}
 
 Aufzählungen kommen in Modellen ebenfalls häufig vor, weshalb diese
 dargestelt werden können sollten. Auch hier gibt es Repräsentation wie
 JSON, die Listen direkt unterstützen, und solche, die sie durch
 Unterknoten repräsentieren.
 
-\lsubsection[cgen:model:string]{Strings}
+\lsection[model:string]{Strings}
 
 Zeichenketten stehen auf der niedrigsten Stufe der Datenrepräsentation -
 schließlich sind sie lediglich Bitfolgen. Damit sind Strings immer dann
@@ -442,7 +434,7 @@ Verarbeitung sollte ein String deshalb vom Parser in ein strukturiertes
 Modell umgewandelt werden. Eine graphische Darstellung besitzen Strings
 nicht, wenn man von der Anzeige als Text absieht.
 
-\lsubsection[cgen:model:object]{Objekte}
+\lsection[model:object]{Objekte}
 
 Das Wort ``Objekt'' wird in dieser Arbeit nicht ausschließlich im
 objektorientierten Sinn verwendet - vielmehr ist hier "`Datentypinstanz
@@ -459,7 +451,7 @@ Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
 Haskell-Datentypen \sees{haskell}. Eine Visualisierung von
 Objekten kann als Baum mit benannnten Kanten erfolgen.
 
-\lsubsection[cgen:model:sexp]{\sexps}
+\lsection[model:sexp]{\sexps}
 
 \sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
 Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
@@ -517,7 +509,7 @@ usw. vereinfachen, bieten \sexps{} also eine universelle
 Modellierungssprache an, mit der auch Attribute und Listen indirekt
 repräsentiert werden können.
 
-\lsubsection[cgen:model:xml]{XML}
+\lsection[model:xml]{XML}
 
 XML ist die wohl derzeit meistverbreitete Markup-Sprache, weshalb hier
 auf eine detailierte Einführung verzichtet wird. Wie bei \sexps{}
@@ -594,7 +586,7 @@ sind, sowie einem Plugin-System, welches unter anderem einen
 Namespace-Preprocessor bereitstellt, der die Doppelpunkte korrekt
 interpretiert.
 
-\lsubsection[cgen:model:json]{JSON}
+\lsection[model:json]{JSON}
 
 JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
 Javascript, weshalb es direkt von einem Javascript-Interpreter
@@ -623,7 +615,7 @@ ein \sexp{} standardmäßig eine Liste von Unterelementen ist. Zum anderen
 unterscheidet sich die äußerste Ebene, wo bei \sexps{} ein Name, in JSON
 hingegen ein Wert steht.
 
-\lsubsection[cgen:model:uml]{UML}
+\lsection[model:uml]{UML}
 
 UML ist eine graphische Modellierungssprache, die speziell für die
 Spezifikation von Softwaresystemen entworfen wurde und insbesondere den
@@ -647,7 +639,7 @@ Objektdiagramm.
 
 \fig{car_uml}{Auto-Beispiel als UML-Objektdiagramm}
 
-\lsubsection[cgen:model:sum]{Zusammenfassung}
+\lsection[model:sum]{Zusammenfassung}
 
 Es gibt im wesentlichen drei Arten, ein Modell zu repräsentieren, die
 alle ihre Daseinsberechtigung haben und über Parser, Generatoren und
@@ -700,7 +692,7 @@ Ausdrucksmächtigkeit zu verlieren. Damit gibt es in Tools, die \sexps{}
 benutzen, keinerlei unnötige Komplexität. Aus diesem Grund widmet sich
 diese Arbeit hauptsächlich \sexp-gestützter Code-Generierung.
 
-\lsection[cgen:comp]{Template-basierte \cgen{}}
+\lchapter[template]{Template-basierte \cgen{}}
 
 Templates werden für die Erzeugung von Dokumentmengen eingesetzt, für
 die gewisse statische Bereiche in jedem Dokument identisch sind, während
@@ -719,17 +711,17 @@ Punkten. Dieser Abschnitt stellt zunächst diese Vergleichskriterien vor,
 anschließend wird eine Auswahl Template-basierter Tools zur \cgen anhand
 dieser Kriterien verglichen und bewertet.
 
-\lsubsection[cgen:comp:crit]{Vergleichskriterien}
-\lsubsubsection[cgen:comp:crit:model]{Verwendete Modelle}
+\lsection[template:crit]{Vergleichskriterien}
+\lsubsection[template:crit:model]{Verwendete Modelle}
 
 Template-Engines unterscheiden sich sowohl in den Eingabe-, als auch in
 den Ausgabemodellen. Möglich sind Zeichenketten, typisierte Objekte
-sowie untypisierte Bäume wie \sexps{} oder XML \sees{cgen:model}. Auch
+sowie untypisierte Bäume wie \sexps{} oder XML \seec{model}. Auch
 die generierbaren Zielsprachen unterscheiden sich - manche Generatoren
 können jede Sprache generieren, während andere nur eine einzige oder
 eine Menge von Sprachen unterstützen.
 
-\lsubsubsection[cgen:comp:crit:def]{Template-Definition}
+\lsubsection[template:crit:def]{Template-Definition}
 
 Die Definition von Templates lässt sich Anhand der Operationen
 Quasiquote\footnote{Neben Quasiquote ist auch der Begriff Backquote
@@ -768,7 +760,7 @@ möglich, die Erzeugung mittels Quasiquote und Unquote zu bevorzugen, da hier
 der generierende Code dem generierten ähnelt, was eine bessere
 Lesbarkeit mit sich bringt.
 
-\lsubsubsection[cgen:comp:crit:lang]{Meta-Programmiersprache}
+\lsubsection[template:crit:lang]{Meta-Programmiersprache}
 
 Die Bandbreite bei der Sprachmächtigkeit in Unquote-Bereichen ist hoch:
 Es gibt Tools, die überhaupt keine Berechnungen, sondern lediglich das
@@ -777,7 +769,7 @@ vollständige (Meta-)Programmiersprachen - Zwischenstufen sind ebenfalls
 möglich. Zudem gibt es Unterschiede beim mit einem Metaprogramm
 verbundenen Schreibaufwand.
 
-\lsubsubsection[cgen:comp:crit:contr]{Kontrollfluss}
+\lsubsection[template:crit:contr]{Kontrollfluss}
 
 Ein weiterer Unterschied zwischen Code-Generatoren liegt im
 Kontrollfluss. Manche Systeme können nur ein einzelnes Template
@@ -791,7 +783,7 @@ Templates, die an einen Knotennamen oder ein Muster gebunden sind. Der
 Generator entscheidet dann Anhand des Modells, welches Template für die
 Verarbeitung zuständig ist.
 
-\lsubsubsection[cgen:comp:crit:sep]{Komponententrennung}
+\lsubsection[template:crit:sep]{Komponententrennung}
 \todo{MVC-Buch?}
 Die meisten Software-Systeme lassen sich durch eine
 Model-View-Controller-Architektur (MVC) beschreiben. Daten und deren
@@ -815,7 +807,7 @@ Trennung von Model, View und Controller unterstützt oder gar forciert -
 auf der anderen Seite sollte das Tool aber nicht im Wege stehen, wenn
 eine ungewöhnliche Aufgabe andere Wege erfordert.
 
-\lsubsubsection[cgen:comp:crit:gentemp]{Generierung von Templates}
+\lsubsection[template:crit:gentemp]{Generierung von Templates}
 
 \cgen{} bietet generell die Möglichkeit, eine Programmiersprache um neue
 Abstraktionen zu erweitern, indem die neuen Konzepte vom Generator auf
@@ -833,7 +825,7 @@ als Unquote der Metasprache interpretiert werden, was zu einem Fehler
 führt. Stattdessen muss dieses Unquote auf eine umständliche Weise,
 z.B. durch Escape-Sequenzen, erzeugt werden.
 
-\lsubsection[cgen:templates:php]{PHP}
+\lsection[template:php]{PHP}
 
 Die Scriptsprache PHP ist von vornherein als Template-System
 konstruiert, womit Code beliebiger Sprachen generiert werden kann. Viele
@@ -851,7 +843,7 @@ Model und View wird von PHP nicht speziell unterstützt oder gefordert,
 ist aber möglich. Generierung von PHP-Dateien selbst wird nicht speziell
 unterstützt und ist deswegen schwer umzusetzen.
 
-\lsubsection[cgen:templates:stringtemplate]{StringTemplate}
+\lsection[template:stringtemplate]{StringTemplate}
 
 \todo{Beispiele?}
 
@@ -891,7 +883,7 @@ wodurch die Trennung wiederum verletzt wäre. Für solche Fälle wäre es
 hilfreich, wenn StringTemplate das Definieren von Helper-Klassen, deren
 Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 
-\lsubsection[cgen:templates:ctemp]{Templates in \cpp{}} \cpp{}-Templates
+\lsection[template:ctemp]{Templates in \cpp{}} \cpp{}-Templates
 bieten die Möglichkeit, Klassen oder Funktionen unter anderen durch
 Typnamen zu parametrisieren, um so generische Konstrukte wie
 Collection-Klassen definieren zu können. Die bekannten Java-Generics
@@ -938,7 +930,7 @@ nicht um Makros. Templates werden direkt vom Compiler ausgewertet und
 nicht etwa einem eigenständigen Präprozessor. Deswegen ist es nicht
 möglich, Templates selbst zu generieren.
 
-\lsubsection[cgen:templates:temphask]{Template Haskell}
+\lsection[template:temphask]{Template Haskell}
 
 Template Haskell ist eine Compiler-Erweiterung für Haskell, die die
 Grundidee von \cpp{}-Templates als "`funktionale
@@ -1017,7 +1009,7 @@ Wenn nun standardmäßig die \sexp{}-Notation verwendet wird, ist auch
 weiterhin die Metasprache mit der Zielsprache identisch. Dieser Weg
 wird im in \cref{magicl} vorgestellten Framework gewählt.
 
-\lsubsection[cgen:templates:cprep]{C-Präprozessor}
+\lsection[template:cprep]{C-Präprozessor}
 
 Der C-Präprozessor wird unter anderem verwendet, um Abhängigkeiten
 zwischen Quellcode-Dateien über bedingte Includes zu verwalten. Er läuft
@@ -1067,7 +1059,7 @@ Semantik - wenn ein Programmierer beispielsweise sorglos ein Makro
 verwendet im Glauben, es handele sich um eine Funktion, können
 unerwartete Fehler wie Namenskonflikte auftreten.
 
-\lsubsection[cgen:templates:xsl]{XSL}
+\lsection[template:xsl]{XSL}
 
 \todo{Literatur}
 
@@ -1160,7 +1152,7 @@ um beispielsweise ein \icode{<xsl:apply-templates/>} zu generieren, muss
 dieses umständlich entweder in einem CDATA-Abschnitt quotiert oder über
 das nachträgliche Ändern des Element-Namespace erzeugt werden.
 
-\lsubsection[cgen:templates:lisp]{Lisp}
+\lsection[template:lisp]{Lisp}
 
 Lisp ist eine der ältesten Programmiersprachfamilien der Welt, die unter
 anderem für ihre Möglichkeiten zur Metaprogrammierung bekannt ist. Neben
@@ -1313,7 +1305,7 @@ Wird kompiliert nach:
 
 \todo{Warum kann nicht beliebiger Code generiert werden? Letzlich Upcase}
 
-\lsubsection[cgen:comp:sum]{Zusammenfassung}
+\lsection[template:sum]{Zusammenfassung}
 
 In dieser Sektion wurde eine Reihe von Template-basierten
 Code-Generatoren miteinander verglichen. \abb{comp_sum} zeigt eine
@@ -1407,240 +1399,306 @@ Code, wodurch praktisch Compiler-Plugins mit minimalem Aufwand erzeugt
 werden können. Dadurch lassen sich in Lisp leicht mächtige, voll
 integrierte DSLs konstruieren.
 
-\lsection[cgen:parser]{Parser-Generatoren}
+\lchapter[cats]{Kategorientheorie}
 
-Parser sind für die Umwandlung von Zeichenketten in typisierte Modelle
-verantwortlich und werden deshalb für Code-Generatoren benötigt, die
-ihre Eingaben aus Text-Dateien beziehen. Parser selbst werden oft nicht
-von Hand in einer allgemeinen Programmiersprache entwickelt, sondern aus
-einer EBNF-ähnlichen Notation generiert. Dafür gibt es eine Reihe von
-Frameworks, von denen eine kleine Auswahl in diesem Abschnitt
-vorgestellt und verglichen wird.
+Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
+aber auch ein universeller, denn fast alle wichtigen mathematischen
+Strukturen sind Kategorien. Kategorientheorie findet dank seiner
+Allgemeinheit und Anwendbarkeit für Berechnungen auch in der Informatik
+eine immer größer werdende Rolle. Die Implementation von MagicL benutzt
+einige kategorientheorietische Begriffe, z.B. werden Parser als
+zusammengesetzte Funktoren konstruiert. Dieser Abschnitt führt in die
+Kategorientheorie ein und stellt alle später verwendeten Konzepte
+vor. Die Definitionen sind weitgehend aus \cite{Grundlagen} übernommen.
 
-\lsubsection[cgen:parser:crit]{Vergleichskriterien}
+\lsection[cats:intro]{Einführung}
 
+\fig{cat_funs}{Ein simples Funktionensystem}
 
+\todo{abs=round}
 
-\lsubsection[cgen:parser:yacc]{Lex / Yacc}
-Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
-LALR(1)-Parser
+Der Grundansatz der Kategorientheorie ist die Verallgemeinerung der
+Art und Weise, wie mit Funktionstypen gerechnet wird - insbesondere
+hinsichtlich der Komposition von Funktionen. \abb{cat_funs} zeigt ein
+kleines Funktionensystem zwischen den Mengen $\mathbb{R} \times
+\mathbb{R}$, $\mathbb{R}$ und $\mathbb{Z}$. Es kommen folgende
+Funktionen vor:
+\begin{itemize}
+\item $+ : \mathbb{R} \times \mathbb{R} \ato \mathbb{R}$ addiert zwei
+  reelle Zahlen.
+\item $\mathrm{abs} : \mathbb{R} \ato \mathbb{Z}$ ist die Betragsfunktion.
+\item $+1 : \mathbb{Z} \ato \mathbb{Z}$ addiert $1$ zu einer ganzen Zahl.
+\item $\mathrm{abs} \circ + : \mathbb{R} \times \mathbb{R} \ato \mathbb{Z}$
+  addiert zwei reelle Zahlen und bildet anschließend den Betrag.
+\end{itemize}
 
-\lsubsection[cgen:parser:javacc]{JavaCC}
- Integriert EBNF mit Java-Code
- LL(k)-Parser
+Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach}
++"') lässt sich bilden, weil der Definitionsbereich von $\mathrm{abs}$
+mit dem Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es
+lassen sich also zwei im Diagramm aufeinander folgende Pfeile zu einem
+direkten zusammenfassen. Die Kategorientheorie "`vergisst"' nun den
+Bezug zu Mengen und Funktionen und arbeitet statt dessen mit Objekten
+und Morphismen, welche vollkommen abstrakt definiert sind und mit
+bestimmten Operationen eine Kategorie bilden:
 
-\lsubsection[cgen:parser:treetop]{Treetop}
- Ähnlich javacc, für Ruby
- Parsing Expression Grammar (PEG)
+\lsection[cats:cat]{Kategorien}
 
-\lsubsection[cgen:parser:parsec]{Parsec}
- Haskell-Bibliothek
- Keine eigene Syntax, embedded DSL
- Basiert auf Monaden
- Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
+\defi{Kategorie}{
+Eine Kategorie $\mathbf{C} = (\mathrm{Ob}^\mathbf{C}, \mathrm{Mor}^\mathbf{C},
+\circ^\mathbf{C}, \mathrm{id}^\mathbf{C})$ ist gegeben durch
+\begin{itemize}
+\item eine Klasse $\mathrm{Ob}^\mathbf{C}$ von Objekten\footnote{Da Objekte selbst Mengen
+    sein können, wäre eine Definition von $\mathrm{Ob}^\mathbf{C}$ als Menge problematisch.}.
+\item eine Menge Morphismen $\mathrm{Mor}^\mathbf{C}_{A,B}$ für alle $ A,B \in
+  \mathrm{Ob}^\mathbf{C}$, wobei $A$ und $B$ Domäne und Codomäne genannt werden,
+\item einen Kompositionsoperator $\circ^\mathbf{C}_{A,B,C}$ für alle $
+  A,B,C \in \mathrm{Ob}^\mathbf{C}$ mit \\
+  $\circ^\mathbf{C}_{A,B,C} : \mathrm{Mor}^\mathbf{C}_{B,C} \times
+  \mathrm{Mor}^\mathbf{C}_{A,B} \rightarrow \mathrm{Mor}^\mathbf{C}_{A,C}$,
+\item eine Identität $\mathrm{id}^\mathbf{C}_A \in \mathrm{Mor}^\mathbf{C}_{A,A}$ für alle $ A \in \mathrm{Ob}^\mathbf{C}$,
+\end{itemize}
+wobei folgende Axiome erfüllt sein müssen:
+\begin{itemize}
+\item Neutralität der Identität: $$f \circ_{A,A,B} \mathrm{id}_A = \mathrm{id}_B \circ_{A,B,B} f = f$$
+\item Assoziativität:
+  $$f \circ_{A,C,D} (g \circ_{A,B,C} h) = (f \circ_{B,C,D} g) \circ_{A,B,D}h$$
+\end{itemize}
+}
 
-\lsubsection[cgen:parser:sum]{Zusammenfassung}
+Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
+sie aus dem Kontext hervorgehen. Wie von Funktionen gewohnt, lässt sich
+$f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$. Sind $A$
+und $B$ identisch, bezeichnet man f auch als Endomorphismus.
+
+\fig{cat_simple}{Eine einfache Kategorie}
+
+Wie das Einführungsbeispiel erwarten lässt, bilden Mengen und darauf
+definierte Funktionen Kategorien - die Kategorie, die alle denkbar
+möglichen Mengen und Funktionen enthält, heißt $\mathbf{Set}$. Das
+Einführungsbeispiel skizziert somit unvollständig eine Unterkategorie
+von $\mathbf{Set}$. \abb{cat_simple} zeigt eine andere simple
+Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
+Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle
+Kompositionen dieser Morphismen sind wieder in
+$\mathrm{Mor}^{\mathbf{C}}$ - denn jede Kategorie ist selbstverständlich
+unter Komposition geschlossen.
+
+\fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
+
+Viele Definitionen der Kategorientheorie erfolgen über sogenannte
+kommutative Diagramme:
+
+\defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn
+  für je zwei eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A
+  \rightarrow B$ und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$
+  zwischen zwei Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  }
+Beispielsweise zeigt \abb{cat_comp} das Assoziativitätsaxiom als
+kommutatives Diagramm. $g$ ist nur der Vollständigkeit halber
+eingezeichnet und spielt für das kommutative Diagramm selbst keine
+Rolle. Dieses Diagramm dient lediglich der Veranschaulichung, ist aber
+nicht selbst für die Definition der Assoziativität geeignet -
+schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
+von $\circ$ voraus.
+
+\lsection[cats:prod]{Produkte und Coprodukte}
+
+Die Kategorientheorie schafft es, Begriffe für Funktionseigenschaften
+wie Injektivität sowie Mengenoperationen wie das kartesische Produkt auf
+Kategorien zu verallgemeinern, indem sich die neuen Definitionen
+ausschließlich auf Objekte und Morphismen beziehen und nicht von Mengen
+oder Funktionen im speziellen Gebrauch machen. In der Kategorie
+$\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
+überein. Dem kartesischen Produkt entspricht das Produkt von Objekten:
+
+\defi{Produkt}{ Ein Objekt $A \times B$ mit zwei Projektionsmorphismen
+  $\pi_1 : A \times B \ato A$ und $\pi_2 : A \times B \ato B$ ist ein
+  Produkt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie für
+  alle $f : X \ato A$ und alle $g : X \ato B$ genau ein Morphismus
+  $\langle f,g \rangle : X \ato A \times B$ existiert, für den
+  \abb{cat_product} kommutiert, d.h.  $\pi_1 \circ \langle f,g \rangle =
+  f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.  }
 
 \begin{figure}
   \centering
-  \begin{tabular}{|l|l|l|l|l|} \hline
-\bf Parser-Generator  & \bf Lex / Yacc & \bf JavaCC  & \bf Treetop & \bf Parsec        \\\hline\hline
-\bf Art               & LALR(1)        & LL(k)       & PEG         & monadisch         \\\hline 
-\bf Getrennter Lexer  & ja             &             &             &                   \\\hline  
-\bf Sprachklasse      &                &             &             & kontextsensitiv   \\\hline 
-\bf Lookahead         &                &             &             & beliebig          \\\hline 
-\bf Ausgabeformat     &                & Java-Objekt & Ruby-Objekt & Haskell-Objekt    \\\hline 
-\bf Metasprache       &                &             &             & Haskell           \\\hline 
-\bf Aufwand           & hoch           &             &             &                   \\\hline 
-\bf Performance       &                &             &             &                   \\\hline 
-%bf                   &                &             &             &                   \\\hline     
-  \end{tabular}
-  \caption{Tabellarischer Vergleich von Parser-Generatoren}
-  \label{magicl:fig:parser_comp}
+  \subfloat[Produkt]{
+    \includegraphics[scale=0.3]{images/cat_product}
+    \label{magicl:fig:cat_product}
+  }
+  \subfloat[Coprodukt]{
+    \includegraphics[scale=0.3]{images/cat_coproduct}
+    \label{magicl:fig:cat_coproduct}
+  }
+  \caption{Kommutative Diagramme zur Definition von Produkt und Coprodukt}
 \end{figure}
 
-% \lchapter[sexy]{Objektorientierte Ruby-Implementation}
+Man kann leicht nachvollziehen, dass das kartesische Produkt genau ein
+Produkt für die Kategorie $\mathbf{Set}$ ist. $\langle f,g \rangle$ ist
+hier die Funktion, die $x$ auf das Tupel $(f(x), g(x))$ abbildet.
 
-% \todo{überarbeiten}
+Dreht man im Diagramm alle Pfeile um, erhält man die Definition für das
+Coprodukt, einen zum Produkt dualen\footnote{Die zu einer Kategorie
+  $\mathbf{C}$ duale Kategorie $\mathbf{C}^{\mathrm{op}}$ entsteht
+  nämlich durch das Umdrehen von Pfeilen.} Operator:
 
-% \sexy{} ist das erste im Rahmen dieser Arbeit entworfene
-% \sexp{}-Compiler-Framework, welches in Ruby implementiert ist.
+\defi{Coprodukt}{ Ein Objekt $A + B$ mit zwei Injektionsmorphismen
+  $\iota_1 : A \ato A + B$ und $\iota_2 : B \ato A + B$ ist ein
+  Coprodukt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie
+  alle $f : A \ato X$ und alle $g : B \ato X$ genau ein Morphismus
+  $[f,g] : A + B \ato X$ existiert, für den \abb{cat_coproduct}
+  kommutiert, d.h.  $[f,g] \circ \iota_1 = f$ und $[f,g] \circ \iota_2 =
+  g$ gelten.  }
 
-% \sref{sexy:arch} erläutert die objektorientierte
-% Systemarchitektur und die Funktionsweise der Komponenten, woraufhin
-% \sref{sexy:macros} eine Implementation eines Lisp nachempfundenen
-% Makro-Konstruktes demonstriert. Als Beispiele für \sref{sexy:examples}
-% dienen die Definitionen der Sprachen, in denen das System selbst
-% geschrieben ist. \sref{sexy:limits} erörtert die Schwächen dieses
-% Ansatzes und liefert die Motivation für eine neue Version.
+Das Coprodukt entspricht einer disjunkten Vereinigung von Mengen, also
+einer Vereinigung von Mengen. die vorher explizit disjunkt gemacht
+werden (sofern sie es nicht bereits sind). Dies kann beispielsweise durch
+die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
+\{1_L,2_L,3_L,2_R,3_R,4_R\}$. Der Morphismus $[f,g]$ entspricht einer
+Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
+aus $B$ entsprechend $g$.
 
-% \lsection[sexy:reqs]{Anforderungen}
+\lsection[cats:func]{Funktoren}
 
-% Minimalistescher \textit{Proof of Concept} der Möglichkeit, einen
-% \sexp{}-basierten Makroprozessor ähnlich Lisp mit einer anderen
-% Metasprache und beliebigen Zielsprachen zu implementieren.
+Strukturerhaltende Abbildungen zwischen Objekten und Morphismen zweier
+Kategorien werden Funktoren genannt:
 
-% Groß-/Kleinschreibung von Symbolen reicht schon für
-% Zielsprachenunabhängigkeit, solange erzeugte Symbole in Datei geschrieben können werden.
-   
-% Metasprache Ruby aufgrund Möglichkeit zur Laufzeit-Metaprogrammierung,
-% wodurch Makros direkt nach Definition benutzt werden können.
+\defi{Funktor}{
+Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
+\rightarrow \mathbf{D}$ von Kategorie $C$ nach Kategorie $D$
+    \begin{itemize}
+    \item bildet jedes Objekt $A \in \mathrm{Ob}^{\mathbf{C}}$ auf $F_{\mathrm{Ob}}(A) \in
+      \mathrm{Ob}^{\mathbf{D}}$ ab,
+    \item bildet jeden Morphismus $f \in
+      \mathrm{Mor}^{\mathbf{C}}_{A,B}$ auf $F_{\mathrm{Mor}}(f) \in
+      \mathrm{Mor}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A),F_{\mathrm{Ob}}(B)}$
+      ab,
+    \end{itemize}
+    wobei für alle $A,B,C \in \mathrm{Ob}^{\mathbf{C}}$ und alle $f \in
+    \mathrm{Mor^{\mathbf{C}}_{B,C}},g \in
+    \mathrm{Mor^{\mathbf{C}}_{A,B}}$ folgende Axiome erfüllt sein
+    müssen:
+    \begin{itemize}
+    \item Erhaltung der Komposition:
+      $$F_{\mathrm{Mor}}(f \circ^{\mathbf{C}} g) =
+      F_{\mathrm{Mor}}(f) \circ^{\mathbf{D}} F_{\mathrm{Mor}}(g)$$
+    \item Erhaltung der Identität:
+      $$F_{\mathrm{Mor}}(\mathrm{id}^{\mathbf{C}}_A) =
+      \mathrm{id}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A)}$$
+    \end{itemize}
+}
 
-% \lsection[sexy:ruby]{Ruby}
+Statt $F_{\mathrm{Ob}}$ und $F_{\mathrm{Mor}}$ kann einfach $F$
+geschrieben werden, wenn aus dem Kontext hervorgeht welche Abbildung
+gemeint ist.
 
-% Ruby ist eine dynamisch getypte, interpretierte Programmiersprache, die
-% sowohl funktional als auch objektorientiert ist und eine relativ
-% einfache Syntax benutzt\footnote{Die Ruby-Syntax ist einfach im
-%   Vergleich zu Sprachen wie C - aber natürlich noch immer um ein
-%   Vielfaches komplexer als Lisp-Syntax.}, mit der viele
-% Schleifenkonstrukte durch die Übergabe von sogenannten Blöcken an
-% Funktionen realisiert werden können.  Unter Anderem aufgrund des
-% erfolgreichen Webframeworks \textit{Ruby on Rails} ist Ruby inzwischen
-% auch außerhalb seines Herkunftslandes Japan recht beliebt.
+Kategorien als Objekte und Funktoren als Morphismen ergeben selbst
+wieder eine Kategorie, die Kategorie der kleinen Kategorien - kleine
+Kategorien sind Kategorien, deren Klasse von Objekten eine Menge
+ist. Diese Einschränkung ist nötig, da Klassen von Klassen in der
+Mathematik ähnlich problematisch sind wie Mengen von Mengen.
 
-% \lsubsection[sexy:ruby:runtime]{Laufzeiteigenschaften}
+\lsection[cats:nats]{Natürliche Transformationen}
 
-% Im Gegensatz zu den meisten kompilierten Sprachen\footnote{In einer
-%   interpretierten Sprache ist das Bereitstellen einer
-%   \icode{eval}-Funktion deutlich leichter - schließlich gibt es diese im
-% Interpreter bereits, so dass im Wesentlichen nur noch die Schnittstelle
-% erstellt werden muss.} hat Ruby wie Lisp die
-% Möglichkeit, über eine \icode{eval}-Funktion Code zur Laufzeit zu
-% evaluieren, was viele interessante Möglichkeiten mit sich bringt:
-% Beispielsweise lassen sich so Anwendungen erstellen, die durch eine
-% mitgelieferte Skriptsprache (Ruby selbst) erweitert werden können.
+Eine andere Möglichkeit, aus Funktoren eine Kategorien zu bilden,
+besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
+\ato \mathbf{D}$ als Objekte bilden die sogenannte Funktorkategorie über
+$\mathbf{C}$ und $\mathbf{D}$, deren Morphismen natürliche
+Transformationen heißen.
 
-% Das Wegfallen der Kompilationsphase hat sowohl Vor- als auch Nachteile:
-% Eine Übersetzung in Maschinensprache kostet Zeit, andererseits Laufen
-% kompilierte Programme meist schneller und sind sparender mit
-% Resourcen. In \textit{Ruby on Rails} beispielsweise muss eine Programm-
-% oder Template-Datei nur gespeichert werden, damit beim nächsten Aufruf
-% der Webseite bereits die neue Version in Kraft tritt, was sehr praktisch
-% zum Entwickeln ist. Allerdings haben Rails-Anwendungen einen hohen
-% Speicherverbrauch und sind vergleichsweise langsam\footnote{Die
-%   vergleichsweise schlechte Performance liegt allerdings nicht nur an
-%   der interpretierten Sprache, sondern auch an der Komplexität des
-%   Frameworks. Beispielsweise sind php-Anwendungen meist schneller,
-%   obwohl die Sprache ebenfalls interpretiert ist}.
+\defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha:F \nto
+G$ ordnet jedem Objekt $A$ aus $\mathbf{C}$ einen Morphismus
+$\alpha_A:F(A) \ato G(A)$ aus $\mathbf{D}$ zu, wobei für alle Objekte
+$A,B$ und alle Morphismen $f:A \ato B$ aus $\mathbf{C}$ die
+Gleichung
+$$\alpha_B \circ F(f) = G(f) \circ \alpha_A $$
+gelten muss, was dem kommutativen Diagramm in \abb{cat_nat}
+entspricht.
+}
 
-% Ähnllich verhält es sich mit der dynamischen Typisierung: Das Wegfallen
-% von Variablen-Deklarationen beschleunigt den Entwicklungsvorgang -
-% Stichwort "`Rapid Prototyping"' - und vereinfacht Refactorings. Im
-% Gegenzug fällt die nützliche statische Prüfung weg, so dass viele Fehler
-% erst unerwartet zur Laufzeit auftreten und deren Ursache möglicherweise
-% schwerer zu lokalisieren ist. Größere Ruby-Projekte verwenden deshalb meist
-% besonders viele \textit{Unit Tests} - welche natürlich auch bei statisch
-% typisierten Sprachen nützlich sind.
+Obwohl natürliche Transformationen in der Funktorkategorie Morphismen
+sind, werden sie für die bessere Unterscheidung mit $\nto$ statt
+$\ato$ notiert.
 
-% \lsubsection[sexy:ruby:classes]{Klassen und Methoden}
+\fig{cat_nat}{Kommutatives Diagramm in Kategorie $\mathbf{D}$ für die Definition von
+  natürlichen Transformationen}
 
-% \lsubsection[sexy:ruby:blocks]{Blöcke}
+\lsection[cats:monads]{Monaden}
 
-% \lsection[sexy:arch]{Architektur}
-
-% \begin{itemize}
-% \item Sexp
-%   \begin{itemize}
-%   \item als Liste
-%   \item \icode{<>} Notation für Kommentare, Strings usw.
-%   \item Parser mit Treetop
-%   \end{itemize}
-% \item Compiler als Klasse, Vererbung
-% \item 3 Stufen: Base, Ruby, Comp
-% \item metazirkulär
-% \item Formatierung: Fremder Ruby Formatter
-% \end{itemize}
-
-% \lsection[sexy:macros]{Makros}
-
-% \begin{itemize}
-% \item Rekursive Expansion
-% \item Implementation als Funktion, unterscheidung von Compiler-Funktionen
-% \item Laufzeitevaluation (\icode{compiler_eval_return})
-% \item backquote (besserer Ansatz mit Zahlen)
-% \item \icode{default_macro}
-% \end{itemize}
-% \lsection[sexy:examples]{Beispiele}
-
-% \lsection[sexy:disc]{Diskussion}
-
-% \begin{itemize}
-% \item Operatoren, Sonderzeichen $\Rightarrow$ Andere
-%   Repräsentation oder Codierung
-% \item Scheme vs CL defun/defmacro - Scheme kanonischer (siehe ...)
-% \item \icode{<>} unnötig
-% \item Parser versagt bei fehlerhaften Input
-% \item Genereller Pretty-Printer für andere Sprachen nötig
-% \end{itemize}
-
-\lchapter[magicl]{Arrow-basierte Implementation in Haskell}
-
-\todo{überarbeiten}
-
-MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
-als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
-Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{magicl:cats_hask} beschrieben), mit deren Hilfe
-beispielsweise in \sref{magicl:parser} sehr allgemeine und elegante
-\sexp{}-Parser konstruiert werden. In \sref{magicl:sexp} geht es um
-das Parsen von \sexps{} und die hierfür bereitgestellten
-Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
-Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
-werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
-Modelle, Parser und Compiler, die Teil von MagicL sind.
-
-\lsection[magicl:reqs]{Anforderungen}
-
-\todo{Begriffsklärung \sexp{}-Parser}
-
+Monaden setzen sich aus einem Endofunktor und zwei natürlichen
+Transformationen zusammen:
+\defi{Monade}{Eine Monade $(T,\eta,\mu)$ über der Kategorie $\mathbf{C}$ besteht aus
+  \begin{itemize}
+  \item einem Endofunktor $T:\mathbf{C} \ato \mathbf{C}$,
+  \item einer natürlichen Transformation $\eta:\mathrm{id}_{\mathbf{C}} \nto T$,
+  \item einer natürlichen Transformation $\mu:T^2 \nto T$,
+  \end{itemize}
+wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
 \begin{itemize}
-\item Schachtelung von Makros
-\item EBNF wünschenswert
-\item Generischer Pretty-Printer
-\item Robusterer \sexp-{Parser}
-\item Typisiert vs untypisierte Zwischenmodelle
-\item Vorteile Typisiert
-  \begin{itemize}
-  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
-  \item simpler als bq-code
-  \item Selbstdokumentation des Modells
-  \end{itemize}
-\item Vorteile untypisiert
-  \begin{itemize}
-  \item Kommunikation (externe Anwendungen, Netzwerk)
-  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
-  \item Redundanzen können in \sexp{}-Version herausgenommen werden
-  \end{itemize}
-\item MagicL:
-  \begin{itemize}
-  \item Untypisierte Eingabe (Sexp)
-  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
-  \end{itemize}
-\item Repräsentation von \sexps{}
-  \begin{itemize}
-  \item Sexp-Strachen sollten immer besonderen Head haben (klare
-    Semantik, vgl. XML, Pretty-Print)
-  \item Gesondert repräsentieren zum erzwingen?
-  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
-    wird komplizierter
-  \item Definition
-  \end{itemize}
+\item Assoziativität: $$\mu_A \circ T(\mu_A) = \mu_A \circ \mu_{T(A)}$$
+\item Neutrales Element: $$\mu_A \circ T(\eta_A) = \mu_A \circ \eta_{T(A)} = \mathrm{id}_{T(A)}$$
 \end{itemize}
+}
+$\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier den Identitätsfunktor,
+$\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den Identitätsmorphismus. Auch diese Gleichungen ließen sich
+als kommutative Diagramme darstellen.
 
-\lsection[haskell]{Die Sprache Haskell}
+Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
+$T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
+auf der linken Seite behält das äußere $T$ bei und verwendet $\mu$, um
+das innen stehende $T(T(A))$ in $T(A)$ zu überführen. Rechts reduziert
+$\mu_{T(x)}:T(T(T(A))) \ato T(T(A))$ dagegen von außen und lässt das
+innere $T(A)$ unangerührt. Wird das Ergebnis dann in $\mu$ gesteckt,
+sind innere und äußere Reduktion ununterscheidbar. Die Gleichung lässt
+sich auch kurz als $\mu \circ T \mu = \mu \circ \mu T$ schreiben.
+
+Das zweite Axiom funktioniert ähnlich, nur beschreiben diesmal beide
+Seiten eine Art, den Identitätsmorphismus für das Objekt $T(A)$ zu
+bilden. $T(\eta_A):T(A) \ato T(T(A)$ fügt das neue $T$ innen ein,
+$\eta_{T(A)}:T(A) \ato T(T(A))$ hingegen außen.
+
+Zu jeder Monade lässt sich eine neue Kategorie bilden, die Kleisli-Kategorie:
+\defi{Kleisli-Kategorie}{
+Die Kleisli-Kategorie $\mathbf{C}_K$ zur Kategorie $C$ und der
+Monade $(T,\eta,\mu)$ besteht aus
+\begin{itemize}
+\item den Objekten von $\mathbf{C}$,
+\item den Morphismen $f^{\mathbf{C}} \in
+  \mathrm{Mor}^{\mathbf{C}}_{A,T(B)}$ aus $C$, die in $f \in
+  \mathrm{Mor}^{\mathbf{C}_K}_{A,B}$ umbenannt werden,
+\item der Identität $\mathrm{id}_A = \eta_A$,
+\item der Komposition $f \circ^{\mathbf{C}_K}_{A,B,C} g = \mu_C
+  \circ^{\mathbf{C}} T(f) \circ^{\mathbf{C}} g$.
+\end{itemize}
+}
+Die Erfüllung der Kategorieaxiome wird hier nicht gezeigt, folgt aber
+aus den Axiomen für Funktoren, natürliche Transformationen und Monaden.
+
+Monaden sind in der Programmierung nützlich, da sie generisch das
+Rechnen mit "`eingepackten"' Werten beschreiben. Beispielsweise könnte
+$A$ für den Typ \icode{Int} und $T(A)$ für \icode{List of Int}
+stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
+$\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
+Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
+Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
+Verknüpfen. Haskell (siehe \sref{haskell}) benutzt Monaden unter
+anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
+einzubauen, wie \sref{cats_hask:monads} erklärt.
+
+\lchapter[haskell]{Die Sprache Haskell}
+
+\todo{lazy evaluation}
 
 Haskell ist eine funktionale Programmiersprache, die generell sehr
 mathematisch inspiriert ist. Beispielsweise sind Funktionen hier
 grundsätzlich pur, d.h. ohne Nebeneffekte. Um dennoch mit Nebeneffekten
 umgehen zu können, welche für konkrete Anwendung nötig sind, wird das
 mächtige Konzept der Monaden bereitgestellt (siehe
-\sref{magicl:cats:monads} und \sref{magicl:cats_hask:monads}. Auch
+\sref{cats:monads} und \sref{cats_hask:monads}. Auch
 Objekte gibt es hier in der Form nicht - stattdessen wird mittels
 algebraischer Datentypen und Typklassen modelliert. Unterstützt wird
 dieser Ansatz durch ein statisches Typsystem, welches praktische
 Features wie Typinferenz oder abhängige Typen bereitstellt.
 
-\lsubsection[haskell:functions]{Funktionen}
+\lsection[haskell:functions]{Funktionen}
 
 Funktionsaufrufe in Haskell benötigen keine Klammern, sondern werden
 einfach durch Leerzeichen in der Form \icode{funktion arg1 arg2 arg3}
@@ -1713,7 +1771,7 @@ sumSquare x y = square (x + y)
     square x = x * x
 \end{code}
 
-\lsubsection[haskell:data]{Datentypen}
+\lsection[haskell:data]{Datentypen}
 
 Es gibt in Haskell vier Arten von Typen: Zunächst gibt es primitive
 Typen wie \icode{Char}, \icode{Int} oder \icode{Float} sowie
@@ -1778,7 +1836,7 @@ werden, welches vom Compiler effizienter behandelt wird, da es sich
 lediglich um eine Verpackung für einen bestehenden Typen handelt. Dies
 wird vor allem zusammen mit Typklassen benutzt.
 
-\lsubsection[haskell:typeclasses]{Typklassen}
+\lsection[haskell:typeclasses]{Typklassen}
 
 Oben wurden bereits Funktionen und Datentypen präsentiert, die auf
 beliebige Typen anwendbar sind. Oft ist es allerdings erforderlich, die
@@ -1821,291 +1879,7 @@ showList [1, 2, 3] -- ergibt "{1 - 2 - 3}"
  Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
  Hier: (...) => als auslassung
 
-\lsection[magicl:cats]{Kategorientheorie}
-
-Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
-aber auch ein universeller, denn fast alle wichtigen mathematischen
-Strukturen sind Kategorien. Kategorientheorie findet dank seiner
-Allgemeinheit und Anwendbarkeit für Berechnungen auch in der Informatik
-eine immer größer werdende Rolle. Die Implementation von MagicL benutzt
-einige kategorientheorietische Begriffe, z.B. werden Parser als
-zusammengesetzte Funktoren konstruiert. Dieser Abschnitt führt in die
-Kategorientheorie ein und stellt alle später verwendeten Konzepte
-vor. Die Definitionen sind weitgehend aus \cite{Grundlagen} übernommen.
-
-\lsubsection[magicl:cats:intro]{Einführung}
-
-\fig{cat_funs}{Ein simples Funktionensystem}
-
-\todo{abs=round}
-
-Der Grundansatz der Kategorientheorie ist die Verallgemeinerung der
-Art und Weise, wie mit Funktionstypen gerechnet wird - insbesondere
-hinsichtlich der Komposition von Funktionen. \abb{cat_funs} zeigt ein
-kleines Funktionensystem zwischen den Mengen $\mathbb{R} \times
-\mathbb{R}$, $\mathbb{R}$ und $\mathbb{Z}$. Es kommen folgende
-Funktionen vor:
-\begin{itemize}
-\item $+ : \mathbb{R} \times \mathbb{R} \ato \mathbb{R}$ addiert zwei
-  reelle Zahlen.
-\item $\mathrm{abs} : \mathbb{R} \ato \mathbb{Z}$ ist die Betragsfunktion.
-\item $+1 : \mathbb{Z} \ato \mathbb{Z}$ addiert $1$ zu einer ganzen Zahl.
-\item $\mathrm{abs} \circ + : \mathbb{R} \times \mathbb{R} \ato \mathbb{Z}$
-  addiert zwei reelle Zahlen und bildet anschließend den Betrag.
-\end{itemize}
-
-Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach}
-+"') lässt sich bilden, weil der Definitionsbereich von $\mathrm{abs}$
-mit dem Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es
-lassen sich also zwei im Diagramm aufeinander folgende Pfeile zu einem
-direkten zusammenfassen. Die Kategorientheorie "`vergisst"' nun den
-Bezug zu Mengen und Funktionen und arbeitet statt dessen mit Objekten
-und Morphismen, welche vollkommen abstrakt definiert sind und mit
-bestimmten Operationen eine Kategorie bilden:
-
-\lsubsection[magicl:cats:cat]{Kategorien}
-
-\defi{Kategorie}{
-Eine Kategorie $\mathbf{C} = (\mathrm{Ob}^\mathbf{C}, \mathrm{Mor}^\mathbf{C},
-\circ^\mathbf{C}, \mathrm{id}^\mathbf{C})$ ist gegeben durch
-\begin{itemize}
-\item eine Klasse $\mathrm{Ob}^\mathbf{C}$ von Objekten\footnote{Da Objekte selbst Mengen
-    sein können, wäre eine Definition von $\mathrm{Ob}^\mathbf{C}$ als Menge problematisch.}.
-\item eine Menge Morphismen $\mathrm{Mor}^\mathbf{C}_{A,B}$ für alle $ A,B \in
-  \mathrm{Ob}^\mathbf{C}$, wobei $A$ und $B$ Domäne und Codomäne genannt werden,
-\item einen Kompositionsoperator $\circ^\mathbf{C}_{A,B,C}$ für alle $
-  A,B,C \in \mathrm{Ob}^\mathbf{C}$ mit \\
-  $\circ^\mathbf{C}_{A,B,C} : \mathrm{Mor}^\mathbf{C}_{B,C} \times
-  \mathrm{Mor}^\mathbf{C}_{A,B} \rightarrow \mathrm{Mor}^\mathbf{C}_{A,C}$,
-\item eine Identität $\mathrm{id}^\mathbf{C}_A \in \mathrm{Mor}^\mathbf{C}_{A,A}$ für alle $ A \in \mathrm{Ob}^\mathbf{C}$,
-\end{itemize}
-wobei folgende Axiome erfüllt sein müssen:
-\begin{itemize}
-\item Neutralität der Identität: $$f \circ_{A,A,B} \mathrm{id}_A = \mathrm{id}_B \circ_{A,B,B} f = f$$
-\item Assoziativität:
-  $$f \circ_{A,C,D} (g \circ_{A,B,C} h) = (f \circ_{B,C,D} g) \circ_{A,B,D}h$$
-\end{itemize}
-}
-
-Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
-sie aus dem Kontext hervorgehen. Wie von Funktionen gewohnt, lässt sich
-$f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$. Sind $A$
-und $B$ identisch, bezeichnet man f auch als Endomorphismus.
-
-\fig{cat_simple}{Eine einfache Kategorie}
-
-Wie das Einführungsbeispiel erwarten lässt, bilden Mengen und darauf
-definierte Funktionen Kategorien - die Kategorie, die alle denkbar
-möglichen Mengen und Funktionen enthält, heißt $\mathbf{Set}$. Das
-Einführungsbeispiel skizziert somit unvollständig eine Unterkategorie
-von $\mathbf{Set}$. \abb{cat_simple} zeigt eine andere simple
-Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
-Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle
-Kompositionen dieser Morphismen sind wieder in
-$\mathrm{Mor}^{\mathbf{C}}$ - denn jede Kategorie ist selbstverständlich
-unter Komposition geschlossen.
-
-\fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
-
-Viele Definitionen der Kategorientheorie erfolgen über sogenannte
-kommutative Diagramme:
-
-\defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn
-  für je zwei eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A
-  \rightarrow B$ und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$
-  zwischen zwei Objekten $A$ und $B$ die Gleichung $f=g$ gilt.  }
-Beispielsweise zeigt \abb{cat_comp} das Assoziativitätsaxiom als
-kommutatives Diagramm. $g$ ist nur der Vollständigkeit halber
-eingezeichnet und spielt für das kommutative Diagramm selbst keine
-Rolle. Dieses Diagramm dient lediglich der Veranschaulichung, ist aber
-nicht selbst für die Definition der Assoziativität geeignet -
-schließlich setzt \dref{Kommutatives Diagramm} bereits Assoziativität
-von $\circ$ voraus.
-
-\lsubsection[magicl:cats:prod]{Produkte und Coprodukte}
-
-Die Kategorientheorie schafft es, Begriffe für Funktionseigenschaften
-wie Injektivität sowie Mengenoperationen wie das kartesische Produkt auf
-Kategorien zu verallgemeinern, indem sich die neuen Definitionen
-ausschließlich auf Objekte und Morphismen beziehen und nicht von Mengen
-oder Funktionen im speziellen Gebrauch machen. In der Kategorie
-$\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
-überein. Dem kartesischen Produkt entspricht das Produkt von Objekten:
-
-\defi{Produkt}{ Ein Objekt $A \times B$ mit zwei Projektionsmorphismen
-  $\pi_1 : A \times B \ato A$ und $\pi_2 : A \times B \ato B$ ist ein
-  Produkt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie für
-  alle $f : X \ato A$ und alle $g : X \ato B$ genau ein Morphismus
-  $\langle f,g \rangle : X \ato A \times B$ existiert, für den
-  \abb{cat_product} kommutiert, d.h.  $\pi_1 \circ \langle f,g \rangle =
-  f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.  }
-
-\begin{figure}
-  \centering
-  \subfloat[Produkt]{
-    \includegraphics[scale=0.3]{images/cat_product}
-    \label{magicl:fig:cat_product}
-  }
-  \subfloat[Coprodukt]{
-    \includegraphics[scale=0.3]{images/cat_coproduct}
-    \label{magicl:fig:cat_coproduct}
-  }
-  \caption{Kommutative Diagramme zur Definition von Produkt und Coprodukt}
-\end{figure}
-
-Man kann leicht nachvollziehen, dass das kartesische Produkt genau ein
-Produkt für die Kategorie $\mathbf{Set}$ ist. $\langle f,g \rangle$ ist
-hier die Funktion, die $x$ auf das Tupel $(f(x), g(x))$ abbildet.
-
-Dreht man im Diagramm alle Pfeile um, erhält man die Definition für das
-Coprodukt, einen zum Produkt dualen\footnote{Die zu einer Kategorie
-  $\mathbf{C}$ duale Kategorie $\mathbf{C}^{\mathrm{op}}$ entsteht
-  nämlich durch das Umdrehen von Pfeilen.} Operator:
-
-\defi{Coprodukt}{ Ein Objekt $A + B$ mit zwei Injektionsmorphismen
-  $\iota_1 : A \ato A + B$ und $\iota_2 : B \ato A + B$ ist ein
-  Coprodukt von $A$ und $B$, wenn für jedes $X \in \mathrm{Ob}$ sowie
-  alle $f : A \ato X$ und alle $g : B \ato X$ genau ein Morphismus
-  $[f,g] : A + B \ato X$ existiert, für den \abb{cat_coproduct}
-  kommutiert, d.h.  $[f,g] \circ \iota_1 = f$ und $[f,g] \circ \iota_2 =
-  g$ gelten.  }
-
-Das Coprodukt entspricht einer disjunkten Vereinigung von Mengen, also
-einer Vereinigung von Mengen. die vorher explizit disjunkt gemacht
-werden (sofern sie es nicht bereits sind). Dies kann beispielsweise durch
-die Indizes $L$ und $R$ geschehen: $\{1,2,3\} + \{2,3,4\} =
-\{1_L,2_L,3_L,2_R,3_R,4_R\}$. Der Morphismus $[f,g]$ entspricht einer
-Fallunterscheidung: Auf Elemente aus $A$ wird $f$ angewendet, auf welche
-aus $B$ entsprechend $g$.
-
-\lsubsection[magicl:cats:func]{Funktoren}
-
-Strukturerhaltende Abbildungen zwischen Objekten und Morphismen zweier
-Kategorien werden Funktoren genannt:
-
-\defi{Funktor}{
-Ein Funktor $F=(F_{\mathrm{Ob}},F_{\mathrm{Mor}}) : \mathbf{C}
-\rightarrow \mathbf{D}$ von Kategorie $C$ nach Kategorie $D$
-    \begin{itemize}
-    \item bildet jedes Objekt $A \in \mathrm{Ob}^{\mathbf{C}}$ auf $F_{\mathrm{Ob}}(A) \in
-      \mathrm{Ob}^{\mathbf{D}}$ ab,
-    \item bildet jeden Morphismus $f \in
-      \mathrm{Mor}^{\mathbf{C}}_{A,B}$ auf $F_{\mathrm{Mor}}(f) \in
-      \mathrm{Mor}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A),F_{\mathrm{Ob}}(B)}$
-      ab,
-    \end{itemize}
-    wobei für alle $A,B,C \in \mathrm{Ob}^{\mathbf{C}}$ und alle $f \in
-    \mathrm{Mor^{\mathbf{C}}_{B,C}},g \in
-    \mathrm{Mor^{\mathbf{C}}_{A,B}}$ folgende Axiome erfüllt sein
-    müssen:
-    \begin{itemize}
-    \item Erhaltung der Komposition:
-      $$F_{\mathrm{Mor}}(f \circ^{\mathbf{C}} g) =
-      F_{\mathrm{Mor}}(f) \circ^{\mathbf{D}} F_{\mathrm{Mor}}(g)$$
-    \item Erhaltung der Identität:
-      $$F_{\mathrm{Mor}}(\mathrm{id}^{\mathbf{C}}_A) =
-      \mathrm{id}^{\mathbf{D}}_{F_{\mathrm{Ob}}(A)}$$
-    \end{itemize}
-}
-
-Statt $F_{\mathrm{Ob}}$ und $F_{\mathrm{Mor}}$ kann einfach $F$
-geschrieben werden, wenn aus dem Kontext hervorgeht welche Abbildung
-gemeint ist.
-
-Kategorien als Objekte und Funktoren als Morphismen ergeben selbst
-wieder eine Kategorie, die Kategorie der kleinen Kategorien - kleine
-Kategorien sind Kategorien, deren Klasse von Objekten eine Menge
-ist. Diese Einschränkung ist nötig, da Klassen von Klassen in der
-Mathematik ähnlich problematisch sind wie Mengen von Mengen.
-
-\lsubsection[magicl:cats:nats]{Natürliche Transformationen}
-
-Eine andere Möglichkeit, aus Funktoren eine Kategorien zu bilden,
-besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
-\ato \mathbf{D}$ als Objekte bilden die sogenannte Funktorkategorie über
-$\mathbf{C}$ und $\mathbf{D}$, deren Morphismen natürliche
-Transformationen heißen.
-
-\defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha:F \nto
-G$ ordnet jedem Objekt $A$ aus $\mathbf{C}$ einen Morphismus
-$\alpha_A:F(A) \ato G(A)$ aus $\mathbf{D}$ zu, wobei für alle Objekte
-$A,B$ und alle Morphismen $f:A \ato B$ aus $\mathbf{C}$ die
-Gleichung
-$$\alpha_B \circ F(f) = G(f) \circ \alpha_A $$
-gelten muss, was dem kommutativen Diagramm in \abb{cat_nat}
-entspricht.
-}
-
-Obwohl natürliche Transformationen in der Funktorkategorie Morphismen
-sind, werden sie für die bessere Unterscheidung mit $\nto$ statt
-$\ato$ notiert.
-
-\fig{cat_nat}{Kommutatives Diagramm in Kategorie $\mathbf{D}$ für die Definition von
-  natürlichen Transformationen}
-
-\lsubsection[magicl:cats:monads]{Monaden}
-
-Monaden setzen sich aus einem Endofunktor und zwei natürlichen
-Transformationen zusammen:
-\defi{Monade}{Eine Monade $(T,\eta,\mu)$ über der Kategorie $\mathbf{C}$ besteht aus
-  \begin{itemize}
-  \item einem Endofunktor $T:\mathbf{C} \ato \mathbf{C}$,
-  \item einer natürlichen Transformation $\eta:\mathrm{id}_{\mathbf{C}} \nto T$,
-  \item einer natürlichen Transformation $\mu:T^2 \nto T$,
-  \end{itemize}
-wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
-\begin{itemize}
-\item Assoziativität: $$\mu_A \circ T(\mu_A) = \mu_A \circ \mu_{T(A)}$$
-\item Neutrales Element: $$\mu_A \circ T(\eta_A) = \mu_A \circ \eta_{T(A)} = \mathrm{id}_{T(A)}$$
-\end{itemize}
-}
-$\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier den Identitätsfunktor,
-$\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den Identitätsmorphismus. Auch diese Gleichungen ließen sich
-als kommutative Diagramme darstellen.
-
-Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
-$T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
-auf der linken Seite behält das äußere $T$ bei und verwendet $\mu$, um
-das innen stehende $T(T(A))$ in $T(A)$ zu überführen. Rechts reduziert
-$\mu_{T(x)}:T(T(T(A))) \ato T(T(A))$ dagegen von außen und lässt das
-innere $T(A)$ unangerührt. Wird das Ergebnis dann in $\mu$ gesteckt,
-sind innere und äußere Reduktion ununterscheidbar. Die Gleichung lässt
-sich auch kurz als $\mu \circ T \mu = \mu \circ \mu T$ schreiben.
-
-Das zweite Axiom funktioniert ähnlich, nur beschreiben diesmal beide
-Seiten eine Art, den Identitätsmorphismus für das Objekt $T(A)$ zu
-bilden. $T(\eta_A):T(A) \ato T(T(A)$ fügt das neue $T$ innen ein,
-$\eta_{T(A)}:T(A) \ato T(T(A))$ hingegen außen.
-
-Zu jeder Monade lässt sich eine neue Kategorie bilden, die Kleisli-Kategorie:
-\defi{Kleisli-Kategorie}{
-Die Kleisli-Kategorie $\mathbf{C}_K$ zur Kategorie $C$ und der
-Monade $(T,\eta,\mu)$ besteht aus
-\begin{itemize}
-\item den Objekten von $\mathbf{C}$,
-\item den Morphismen $f^{\mathbf{C}} \in
-  \mathrm{Mor}^{\mathbf{C}}_{A,T(B)}$ aus $C$, die in $f \in
-  \mathrm{Mor}^{\mathbf{C}_K}_{A,B}$ umbenannt werden,
-\item der Identität $\mathrm{id}_A = \eta_A$,
-\item der Komposition $f \circ^{\mathbf{C}_K}_{A,B,C} g = \mu_C
-  \circ^{\mathbf{C}} T(f) \circ^{\mathbf{C}} g$.
-\end{itemize}
-}
-Die Erfüllung der Kategorieaxiome wird hier nicht gezeigt, folgt aber
-aus den Axiomen für Funktoren, natürliche Transformationen und Monaden.
-
-Monaden sind in der Programmierung nützlich, da sie generisch das
-Rechnen mit "`eingepackten"' Werten beschreiben. Beispielsweise könnte
-$A$ für den Typ \icode{Int} und $T(A)$ für \icode{List of Int}
-stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
-$\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
-Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
-Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
-Verknüpfen. Haskell (siehe \sref{haskell}) benutzt Monaden unter
-anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
-einzubauen, wie \sref{magicl:cats_hask:monads} erklärt.
-
-\lsection[magicl:cats_hask]{Kategorien in Haskell}
+\lsection[cats_hask]{Kategorien in Haskell}
 
 Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
 die allerdings immer bestimmten Einschränkungen
@@ -2131,7 +1905,7 @@ Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
 Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
 benutzt mit \icode{f >>> g = g . f}. %<<
 
-\lsubsection[magicl:cats_hask:arrows]{Arrows}
+\lsubsection[cats_hask:arrows]{Arrows}
 
 Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
@@ -2187,7 +1961,7 @@ f >>^ func = f >>> arr func
 \end{code}% <<
 noch etwas syntaktischen Zucker.
 
-\lsubsection[magic:cats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
+\lsubsection[cats_hask:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
 
 Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
 \icode{Either}-Datentyp, der folgendermaßen definiert ist:
@@ -2233,7 +2007,7 @@ Produkt-Operationen:
   \dref{Coprodukt}
 \end{itemize}
 
-\lsubsection[magicl:cats_hask:functors]{Funktoren}
+\lsubsection[cats_hask:functors]{Funktoren}
 
 Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
 allerdings nur Endofunktoren über der Kategorie $\mathbf{Hask}$ repräsentieren:
@@ -2267,7 +2041,7 @@ Alle hier verwendeten \icode{Functor}-Instanzen konstruieren aus einem
 \icode{Arrow}-Typ einen zweiten mit zusätzlichen Eigenschaften,
 z.B. erweitert der \icode{FailFunctor} einen Arrow-Typ um mögliches
 Scheitern. Die Instanz-Deklaration dafür sieht im Gerüst folgendermaßen
-aus (die Details werden in \sref{magicl:parser:fail} erläutert):
+aus (die Details werden in \sref{arrowparser:fail} erläutert):
 \begin{code}
 newtype FailFunctor ar a b = ...
 
@@ -2275,11 +2049,11 @@ instance (Arrow ar) => Functor (FailFunctor ar) ar where
   lift f = ...
 \end{code}
 
-\lsubsection[magicl:cats_hask:monads]{Monaden}
+\lsubsection[cats_hask:monads]{Monaden}
 
 Die Typklasse \icode{Monad} aus den Haskell-Bibliotheken beschreibt
 Monaden über der Kategorie $\mathbf{Hask}$. $\eta$ aus
-\sref{magicl:cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
+\sref{cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
 Operator \icode{>>=} %<<
 mit anderer Signator gefordert:
 \begin{code}
@@ -2331,7 +2105,7 @@ einen weiteren Arrow sowie eine Eingabe bekommt, um dann den übergebenen
 Arrow auf die Eingabe anzuwenden. Damit ist es möglich, Arrows
 einzusetzen, die erst im Verarbeitungsprozess und in Abhängigkeit der
 Eingabedaten erzeugt werden - eine Eigenschaft, die Monaden generell
-besitzen. Dies wird beispielsweise in \sref{magicl:parser} wichtig für
+besitzen. Dies wird beispielsweise in \sref{arrowparser} wichtig für
 die Konstruktion von kontextsensitiven Parsern.
 
 Instanzen der Klasse \icode{ArrowChoice} sind vollständig äquivalent zu
@@ -2360,7 +2134,7 @@ foo >>= (\ x ->
 \end{code} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt -
 dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
-zuständig ist (siehe \sref{magicl:cats_hask:monads:examples:io}). Diese
+zuständig ist (siehe \sref{cats_hask:monads:examples:io}). Diese
 Verwendung erklärt auch nachträglich den Namen \icode{return}, wobei es
 sich noch immer um die $\eta$-Transformation handelt und nicht etwa ein
 syntaktisches \icode{return}-Statement wie in imperativen Sprachen
@@ -2375,9 +2149,9 @@ Komposition zurückgegriffen wird. Punktfreie Notation wird auch bei
 Definitionen von Funktionen oft verwendet und ist für viele
 Haskell-Programmierer natürlicher und eleganter.
 
-\lsubsubsection[magicl:cats_hask:monads:examples]{Beispiele für Monaden}
+\lsubsubsection[cats_hask:monads:examples]{Beispiele für Monaden}
 
-\lparagraph[magicl:cats_hask:monads:examples:maybe]{\icode{Maybe}}
+\lparagraph[cats_hask:monads:examples:maybe]{\icode{Maybe}}
 
 Funktionen, die fehlschlagen können, lassen sich in der Form \icode{a
   -> Maybe b} darstellen. Möchte man mehrerer solcher Funktionen
@@ -2403,7 +2177,7 @@ daraufhin \icode{bar x} ebenfalls erfolgreich, wird dieses in \icode{y}
 gespeichert und als Ergebnis \icode{Just (x, y)} zurückgegeben. Schlägt
 eine der Funktionen fehl, ist das ergebnis \icode{Nothing}.
 
-\lparagraph[magicl:cats_hask:monads:examples:io]{\icode{IO}}
+\lparagraph[cats_hask:monads:examples:io]{\icode{IO}}
 
 Jede Programmiersprache benötigt für die reale Welt Möglichkeiten,
 Operationen mit Nebeneffekten wie das Schreiben oder solche, die von
@@ -2437,7 +2211,7 @@ bereitstellen, die Nebeneffekte enthalten:
 type IOArrow = Kleisli IO
 \end{code}
 
-\lsection[magicl:parser]{Parser als Arrows}
+\lchapter[arrowparser]{Arrow-basierte Parser}
 
 Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
 Konstruktion von Parsern. Die obersten Ziele sind Allgemeinheit sowie
@@ -2479,7 +2253,52 @@ Arrows. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
 Diese beiden Eigenschaften lassen sich einzeln mittels Funktoren auf
 bestehenden Kategorien ausdrücken.
 
-\lsubsection[magicl:parser:fail]{Fehlschlagende Arrows}
+
+\lsection[parsergen]{Parser-Generatoren}
+
+Parser sind für die Umwandlung von Zeichenketten in typisierte Modelle
+verantwortlich und werden deshalb für Code-Generatoren benötigt, die
+ihre Eingaben aus Text-Dateien beziehen. Parser selbst werden oft nicht
+von Hand in einer allgemeinen Programmiersprache entwickelt, sondern aus
+einer EBNF-ähnlichen Notation generiert. Dafür gibt es eine Reihe von
+Frameworks, von denen eine kleine Auswahl in diesem Abschnitt
+vorgestellt und verglichen wird.
+
+\lsubsection[parsergen:yacc]{Lex / Yacc}
+Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
+LALR(1)-Parser
+
+\lsubsection[parsergen:javacc]{JavaCC}
+ Integriert EBNF mit Java-Code
+ LL(k)-Parser
+
+\lsubsection[parsergen:parsec]{Parsec}
+ Haskell-Bibliothek
+ Keine eigene Syntax, embedded DSL
+ Basiert auf Monaden
+ Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
+
+\lsubsection[parsergen:sum]{Zusammenfassung}
+
+\begin{figure}
+  \centering
+  \begin{tabular}{|l|l|l|l|l|} \hline
+\bf Parser-Generator  & \bf Lex / Yacc & \bf JavaCC  & \bf Treetop & \bf Parsec        \\\hline\hline
+\bf Art               & LALR(1)        & LL(k)       & PEG         & monadisch         \\\hline 
+\bf Getrennter Lexer  & ja             &             &             &                   \\\hline  
+\bf Sprachklasse      &                &             &             & kontextsensitiv   \\\hline 
+\bf Lookahead         &                &             &             & beliebig          \\\hline 
+\bf Ausgabeformat     &                & Java-Objekt & Ruby-Objekt & Haskell-Objekt    \\\hline 
+\bf Metasprache       &                &             &             & Haskell           \\\hline 
+\bf Aufwand           & hoch           &             &             &                   \\\hline 
+\bf Performance       &                &             &             &                   \\\hline 
+%bf                   &                &             &             &                   \\\hline     
+  \end{tabular}
+  \caption{Tabellarischer Vergleich von Parser-Generatoren}
+  \label{magicl:fig:parser_comp}
+\end{figure}
+
+\lsection[arrowparser:fail]{Fehlschlagende Arrows}
 
 Berechnungen von $A$ nach $B$, die fehlschlagen können, sollen zwei
 mögliche Resultate haben. Im Erfolgsfall wird ein normaler Rückgabewert
@@ -2578,7 +2397,7 @@ Transformation von $f$ als auch auf $B$ selbst (bei $g$) abbilden.
 
 \todo{(Co)Produkt?}
 
-\lsubsection[magicl:parser:state]{Arrows mit Zuständen}
+\lsection[arrowparser:state]{Arrows mit Zuständen}
 
 Zustände lassen sich ähnlich zu einem Arrow hinzufügen. Über Produkte
 wird der Zustandstyp $S$ (z.B. eine Stream-Position oder der
@@ -2605,7 +2424,7 @@ instance (Arrow ar) => Functor (StateFunctor s ar) ar where
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
 unverändert weitergeben - dies entspricht genau der
-\icode{first}-Funktion aus \sref{magicl:cats_hask:arrows}.
+\icode{first}-Funktion aus \sref{cats_hask:arrows}.
 
 Das Lesen und Schreiben von Zuständen wird von den Funktionen \icode{get} und
 \icode{put} bereitgestellt, welche in der Typklasse \icode{ArrowState}
@@ -2628,7 +2447,7 @@ Zustand zurück, während \icode{put} den übergebenen Zustand
 
 \todo{Prod/Coprod?}
 
-\lsubsection[magicl:parser:parse]{Der Parse-Funktor}
+\lsection[arrowparser:parse]{Der Parse-Funktor}
 
 Nun lassen sich obige Kategorie-Erweiterungen zu einer Parser-Kategorie
 $\mathbf{C}_p = \mathbf{C}_{fs}$ zusammensetzen, d.h. die ursprüngliche
@@ -2693,7 +2512,7 @@ anbieten. Auch der variable Token-Typ erzeugt viele Möglichkeiten:
 Textdateien können mit \icode{Char}, Bitstreams mit \icode{Bool} oder
 \sexp{}-Streams mit \icode{Sexp} verarbeitet werden.
 
-\lsubsection[magicl:parser:lib]{Parser-Library}
+\lsection[arrowparser:lib]{Parser-Library}
 
 MagicL beinhaltet eine Parser-Bibliothek, in der u.a. viele simple
 Parser-Konstruktoren definiert sind. Hier ein paar
@@ -2772,7 +2591,7 @@ werden kann. Die Rückgabe wird mittels \icode{unMaybeList} vom durch
 \icode{Nothing} eine leere Liste zurückgegeben wird, wenn nichts gelesen
 werden kann.
 
-\lsubsubsection[magicl:parser:lib:example]{Beispiel: Ein \sexp{}-Parser}
+\lsubsection[arrowparser:lib:example]{Beispiel: Ein \sexp{}-Parser}
 
 Aufgrund der einfachen gewählten Struktur von \sexps{} und der
 praktischen Parser-Library ist es möglich, in vier kurzen Zeilen einen
@@ -2809,91 +2628,7 @@ ausgegeben, z.B.
 "(test) )"  ==>  Empty stream expected: ")"
 \end{code}
 
-\lsection[magicl:sexp]{Parsen von \sexps{}}
-
-\todo{SexpParser Typ}
-
-Die Parser-Bibliothek an sich ist bereits nützlich, um Textdateien
-einlesen zu können. Das eigentliche Ziel aber ist die Verarbeitung von
-\sexps{}. Es lassen sich zwar bereits Streams von \sexps{} verarbeiten,
-es gibt aber bisher keine komfortablen Operationen, um das Innere einer
-\sexp{} zu testen oder zu verarbeiten. Da ein \sexp{} selbst wieder eine
-Liste und damit ein Stream ist, bietet es sich an, diesen ebenfalls über
-einen "`inneren Parser"' zu verarbeiten.
-
-Beispielsweise könnte eine Liste von Personen folgenderweise
-repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
-  sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)} ersetzt
-  werden - aber es handelt sich ja nur um ein einfaches Beispiel.}:
-\begin{code}
-(person Franz)
-(person Walter)
-(person Heinz)
-\end{code}
-
-Ein Parser, der eine Liste von Namensstrings produzieren soll, würde mit
-der bisherigen Bibliothek so aussehen:
-
-\begin{code}
-parsePerson :: SexpParser String
-parsePerson = take >>^ proc >>> (fail ||| id)
-  where proc (Node [Symbol "person", Symbol x]) = Right x
-        proc _ = Left ("Not a person: " ++ show x)
-parsePersons :: SexpParser [String]
-parsePersons = many parsePerson
-\end{code} % <<
-
-Die Verarbeitung von Hand mittels \icode{Node} und \icode{Symbol} im
-Pattern-Matching ist relativ umständlich. Deswegen gibt es eine Reihe
-nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
-
-\begin{itemize}
-\item \icode{takeSexp} liest eine \sexp{} vom Stream und wandelt diese
-  für die Unterscheidung zwischen Symbolen und Knoten mittels
-  \icode{|||} in das Coprodukt \icode{Either String [Sexp]} um.
-\item \icode{takeSymbol} erwartet ein Symbol und gibt dieses als String
-  zurück - ansonsten wird eine Fehlermeldung ausgegeben.
-\item \icode{symbolMacro name = skip (eq (Symbol name))} akzeptiert nur
-  das Symbol mit Namen \icode{name}.
-\item \icode{takeNode} erwartet einen Knoten und gibt diesen als Liste
-  von \sexps{} zurück.
-\item \icode{compNode innerComp} verarbeitet einen Knoten, indem der
-  übergebene Parser \icode{innerComp} auf das Knoteninnere angewendet
-  wird. Da Parser in MagicL immer als Compiler definiert werden (siehe
-  \sref{magicl:arch:compiler}), heißt diese Funktion nicht \icode{parseNode}
-\item \icode{macro name innerComp} % <<
-  konsturiert nun einen Parser, der wie ein Macro das erste Element des
-  Knotens mit dem Symbol \icode{name} vergleicht und im Erfolgsfall die
-  restlichen Elemente mit \icode{innerComp} verarbeitet. Danach wird
-  sichergestellt, dass der Knoten auch wirklich vollständig gelesen
-  wurde - will man dies nicht, da man den Rest ignoriert, gibt es die
-  Funktion \icode{looseMacro} mit identischer Signatur.
-\end{itemize}
-Das obige Beispiel lässt sich nun umschreiben:
-\begin{code}
-parsePerson  = macro "person" takeSymbol
-parsePersons = many parsePerson
-\end{code}
-
-\icode{macro} benutzt \icode{forceParser} aus
-\sref{magicl:parser:parse}, um das Backtracking auszuhebeln, sobald das
-Symbol übereinstimmt, was wieder für bessere Fehlermeldungen
-sorgt. Allerdings bedeutet dies, dass Code wie
-\begin{code}
-macro "foo" (symbolMacro "bar") <+> macro "foo" (symbolMacro "baz")
-\end{code}
-nicht erwartungsgemäß funktioniert:
-\begin{code}
-(foo bar)   => ()  d.h. Erfolg, kein Ergebnis
-(foo baz)   => Symbol bar expected: baz
-\end{code}
-Es sollte deshalb immer nur ein \icode{macro} für jeden Begriff benutzt
-werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
-\begin{code}
-macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
-\end{code}
-
-\lsection[magicl:arch]{Rahmenarchitektur}
+\lsection[arrowparser:compinterface]{Generische Compiler-Schnittstelle}
 
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
 Interface für die beschreibung von Compilern bestehen. Ziel ist die
@@ -2966,6 +2701,150 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 
 MagicL enthält zudem ein minimalistisches Testframework, um Compiler
 oder im speziellen Macros inkrementell zu testen.
+
+
+\lchapter[sexpproc]{Inkrementelle Kompilation von \sexps{}}
+\lsection[sexpproc]{\sexp-Parser}
+
+\todo{SexpParser Typ}
+
+Die Parser-Bibliothek an sich ist bereits nützlich, um Textdateien
+einlesen zu können. Das eigentliche Ziel aber ist die Verarbeitung von
+\sexps{}. Es lassen sich zwar bereits Streams von \sexps{} verarbeiten,
+es gibt aber bisher keine komfortablen Operationen, um das Innere einer
+\sexp{} zu testen oder zu verarbeiten. Da ein \sexp{} selbst wieder eine
+Liste und damit ein Stream ist, bietet es sich an, diesen ebenfalls über
+einen "`inneren Parser"' zu verarbeiten.
+
+Beispielsweise könnte eine Liste von Personen folgenderweise
+repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
+  sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)} ersetzt
+  werden - aber es handelt sich ja nur um ein einfaches Beispiel.}:
+\begin{code}
+(person Franz)
+(person Walter)
+(person Heinz)
+\end{code}
+
+Ein Parser, der eine Liste von Namensstrings produzieren soll, würde mit
+der bisherigen Bibliothek so aussehen:
+
+\begin{code}
+parsePerson :: SexpParser String
+parsePerson = take >>^ proc >>> (fail ||| id)
+  where proc (Node [Symbol "person", Symbol x]) = Right x
+        proc _ = Left ("Not a person: " ++ show x)
+parsePersons :: SexpParser [String]
+parsePersons = many parsePerson
+\end{code} % <<
+
+Die Verarbeitung von Hand mittels \icode{Node} und \icode{Symbol} im
+Pattern-Matching ist relativ umständlich. Deswegen gibt es eine Reihe
+nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
+
+\begin{itemize}
+\item \icode{takeSexp} liest eine \sexp{} vom Stream und wandelt diese
+  für die Unterscheidung zwischen Symbolen und Knoten mittels
+  \icode{|||} in das Coprodukt \icode{Either String [Sexp]} um.
+\item \icode{takeSymbol} erwartet ein Symbol und gibt dieses als String
+  zurück - ansonsten wird eine Fehlermeldung ausgegeben.
+\item \icode{symbolMacro name = skip (eq (Symbol name))} akzeptiert nur
+  das Symbol mit Namen \icode{name}.
+\item \icode{takeNode} erwartet einen Knoten und gibt diesen als Liste
+  von \sexps{} zurück.
+\item \icode{compNode innerComp} verarbeitet einen Knoten, indem der
+  übergebene Parser \icode{innerComp} auf das Knoteninnere angewendet
+  wird. Da Parser in MagicL immer als Compiler definiert werden (siehe
+  \sref{magicl:arch:compiler}), heißt diese Funktion nicht \icode{parseNode}
+\item \icode{macro name innerComp} % <<
+  konsturiert nun einen Parser, der wie ein Macro das erste Element des
+  Knotens mit dem Symbol \icode{name} vergleicht und im Erfolgsfall die
+  restlichen Elemente mit \icode{innerComp} verarbeitet. Danach wird
+  sichergestellt, dass der Knoten auch wirklich vollständig gelesen
+  wurde - will man dies nicht, da man den Rest ignoriert, gibt es die
+  Funktion \icode{looseMacro} mit identischer Signatur.
+\end{itemize}
+Das obige Beispiel lässt sich nun umschreiben:
+\begin{code}
+parsePerson  = macro "person" takeSymbol
+parsePersons = many parsePerson
+\end{code}
+
+\icode{macro} benutzt \icode{forceParser} aus
+\sref{arrowparser:parse}, um das Backtracking auszuhebeln, sobald das
+Symbol übereinstimmt, was wieder für bessere Fehlermeldungen
+sorgt. Allerdings bedeutet dies, dass Code wie
+\begin{code}
+macro "foo" (symbolMacro "bar") <+> macro "foo" (symbolMacro "baz")
+\end{code}
+nicht erwartungsgemäß funktioniert:
+\begin{code}
+(foo bar)   => ()  d.h. Erfolg, kein Ergebnis
+(foo baz)   => Symbol bar expected: baz
+\end{code}
+Es sollte deshalb immer nur ein \icode{macro} für jeden Begriff benutzt
+werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
+\begin{code}
+macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
+\end{code}
+
+\lsection[sexpproc:gen]{Template-basierte Erzeugung von \sexp}
+
+\lsection[sexpproc:comp]{Makroexpansion in Lisp-Art}
+
+\lchapter[magicl]{Arrow-basierte Implementation in Haskell}
+
+\todo{überarbeiten}
+
+MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
+als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
+Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
+Konzepte (in \sref{cats_hask} beschrieben), mit deren Hilfe
+beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
+\sexp{}-Parser konstruiert werden. In \sref{sexpproc} geht es um
+das Parsen von \sexps{} und die hierfür bereitgestellten
+Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
+Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
+werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
+Modelle, Parser und Compiler, die Teil von MagicL sind.
+
+\lsection[magicl:reqs]{Anforderungen}
+
+\todo{Begriffsklärung \sexp{}-Parser}
+
+\begin{itemize}
+\item Schachtelung von Makros
+\item EBNF wünschenswert
+\item Generischer Pretty-Printer
+\item Robusterer \sexp-{Parser}
+\item Typisiert vs untypisierte Zwischenmodelle
+\item Vorteile Typisiert
+  \begin{itemize}
+  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
+  \item simpler als bq-code
+  \item Selbstdokumentation des Modells
+  \end{itemize}
+\item Vorteile untypisiert
+  \begin{itemize}
+  \item Kommunikation (externe Anwendungen, Netzwerk)
+  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
+  \item Redundanzen können in \sexp{}-Version herausgenommen werden
+  \end{itemize}
+\item MagicL:
+  \begin{itemize}
+  \item Untypisierte Eingabe (Sexp)
+  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
+  \end{itemize}
+\item Repräsentation von \sexps{}
+  \begin{itemize}
+  \item Sexp-Strachen sollten immer besonderen Head haben (klare
+    Semantik, vgl. XML, Pretty-Print)
+  \item Gesondert repräsentieren zum erzwingen?
+  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
+    wird komplizierter
+  \item Definition
+  \end{itemize}
+\end{itemize}
 
 \lsection[magicl:code]{\cgen{}}
 
