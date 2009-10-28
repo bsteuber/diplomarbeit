@@ -179,6 +179,10 @@
 
 \maketitle
 \end{titlepage}
+\thispagestyle{empty}
+\cleardoublepage
+
+\pagenumbering{roman}
 
 \tableofcontents
 
@@ -186,7 +190,6 @@
 
 \chapter*{Abkürzungsverzeichnis}
 \begin{acronym}
-%\setlength{\itemsep}{-\parsep}
 \acro{ASCII}{TODO}
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
@@ -209,9 +212,10 @@
 % \setlength{\parindent}{0pt}
 % \setlength{\parskip}{2ex}
 
+
 \lchapter[intro]{Einleitung}
 
-\lsection[intro:motiv]{Motivation}
+\pagenumbering{arabic}
 
 Modellgetriebene Softwareentwicklung ist in aller Munde: UML
 feiert bald sein 15-Jähriges bestehen \footnote{Der
@@ -228,136 +232,172 @@ immer größer werdende Rolle zu: Ob \textit{Ruby on Rails} oder
 \textit{Google Web Toolkit}, praktisch alle Web Frameworks generieren
 zumindest ihre HTML-Dateien oder SQL-Strings für den Datenbankzugriff.
 
-Abstraktion durch \cgen{} ist also beliebter denn je, und
-Werkzeuge, die diese anbieten oder nutzen, gibt es in großen
-Mengen. Dennoch arbeiten die meisten Werkzeuge mit Templates oder
-String-Manipulation und damit auf Zeichenketten, womit sie
-technologisch einen großen Schritt hinter der \textit{strukturellen}
-Generierung stehen, die Lisp-Programmierer bereits vor 40 Jahren mit
-\sexps{} und Makros praktiziert haben. Denn über \sexps{} wird Lisp-Code
-in einer Baumstruktur repräsentiert, wodurch das Verarbeiten
-und Generieren von Code deutlich vereinfacht und darüber hinaus viele
-Fehlerquellen vermieden werden. Makros ermöglichen zudem eine
-inkrementelle, modulare Compiler-Entwicklung.
+\cgen{} aus Modellen\footnote{Auch Programmcode wird hier als Modell
+  angesehen - mit anderen Worten: "`Code is data and data is code."'}
+bietet viele Vorteile: Zunächst gibt es daduch einen höheren
+Abstraktionsgrad, so dass Modellarchitekten mit Domain Specific
+Languages (DSLs) arbeiten können und so die Ziel-Programmiersprache
+nicht kennen müssen. Auch ist es möglich, durch Austauschen des
+Generator-Backends die Zielsprache zu wechseln, ohne Modelle anpassen zu
+müssen. Alternativ sind durch \cgen{} auch integrierte DSLs oder
+Spracherweiterungen möglich, die dann beliebig mit der Backendsprache
+vermischt werden können - die Möglichkeit, eine Programmiersprache zu
+modifizieren, liegt somit nicht mehr ausschließlich beim
+Hersteller. \cgen{} erhöht die Produktivität, da sich Algorithmen in
+einer speziell auf die Problemdomäne zugeschnittenen Sprache mit weniger
+Aufwand formulieren lassen. Sie kann auch die Qualität erhöhen, da ein
+korrekter Generator auch aus neuen Modellen - sofern diese verifiziert
+sind - immer fehlerfreien Code erzeugt. Auch weist generierter Code eine
+höhere Konsistenz auf, da generierte Strukturen, Funktionsnamen
+etc. immer einheitlich sind. Dies erleichtert die Benutzung von
+generierten Schnittstellen enorm.
 
-Lisp-Programmierer, auf der anderen Seite, haben sich immer nur um die
-Erzeugung von Lisp-Code selbst gekümmert und bis auf wenige Ausnahmen
-(siehe z.B. ParenScript \cite{TODO}, welches JavaScript aus \sexps{}
-generiert) andere Sprachen ignoriert. Zudem wird Lisp allgemein
-totgeschrieben, was teils an veraltetem Sprachdesign, hauptsächlich aber
-an der geringen Anzahl verfügbarer Bibliotheken im Vergleich zu
-Mainstream-Sprachen liegt. Während viele andere Lisp-Konzepte wie
-Garbage Collection oder Konstrukte wie der REPL, eine Lisp-Kommandozeile
-zum interaktiven Programmieren und Testen, bereits von modernen Sprachen
-nachgeahmt wurden, stehen Makros\footnote{Der C-Preprozessor bietet
-  ebenfalls Makros an - diese sind allerdings weniger mächtig als
-  Lisp-Makros \sees{cgen:lisp:cprep}.} nur der kleinen Lisp-Community
-zur Verfügung. Es wäre also wünschenswert, diese oder etwas
-Vergleichbares im Rahmen moderner Sprachen für \cgen{} und -Verarbeitung
-nutzen zu können.
+Mit \cgen{} sind allerdings auch Nachteile verbunden: Die Kompexität des
+Software-Systems wird durch die zusätzliche Ebene erhöht und es
+entstehen neue mögliche Fehlerquellen. Auch die Suche nach Fehlern in
+den Modellen kann erschwert werden, wenn die Probleme sich erst im
+generierten Code manifestieren - hier wird oft eine manuelle
+Rückverfolgung benötigt um festzustellen, welcher Code aus welchem
+Modell erzeugt wurde. Darüber hinaus erfordern neue
+Modellierungssprachen immer eine Einarbeitung und müssen dokumentiert
+werden. Auch sollte es nicht zu viele konkurrierende DSLs für eine
+Domäne geben, so dass einheitliche Standards verloren
+gehen. Beispielsweise kommt es bei Lisp\cite{TODO}-Dialekten aufgrund
+der Leichtigkeit, mit der die Sprache erweitert werden kann, durchaus
+vor, dass jeder Programmierer in seiner eigenen Sprache programmiert, so
+dass die Wartung von fremden Code sehr aufwändig wird. Um dies zu
+vermeiden, ist der rege Austausch von Sprachen und Spracherweiterungen
+wichtig, so dass die Community schnell zu gemeinsamen Standards kommt
+und nicht jeder Programmierer "`das Rad neu erfindet"'.
 
-\lsubsection[cgen]{\cgen}
+Trotz dieser möglichen Probleme überwiegen in vielen Fällen die
+Vorteile, so dass die Bedeutung von generativer Programmierung sowie die
+Vielfalt an Werkzeugen immer weiter zunehmen. Diese Arbeit beschäftigt
+sich ganz allgemein mit der Frage, wie \cgen{} besser, einfacher und
+einheitlicher gestaltet werden kann als bisher.
 
-\todo{Definition} was \cgen{} bedeutet:
-Das automatisiertes Erzeugen von Quelltext. Dennoch gibt es diverse
-Unterschiede zwischen \cgen{}swerkzeugen. \todo{quelle}
+\lsection[intro:motiv]{Motivation}
 
-So differenziert man zwischen aktiver und passiver
-\cgen{}. Aktiv bedeutet, dass die Generierung wiederholt
-ausgeführt werden kann, wenn sich etwas am Modell oder Generator
-ändert, da die komplette Datei generiert wird. Passiv generierter Code
-dagegen wird anschließend vom Programmierer modifiziert bzw. erst mit
-sinnvollen Inhalten bestückt, so dass dieser normalerweise nur
-einmalig generiert werden kann, wenn die Anpassungen nicht
-überschrieben werden sollen. \todo{roundtrip} Zwischen aktiver und
-passiver Generierung liegen Dateien, in denen nur markierte Abschnitte
-generiert werden - so dass der Rest unverändert bleiben kann. Optimal
-wäre \todo{kriterien} natürlich ein allgemeiner Merge-Mechanismus, der die Arbeit des
-Programmierers reibungslos in die neue Version übernimmt - dies ist
-aber leider schwierig zu implementieren.
+Die Entwiklung eines Code-Generators ist gewöhnlich mit großem Aufwand
+verbunden. So muss zunächst eine Eingabesprache festgelegt werden, für
+die dann eine typisiertes Modellrepräsentation sowie ein Parser zur
+Überführung in diese benötigt werden. Für den Parser wird eine eigene
+Beschreibungssprache verwendet, die vom Programmierer vorher erlernt
+werden musste und eventuell eine eingeschränkte Mächtigkeit besitzt, so
+dass eine pragrammatische Nachbearbeitung der Modelle nötig werden
+kann. Im Zuge der Verarbeitung, die in einer allgemeinen
+Programmiersprache geschieht, werden eventuell noch weitere Modelle
+benötigt. Die Code-Erzeugung selbst erfolgt dann meist mittels
+String-basierter Templates, welche aufgrund der fehlenden
+Ausgabetypisierung oft zu Syntaxfehlern führen und so aufwändiges
+Debugging benötigen. Auch die Template-Sprache ist einzeln zu erlernen
+und eventuell ebenfalls in ihren Möglichkeiten eingeschränkt, so dass in
+einigen Fällen nochmals eine Vorverarbeitung der Daten erfolgen muss.
 
-Zudem lässt sich nach Ein- und Ausgabe des Generators unterscheiden:
-Diese können flache Strings, strukturierte (zunächst) ungetypte Daten wie \sexps{}
-und XML oder aber getypte Modelle einer Programmiersprache sein.
+Andererseits verfolgen Lisp-Programmierer bereits seit ca. 40 Jahren
+einen strukturellen Ansatz der \cgen{}, der den mit Spracherweiterungen
+verbundenen Aufwand minimiert und Lisp Bezeichnungen wie "`The
+programmable programming language"'\cite{federano} beschert hat. Hier
+werden Ein- und Ausgabecode ausschließlich durch \sexps{}
+\sees{model:sexp} in einer Baumstruktur repräsentiert, so dass
+Zeichenketten weder eingelesen noch erzeugt werden müssen, wodurch ein
+großer Teil des Generators bereits wegfällt - denn das Verarbeiten und
+Erzeugen von Bäumen ist simpler und weniger fehlerbehaftet. \sexps{}
+fungieren auch direkt als Modelle, so dass weitere Datenstrukturen für
+die Verarbeitung nur noch selten benötigt werden. Lisp-Makros
+\sees{template:lisp} stellen kleine Compiler-Plugins dar, die jeweils
+die Übersetzung eines einzelnen Sprachkonstruktes beschreiben und so
+einen inkrementellen, baukastenartigen Ansatz der Compiler-Entwicklung
+unterstützen. Da Makros selbst Lisp-Funktionen sind, ist die einzige
+verwendete Metasprache mit der generierten Sprache identisch, was die
+Einarbeitung erleichtert und darüber hinaus die Möglichkeit eröffnet,
+Meta-Code selbst durch Generierung zu erzeugen.
 
-Vorteile:
-\begin{itemize}
-\item Abstraktion - Modellarchitekten beötigen keine
-  Programmiersprachkenntnisse, Backend austauschbar
-``Ist die Sprache an die Problemdomäne angepasst, muss man das Problem
-nicht in die Sprache zwängen''
-\item Erweiterung bestehender Sprachen um neue Konzepte
-\item Produktivität - DRY-Prinzip spart u.U. viel Zeit
-\item Qualität - ist der Generator fehlerfrei, gibt es keine Probleme
-  bei neuen Modellen
-\item Konsistenz - einheitliche Strukturen/Namen, minimiert Einarbeitungszeit
-\end{itemize}
+Leider ist das System ausschließlich auf die Erzeugung von Lisp-Code
+ausgerichtet und wird normalerweise nicht für andere Zielsprachen
+benutzt - eine der wenigen Ausnahmen ist Parenscript\cite{parenscript},
+ein Tool zur Erzeugung von Javascript-Code aus Common Lisp. Generell
+wird die Generierung anderer Sprachen von Lisp-System selbst aber
+schlecht unterstützt, so dass die Bereitstellung derartiger Bibliotheken
+mit unverhältnismäßig hohem Aufwand verbunden sind. Lisp-Dialekte werden
+heutzutage nur noch von einer kleinen Community benutzt, was teils an
+veraltetem Sprachdesign, hauptsächlich aber an der geringen Anzahl
+verfügbarer Bibliotheken im Vergleich zu Mainstream-Sprachen
+liegt. Während viele andere Lisp-Konzepte wie Garbage Collection oder
+Konstrukte wie der REPL, einer Lisp-Kommandozeile zum interaktiven
+Programmieren und Testen, bereits von modernen Sprachen nachgeahmt
+wurden, ist der Ansatz einer \sexp-basierten \cgen mittels
+Makros\footnote{Der C-Preprozessor bietet ebenfalls Makros an
+  \sees{template:cprep}, welche allerdings weit weniger mächtig sind.}
+nach wie vor einzigartig. Es wäre also wünschenswert, diesen
+verallgemeinern und auf beliebige Backendsprachen übertragen zu können.
 
-Nachteile:
-\begin{itemize}
-\item Dokumentation / Einarbeitung
-\item Fehlersuche
-\item Komplexität
-\item Entwicklungsaufwand
-\end{itemize}
+\lsection[intro:goal]{Fragestellung und Zielsetzung}
 
-\lsection[intro:goal]{Fragestellungen und Zielsetzung}
-
-Die grundlegende Fragestellung dieser Arbeit lautet: Ist es möglich, die
-Lisp-Ansätze für \cgen{} derart zu verallgemeinern, dass sich beliebige
-durch \sexps{} repräsentierte Sprachen damit komfortabel kompilieren und
-möglichst auch interpretieren lassen können? Es soll allerdings nicht
-zwangsläufig eine Eins-zu-Eins-Kopie der Lisp-Makros erfolgen, sondern
-vielmehr geprüft werden, welche alternative Möglichkeiten es gibt und
-welche davon eventuell besser geeignet für den neuen, breiteren Kontext
-beliebiger Sprachen sind. Insbesondere soll die Implementation selbst
-nicht in Lisp, sondern einer modernen Sprache erfolgen. Dies hat eine
-gewisse Unabhängigkeit vom exakten Lisp-Ansatz und seinen Schwächen oder
-veralteten Designs zur Folge - beispielsweise die nicht vorhandene
-Unterscheidung von Groß- und Kleinschreibung in \sexps{}. Auch die
-Entwicklung von neuen Ideen wird so ermutigt.
-\todo{Begründung schwach}
-
-\todo{überarbeiten}
-Konkret soll in einer Programmiersprache X zunächst eine Repräsentation
-für \sexps{} sowie ein \sexp{}-Parser erstellt werden, woraufhin eine
-Architektur für \sexp{}-Compiler angelegt wird, die einen inkrementellen
-und modularen Compiler-Entwurf ähnlich Lisp unterstützt. Damit soll eine
-\sexp{}-Version von X entstehen, welche sich nach X-Quelltext übersetzen
-lässt, so dass Werkzeuge, die X generieren wollen, nur noch deren
-syntaktisch einfachere \sexp{}-Variante erzeugen müssen. In dem Moment ist
-das Bootstrapping abgeschlossen, so dass von nun an ausschließlich mit
-\sexp{}-Sprachen programmiert werden könnte. Auch bestehender Quelltext
-kann nun durch aus \sexps{} genererierten Versionen ersetzt werden,
-wodurch ein metazirkulärer Compiler entsteht.
-
-Darüber hinaus soll zuletzt untersucht werden, inwieweit eine spezielle
-(\sexp{}-basierte) DSL für Compilerdefinition gestaltet werden kann, in
-der sich die Übersetzung einfacher beschreiben lässt als in X
-oder deren \sexp{}-Schwester. Diese Sprache kann beispielsweise die
-Definition von Lisp-Makros ermöglichen.
+Die grundlegende Fragestellung lautet: Ist es möglich, den Lisp-Ansatz
+inkrementeller \cgen{} auf \sexp{}-Basis derart zu verallgemeinern, dass
+konfortabel in beliebige Zielsprachen generiert werden kann? Der Rahmen
+dieser Arbeit soll allerdings deutlich weiter gefasst sein als die bloße
+Anwendung von Lisp-Makros auf die Erzeugung verschiedener Sprachen -
+diese könnte eventuell bereits durch die Implementation einer geeigneten
+Lisp-Bibliothek erreicht werden. Vielmehr sollen sowohl Lisp als auch
+andere Systeme zunächst auf Stärken und Schwächen untersucht und
+anschließend eine eigene Architektur entworfen werden, die eine
+möglichst hohe Flexibilität sowie maximal viele Vorteile bestehender
+Werkzeuge in sich vereinen soll. Diese soll dann in einer geeigneten
+Programmiersprache umgesetzt und so ein prototypisches Framework
+bereitgestellt werden. Anschließend soll eine möglichst praktische DSL
+für die Beschreibung von \sexp{}-Compilern kreiert werden. Da diese
+selbst mittels \cgen{} komfortabel in die benutzte Programmiersprache
+übersetzt werden sollte, wird ein metazirkulärer "`Compiler, der sich
+selbst kompiliert"' benötigt, welcher durch ein geeignetes Bootstrapping
+zu implementieren ist.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
-\todo{überarbeiten}
+\cref{model} erläutert verschiedene Möglichkeiten der Repräsentation von
+Quellcode und anderen Modellen und die damit verbundenen Vor- und
+Nachteile. Hier werden insbesondere \sexps{} vorgestellt - welche in
+dieser Arbeit eine zentrale Rolle einnehmen - und unter anderem mit XML
+verglichen.
 
- \sref{cgen:codegen} erläutert verschiedene
-Arten der \cgen{}. In \sref{cgen:parser} werden Werkzeuge für
-die Generierung von Parsern beschrieben. \sref{cgen:lisp} stellt die
-Programmiersprache Lisp und insbesondere \sexps{}, die universelle
-Datenstruktur dieser Arbeit, sowie Makros vor. \sexps{} werden in
-\sref{cgen:xml} mit der XML verglichen, außerdem werden dort
-XML-Werkzeuge vorgestellt.
+In \cref{template} geht es um Templates, welche in der einen oder
+anderen Form von praktisch allen \cgen{}swerkzeugen verwendet
+werden. Hier wird eine Reihe bestehender Tools mit teilweise sehr
+unterschiedlichen Verwendungsweisen von Templates vorgestellt und
+evaliert - unter anderem auch Lisp-Makros, die als eine spezielle Form
+von Templates aufgefasst werden.
 
-\cref{magicl} widmet sich MagicL, dem Kern dieser Arbeit. Diese
-Neuimplementation basiert auf einer Haskell-Umsetzung
-kategorientheoretischer Konzepte, mit deren Hilfe unter anderem sehr
-allgemeine und elegante \sexp{}-Parser konstruiert werden
-können. Zudem benutzt MagicL im Gegensatz zu \sexy{} getypte Modelle.
+Aus den vorangegangenen Untersuchungen über Modelle und Werkzeuge werden
+in \cref{reqs} Anforderungen für das universelle, im Rahmen dieser Arbeit
+entworfene Framework MagicL abgeleitet. \todo{mehr}
 
-\cref{end} fasst zum Schluss die Ergebnisse zusammen und gibt
-einen Ausblick auf viele weitere Ideen und Verbesserungen, die nicht im
-Rahmen dieser Arbeit behandelt werden können.
+\cref{cats} führt in die Kategorientheorie, einen sehr abstrakten Zweig
+der Mathematik ein, mit deren Hilfe - neben vielen anderen
+Verwendungsmöglichkeiten - Verarbeitungsprozesse graphisch und
+semantisch korrekt beschrieben sowie elegant durch Operatoren kombiniert
+werden können. Aus diesem Grund basiert die gesamte Architektur von
+MagicL auf Morphismen und Funktoren, was zu einer sehr hohen
+Flexibilität des Frameworks führt.
+
+Die Programmiersprache Haskell stellt dem Programmierer mit Arrows und
+Monaden Umsetzungen katogorientheoretischer Konzepte zur Verfügung, mit
+deren Hilfe es unter anderem gelingt, Nebeneffekte sauber isoliert in
+die ansonsten pur funktionale Sprache zu integrieren. MagicL ist aus
+diesem Grund in Haskell programmiert, weshalb \cref{haskell} die Sprache
+ausführlich vorstellt.
+
+\cref{arrowparser} zeigt, wie sich durch die Kombination einfacher
+Funktoren eine Kategorie für Parser konstruieren lässt.
+
+\cref{sexpproc}
+
+\cref{magicl}
+
+\cref{end} fasst die Ergebnisse zusammen und diskutiert das entstandene
+Framework. Anschließend wird ein Ausblick auf weitere
+Verbesserungsmöglichkeiten und Fortsetzungsmöglichkeiten, die nicht im
+Rahmen dieser Arbeit behandelt werden konnten.
 
 \lchapter[model]{Repräsentation von Modellen}
 
@@ -452,6 +492,8 @@ Haskell-Datentypen \sees{haskell}. Eine Visualisierung von
 Objekten kann als Baum mit benannnten Kanten erfolgen.
 
 \lsection[model:sexp]{\sexps}
+
+\todo{sexps in lisp enthalten zahlen, strings und symbole}
 
 \sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
 Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
@@ -1399,6 +1441,44 @@ Code, wodurch praktisch Compiler-Plugins mit minimalem Aufwand erzeugt
 werden können. Dadurch lassen sich in Lisp leicht mächtige, voll
 integrierte DSLs konstruieren.
 
+\lchapter[reqs]{Anforderungsanalyse}
+
+\begin{itemize}
+\item Schachtelung von Makros
+\item EBNF wünschenswert
+\item Generischer Pretty-Printer
+\item Robusterer \sexp-{Parser}
+\item Typisiert vs untypisierte Zwischenmodelle
+\item Vorteile Typisiert
+  \begin{itemize}
+  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
+  \item simpler als bq-code
+  \item Selbstdokumentation des Modells
+  \end{itemize}
+\item Vorteile untypisiert
+  \begin{itemize}
+  \item Kommunikation (externe Anwendungen, Netzwerk)
+  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
+  \item Redundanzen können in \sexp{}-Version herausgenommen werden
+  \end{itemize}
+\item MagicL:
+  \begin{itemize}
+  \item Untypisierte Eingabe (Sexp)
+  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
+  \end{itemize}
+\item Repräsentation von \sexps{}
+  \begin{itemize}
+  \item Sexp-Strachen sollten immer besonderen Head haben (klare
+    Semantik, vgl. XML, Pretty-Print)
+  \item Gesondert repräsentieren zum erzwingen?
+  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
+    wird komplizierter
+  \item Definition
+  \end{itemize}
+\end{itemize}
+
+\lsection[reqs:sum]{Zusammenfassung}
+
 \lchapter[cats]{Kategorientheorie}
 
 Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik -
@@ -1682,6 +1762,8 @@ Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
 Verknüpfen. Haskell (siehe \sref{haskell}) benutzt Monaden unter
 anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
 einzubauen, wie \sref{cats_hask:monads} erklärt.
+
+\lsection[cats:sum]{Zusammenfassung}
 
 \lchapter[haskell]{Die Sprache Haskell}
 
@@ -2211,6 +2293,8 @@ bereitstellen, die Nebeneffekte enthalten:
 type IOArrow = Kleisli IO
 \end{code}
 
+\lsection[haskell:sum]{Zusammenfassung}
+
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
 Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
@@ -2699,12 +2783,12 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 \icode{compile}-Aufruf, wie etwa \icode{compile :: IOArrow String
   [Sexp]}, gefunden
 
-MagicL enthält zudem ein minimalistisches Testframework, um Compiler
-oder im speziellen Macros inkrementell zu testen.
-
+\lsection[arrowparser:sum]{Zusammenfassung}
 
 \lchapter[sexpproc]{Inkrementelle Kompilation von \sexps{}}
-\lsection[sexpproc]{\sexp-Parser}
+\lsection[sexpproc:sexpparser]{Parser auf \sexps}
+
+\todo{Begriffsklärung \sexp{}-Parser}
 
 \todo{SexpParser Typ}
 
@@ -2788,72 +2872,43 @@ werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}
 
-\lsection[sexpproc:gen]{Template-basierte Erzeugung von \sexp}
-
-\lsection[sexpproc:comp]{Makroexpansion in Lisp-Art}
-
-\lchapter[magicl]{Arrow-basierte Implementation in Haskell}
+\lsection[sepxproc:sexphs]{Metarekursive Kompilation nach Haskell}
 
 \todo{überarbeiten}
 
-MagicL ist ein zweites Framework für \sexp-Compiler, welches anders
-als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
-Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{cats_hask} beschrieben), mit deren Hilfe
-beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
-\sexp{}-Parser konstruiert werden. In \sref{sexpproc} geht es um
-das Parsen von \sexps{} und die hierfür bereitgestellten
-Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
-Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
-werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
-Modelle, Parser und Compiler, die Teil von MagicL sind.
-
-\lsection[magicl:reqs]{Anforderungen}
-
-\todo{Begriffsklärung \sexp{}-Parser}
+Wie auch \sexy{} besitzt auch MagicL eine \sexp{}-basierte und damit für
+\cgen{} geeignete Version seiner Implementationssprache, hier
+also Haskell. Diese ist zwar nicht vollständig, enthält aber die
+wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
 
 \begin{itemize}
-\item Schachtelung von Makros
-\item EBNF wünschenswert
-\item Generischer Pretty-Printer
-\item Robusterer \sexp-{Parser}
-\item Typisiert vs untypisierte Zwischenmodelle
-\item Vorteile Typisiert
-  \begin{itemize}
-  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
-  \item simpler als bq-code
-  \item Selbstdokumentation des Modells
-  \end{itemize}
-\item Vorteile untypisiert
-  \begin{itemize}
-  \item Kommunikation (externe Anwendungen, Netzwerk)
-  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
-  \item Redundanzen können in \sexp{}-Version herausgenommen werden
-  \end{itemize}
-\item MagicL:
-  \begin{itemize}
-  \item Untypisierte Eingabe (Sexp)
-  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
-  \end{itemize}
-\item Repräsentation von \sexps{}
-  \begin{itemize}
-  \item Sexp-Strachen sollten immer besonderen Head haben (klare
-    Semantik, vgl. XML, Pretty-Print)
-  \item Gesondert repräsentieren zum erzwingen?
-  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
-    wird komplizierter
-  \item Definition
-  \end{itemize}
+\item Typisiertes \icode{Haskell}-Modell vs. direkt Sexp -> Code
+\item Funktionsaufrufe simpel
+\item Operatoren
+\item Typen
+\item Syntaktische Konstrukte (where, do, Klassen, ...)
 \end{itemize}
 
-\lsection[magicl:code]{\cgen{}}
+\lsection[sexpproc:gen]{Templates für \sexps}
+
+\lsection[sexpproc:comp]{Lisp-artige Makroexpansion}
+\lsubsection[sexpproc:comp:preproc]{Beispiel: Ein simpler Preprocessor}
+
+\lsection[sexpproc:sum]{Zusammenfassung}
+
+\lchapter[magicl]{Weitere Bestandteile von MagicL}
+
+\todo{überarbeiten, Zustände f. Gensym?}
+
+\lsection[magicl:code]{Erzeugung von Quelltext}
+
+\todo{Template vs. Datentyp}
 
 Um komfortabel korrekt eingerückten Code in einer Zielsprache generieren
-zu können, stellt MagicL einen Datentyp \icode{Code} zur Verfügung,
-sowie einen Compiler von \icode{Code} nach \icode{String}, welcher ein
-Nachbau des von Philip Wadler in \cite[S.223ff]{FunOfProgramming}
-vorgestellten Pretty-Printers ist. Die elementaren
-Konstruktor-Funktionen sind:
+zu können, stellt MagicL einen Datentyp \icode{Code} zur Verfügung sowie
+einen Compiler von \icode{Code} nach \icode{String}, welcher ein Nachbau
+des von Philip Wadler in \cite[S.223ff]{FunOfProgramming} vorgestellten
+Pretty-Printers ist. Die elementaren Konstruktor-Funktionen sind:
 \begin{code}
 newline :: Code
 text    :: String -> Code
@@ -2897,7 +2952,7 @@ syntaktische Programmiersprachenelemente abgeleitet, wie
 \icode{braces} und \icode{brackets} für die drei gängigen Arten der
 Klammerung.
 
-\lsection[magicl:code:example]{Beispiel: Ein Pretty-Printer für \sexps{}}
+\lsubsection[magicl:code:prettysexp]{Beispiel: Ein Pretty-Printer für \sexps{}}
 
 \sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
 noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
@@ -2923,22 +2978,54 @@ layoutSexp (Node children) = format (map layoutSexp children)
 Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
 spezifiziert werden.
 
-\lsection[magicl:sexphs]{Haskell in \sexps{}}
+\lsection[magicl:test]{Test-Framework}
 
-Wie auch \sexy{} besitzt auch MagicL eine \sexp{}-basierte und damit für
-\cgen{} geeignete Version seiner Implementationssprache, hier
-also Haskell. Diese ist zwar nicht vollständig, enthält aber die
-wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
+MagicL enthält ein minimalistisches Testframework, um Compiler
+oder im speziellen Macros inkrementell zu testen.
+
+\lsection[magicl:debug]{Debugging-Möglichkeiten}
+
+\lsection[magicl:build]{Build-Tool}
+
+\lsection[magicl:sum]{Zusammenfassung}
+
+\lchapter[end]{Schluss}
+
+\lsection[end:summary]{Zusammenfassung}
+
+\todo{überarbeiten}
 
 \begin{itemize}
-\item Typisiertes \icode{Haskell}-Modell vs. direkt Sexp -> Code
-\item Funktionsaufrufe simpel
-\item Operatoren
-\item Typen
-\item Syntaktische Konstrukte (where, do, Klassen, ...)
+\item Übertragung von Makros
+\item Erster Prototyp
 \end{itemize}
 
-\lsection[magicl:disc]{Diskussion}
+MagicL ist ein Framework für \sexp-Compiler, welches 
+als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
+Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
+Konzepte (in \sref{cats_hask} beschrieben), mit deren Hilfe
+beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
+\sexp{}-Parser konstruiert werden. In \sref{sexpproc} geht es um
+das Parsen von \sexps{} und die hierfür bereitgestellten
+Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
+Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
+werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
+Modelle, Parser und Compiler, die Teil von MagicL sind.
+
+
+MagicL ist der Prototyp eines
+universellen Frameworks für den Entwurf von Programmier- und
+Auszeichnungssprachen. Es gibt dem Metaprogrammierer praktische
+Werkzeuge für das Parsing und Übersetzen neuer sowie für Generierung von
+Code bestehender Sprachen an die Hand, wobei insbesondere (jedoch
+nicht ausschließlich) aus \sexps{} aufgebaute Sprachen unterstützt
+werden. Die Parser- und Compilererstellung erfolgt nach einem
+kategorientheoretisch motivierten Baukastenansatz, so dass
+unter anderem Parser durch die Kombination von Arrows erzeugt werden.
+
+...
+
+\lsection[end:disc]{Diskussion}
 
   \begin{itemize}
   \item MagicL sauberer und klarer als \sexy{}
@@ -2963,30 +3050,6 @@ wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
     \item Evtl. Kommunikation mit anderen Programmiersprachen / über Streams
     \end{itemize}
   \end{itemize}
-\lchapter[end]{Schluss}
-
-\lsection[end:summary]{Zusammenfassung}
-
-\begin{itemize}
-\item Übertragung von Makros
-\item Erster Prototyp
-\end{itemize}
-
-MagicL ist der Prototyp eines
-universellen Frameworks für den Entwurf von Programmier- und
-Auszeichnungssprachen. Es gibt dem Metaprogrammierer praktische
-Werkzeuge für das Parsing und Übersetzen neuer sowie für Generierung von
-Code bestehender Sprachen an die Hand, wobei insbesondere (jedoch
-nicht ausschließlich) aus \sexps{} aufgebaute Sprachen unterstützt
-werden. Die Parser- und Compilererstellung erfolgt nach einem
-kategorientheoretisch motivierten Baukastenansatz, so dass
-unter anderem Parser durch die Kombination von Arrows erzeugt werden.
-
-...
-
-\begin{itemize}
-\item Fazit
-\end{itemize}
 
 \lsection[end:future]{Ausblick}
 \begin{itemize}
