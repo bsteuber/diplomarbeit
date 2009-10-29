@@ -1,4 +1,4 @@
-\documentclass[a4paper, bibgerm]{book}
+\documentclass[11pt, a4paper, bibgerm]{book}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -56,6 +56,7 @@
 \newcommand\lsubsection{}
 \newcommand\lsubsubsection{}
 \newcommand\lparagraph{}
+\newcommand\myref{}
 \newcommand\cref{}
 \newcommand\sref{}
 \newcommand\fref{}
@@ -92,6 +93,9 @@
     \paragraph{##2}
     \label{#1:sec:##1}%
   }
+  \renewcommand\myref[1]{%
+    \ref{#1:sec:##1}%
+  }%
   \renewcommand\cref[1]{%
     Kapitel~\ref{#1:sec:##1}%
   }%
@@ -184,9 +188,8 @@
 
 \pagenumbering{roman}
 
+\addcontentsline{toc}{section}{Inhaltsverzeichnis}
 \tableofcontents
-
-\listoffigures
 
 \chapter*{Abkürzungsverzeichnis}
 \begin{acronym}
@@ -208,6 +211,7 @@
 \acro{XSLT}{XSL Transformation}
 \acro{W3C}{World Wide Web Consortium}
 \end{acronym}
+\addcontentsline{toc}{section}{Abkürzungsverzeichnis}
 
 % \setlength{\parindent}{0pt}
 % \setlength{\parskip}{2ex}
@@ -361,19 +365,20 @@ Nachteile. Hier werden insbesondere \sexps{} vorgestellt - welche in
 dieser Arbeit eine zentrale Rolle einnehmen - und unter anderem mit XML
 verglichen.
 
-In \cref{template} geht es um Templates, welche in der einen oder
-anderen Form von praktisch allen \cgen{}swerkzeugen verwendet
-werden. Hier wird eine Reihe bestehender Tools mit teilweise sehr
-unterschiedlichen Verwendungsweisen von Templates vorgestellt und
-evaliert - unter anderem auch Lisp-Makros, die als eine spezielle Form
-von Templates aufgefasst werden.
+Fast alle \cgen{}swerkzeuge benutzen Templates für die
+Quelltext-Erzeugung - wenn auch auf sehr verschiedene Arten und
+Weisen. \cref{template} beschreibt Templates zunächst anhand der
+Begriffe Quasiquote und Unquote, welche aus der Lisp-Welt
+stammen. Anschließend wird eine Auswahl Template-basierter Tools
+vorgestellt und in Hinblick vorher erarbeiteter Kriterien evaluiert -
+unter anderem auch Lisp-Makros.
 
 Aus den vorangegangenen Untersuchungen über Modelle und Werkzeuge werden
 in \cref{reqs} Anforderungen für das universelle, im Rahmen dieser Arbeit
 entworfene Framework MagicL abgeleitet. \todo{mehr}
 
-\cref{cats} führt in die Kategorientheorie, einen sehr abstrakten Zweig
-der Mathematik ein, mit deren Hilfe - neben vielen anderen
+\cref{cats} führt in die Kategorientheorie - einen sehr abstrakten Zweig
+der Mathematik - ein, mit deren Hilfe - neben vielfältigen anderen
 Verwendungsmöglichkeiten - Verarbeitungsprozesse graphisch und
 semantisch korrekt beschrieben sowie elegant durch Operatoren kombiniert
 werden können. Aus diesem Grund basiert die gesamte Architektur von
@@ -388,16 +393,45 @@ diesem Grund in Haskell programmiert, weshalb \cref{haskell} die Sprache
 ausführlich vorstellt.
 
 \cref{arrowparser} zeigt, wie sich durch die Kombination einfacher
-Funktoren eine Kategorie für Parser konstruieren lässt.
+Funktoren eine Kategorie für Parser konstruieren lässt. Die
+Haskell-Umsetzung dieser Kategorie ergibt eine praktische und Bibliothek
+für die Erzeugung und Komposition von Parsern. Als Anwendungsbeispiel
+dient das Einlesen von \sexps{} aus einer
+Stringrepräsentation. Anschließend wird eine allgemeine, ebenfalls
+Arrow-basierte Compiler-Schnittstelle entwickelt, mit der verschiedene
+Parser, funktionale und imperative Compiler angesprochen werden
+können. Damit wird es möglich, Haskell mittels Typinferenz selbst den
+passenden Compiler für eine Aufgabe auswählen zu lassen.
 
-\cref{sexpproc}
+Die hier entwickelten Parser können nicht nur auf Zeichenketten, sondern
+auf beliebigen Listen arbeiten. \cref{sexpproc} zeigt, wie damit die
+Verarbeitung von \sexps{} beschrieben werden kann, so dass Makros hier
+als Parser auf \sexps{} aufgefasst werden und damit universeller sind
+als Lisp-Makros, welche ausschließlich \sexps{} als Ausgabe liefern
+können. Diese werden benutzt, um HSexp, eine in \sexps{} repräsentierte
+Haskell-Teilmenge in ein typisiertes Modell zu überführen, welches
+anschließend nach Haskell kompiliert wird. Für die Generierung von
+\sexps{} wird eine DSL ähnlich Lisp konstruiert, die
+Quasiquote-Operatoren enthält, welche besser als bestehende
+Lisp-Varianten für die Erzeugung von Meta-Code selbst geeignet
+ist. Diese DSL wird metazirkulär nach HSexp und anschließend nach
+Haskell übersetzt.
 
-\cref{magicl}
+Weitere Komponenten von MagicL, die in den vorigen Kapiteln keinen Platz
+gefunden haben, werden in \cref{magicl} vorgestellt: Die eigentliche
+Code-Erzeugung erfolgt aus einem typisierten Modell für die Beschreibung
+von eingerücktem Text, was zu weniger Syntaxfehlern und teils kürzerem
+Meta-Code führt als die Benutzung String-basierter Templates. MagicL
+besitzt auch ein minimalistisches Test-Framework für Compiler. Auch die
+Benutzung von Debugging-Ausgaben für die Lokalisierung komplizierterer
+Compiler-Fehler wird kurz erläutert. Zuletzt wird auf das ebenfalls in
+Haskell geschriebene Build-Tool präsentiert, mit dem MagicL kompiliert
+und getestet wird.
 
-\cref{end} fasst die Ergebnisse zusammen und diskutiert das entstandene
-Framework. Anschließend wird ein Ausblick auf weitere
-Verbesserungsmöglichkeiten und Fortsetzungsmöglichkeiten, die nicht im
-Rahmen dieser Arbeit behandelt werden konnten.
+\cref{end} fasst die Arbeit zusammen und diskutiert das entstandene
+Framework. Anschließend wird im Ausblick auf weitere Verbesserungs- und
+Erweiterungsmöglichkeiten eingegangen, die in der Zukunft behandelt
+werden könnten.
 
 \lchapter[model]{Repräsentation von Modellen}
 
@@ -426,7 +460,7 @@ die eine Struktur, aber keine Typisierung, besitzen.
 Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
 sich in den festen Modellen wiederspiegelt. Andere verwenden Modelle,
 die bereits universell und direkt auf jede Domäne anwendbar
-sind. Dazwischen liegen Systeme, in denen der Meta-Programmierer neue
+sind. Dazwischen liegen Systeme, in denen der Metaprogrammierer neue
 Modelle definieren kann, so dass eine Übertragbarkeit vorliegt, die
 allerdings mit einem kleinen Mehraufwand verbunden ist.
 
@@ -493,7 +527,7 @@ Objekten kann als Baum mit benannnten Kanten erfolgen.
 
 \lsection[model:sexp]{\sexps}
 
-\todo{sexps in lisp enthalten zahlen, strings und symbole}
+\todo{sexps in lisp enthalten zahlen, strings und symbole - kontextfrei (XML)}
 
 \sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
 Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
@@ -572,12 +606,25 @@ Das Auto-Beispiel könnte durch
 </car>
 \end{code} %"<
 repräsentiert werden. Die Farbe ist hier ein Attribut. Das Beispiel
-zeigt auch, dass Listen in XML umständlicher sind als in \sexps{}, da
-XML-Knoten neben beliebig vielen XML-Knoten immer nur einen String als
-Unterknoten haben können - aus diesem Grund wird der Baum für die
-Specials um eine Ebene erweitert, wie \abb{car_xml} zeigt. Die Abbildung
-zeigt auch, dass Attribute als zweiter Kantentyp, der nur Strings als
-Kinder zulässt, aufgefasst werden können.
+zeigt, dass die XML-Syntax im Vergleich zu \sexps{} eine erhöhte
+Redundanz aufweist. Die erzwungene Wiederholung des Knotennamens in
+schließenden Tags soll die Robustheit im Falle vergessener Tags erhöhen,
+hat aber neben dem erhöhten Schreibaufwand den Nachteil, dass XML damit
+eine kontextsensitive Sprache und folglich aufwändiger zu parsen
+wird. XML-Parser, die kontextfreie Parser-Generatoren benutzen, müssen
+deshalb anschließend in einem zusätzlichen Durchlauf die korrekte
+Zuordnung der Schließ-Tags überprüfen. Die Schreibarbeit lässt sich zwar
+durch die Verwendung eines speziellen XML-Editors wieder verringern,
+allerdings könnte ein solcher auch die Zuordnung von Unterknoten -
+beispielsweise durch Einrückung - verdeutlichen, was die Redundanz
+wieder unnötig erscheinen lässt.
+
+Ein anderer Grund weshalb das Beispiel umständlich wirkt ist, dass
+XML-Knoten als Unterknoten zwar beliebig viele XML-Knoten, aber - im
+Gegensatz zu \sexps{} nur einen String besitzen können. Aus diesem Grund
+muss der XML-Baum bei der Specials-Aufzählung um eine Ebene erweitert
+werden. \abb{car_xml} zeigt diesen Baum, wobei Attribute als zweiter
+Kantentyp, der nur Strings als Kinder zulässt, aufgefasst werden.
 
 \fig{car_xml}{Repräsentation eines Autos in XML}
 
@@ -597,12 +644,11 @@ ersetzt werden muss, wodurch eine Inkompatibilität zu alten Dateien
 entsteht.
 
 Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
-oder vielmehr ein optionales Feature, was nur aufgrund der - aus Sicht
-eines Lisp-Programmierers - zu umständlichen Syntax für die
-Knotendefinition benutzt wird. In diesem Fall sollten Attribute wohl in
-der Zukunft aus XML verschwinden, schließlich schreibt das
-W3C\cite{rec_xml}: "`The number of optional features in XML is to be
-kept to the absolute minimum, ideally zero"'.
+oder vielmehr ein optionales Feature, was nur aufgrund der umständlichen
+Syntax für Knotendefinitionen genutzt wird. In diesem Fall
+sollten Attribute wohl zukünftig aus XML verschwinden, schließlich
+schreibt das W3C\cite{rec_xml}: "`The number of optional features in XML
+is to be kept to the absolute minimum, ideally zero"'.
 
 Ist also ein zweiter, limitierter Kantentyp für bestimmte Zwecke
 nützlich? Ein Beispiel wäre die Trennung von normalen und
@@ -732,7 +778,7 @@ Baumrepräsentationen eine besondere Rolle zu, da diese im Gegensatz zu
 beispielsweise XML minimal und redundanzfrei definiert sind, ohne an
 Ausdrucksmächtigkeit zu verlieren. Damit gibt es in Tools, die \sexps{}
 benutzen, keinerlei unnötige Komplexität. Aus diesem Grund widmet sich
-diese Arbeit hauptsächlich \sexp-gestützter Code-Generierung.
+diese Arbeit weitgehend der \sexp-gestützten Code-Generierung.
 
 \lchapter[template]{Template-basierte \cgen{}}
 
@@ -802,7 +848,7 @@ möglich, die Erzeugung mittels Quasiquote und Unquote zu bevorzugen, da hier
 der generierende Code dem generierten ähnelt, was eine bessere
 Lesbarkeit mit sich bringt.
 
-\lsubsection[template:crit:lang]{Meta-Programmiersprache}
+\lsubsection[template:crit:lang]{Metaprogrammiersprache}
 
 Die Bandbreite bei der Sprachmächtigkeit in Unquote-Bereichen ist hoch:
 Es gibt Tools, die überhaupt keine Berechnungen, sondern lediglich das
@@ -816,7 +862,7 @@ verbundenen Schreibaufwand.
 Ein weiterer Unterschied zwischen Code-Generatoren liegt im
 Kontrollfluss. Manche Systeme können nur ein einzelnes Template
 verarbeiten, so dass alles weitere in einer externe Programmiersprache
-festgelegt ist. Engines mit einer richtigen Meta-Programmiersprache
+festgelegt ist. Engines mit einer richtigen Metaprogrammiersprache
 bieten hingegen oft die Möglichkeit, programmatische die Template-Engine
 selbst und damit indirekt ein weiteres Template aufzurufen. Andere
 lassen den direkten Aufruf weiterer Templates zu. Eine Alternative zur
@@ -1200,7 +1246,7 @@ Lisp ist eine der ältesten Programmiersprachfamilien der Welt, die unter
 anderem für ihre Möglichkeiten zur Metaprogrammierung bekannt ist. Neben
 alten, aber noch immer benutzten Sprachen wie Emacs Lisp, Scheme oder
 Common Lisp entstehen auch immer wieder neue Lisps wie
-Clujure\cite{Clojure}, welches auf der Java Virtual Machine (JVM)
+Clojure\cite{Clojure}, welches auf der Java Virtual Machine (JVM)
 aufsetzt. Alle Lisp-Sprachen basieren auf \sexps{} und verzichten auf
 die meiste Syntax wie Infix-Operatoren - gleichzeitig sind \sexps{}
 selbst in jedem Lisp als Datenstrukturen verfügbar, so dass jedes
@@ -1215,8 +1261,8 @@ andere Dialekte haben aber meist ähnliche Konstrukte.
 
 Mit der \icode{eval}-Funktion besitzt Lisp auch die Möglichkeit zur
 Laufzeit-Metaprogrammierung, welche hier allerdings nicht näher
-betrachtet wird - denn üblicher ist inzwischen die Benutzung von Makros,
-welche zur Kompilationszeit aufgerufen werden. Macros werden mittels
+betrachtet wird - denn üblicher ist inzwischen die Benutzung von Makros
+für Metaprogrammierung zur Kompilationszeit. Makros werden mittels
 \icode{(defmacro ..)} definiert und sind letzlich Funktionen, die Code
 als Parameter bekommen und Code (beides als \sexps{}) zurückliefern. Der
 Rückgabewert kann sowohl programmatisch als auch mittels Quasiquote
@@ -1253,26 +1299,33 @@ Mit diesen Operationen können beliebige \sexps{} erzeugt werden. Da das
 Template selbst aus Lisp-Code besteht und auch beliebigen anderen
 Lisp-Code aufrufen kann, ist die Metasprache mächtig, erweiterbar sowie
 modulisierbar und benötigt vergleichsweise kurze
-Metaprogramme. Lisp-Makros können nicht direkt aufgerufen werden,
-stattdessen wird ein \sexp{}-Knoten ähnlich wie bei C-Makros als
-Makroaufruf interpretiert, wenn der Knotenname mit einem Makronamen
-übereinstimmt. Hier stellt sich wieder die Frage, ob die äußere
-Ununterscheidbarkeit von Makros und Funktionsaufruf eher positiv oder
-negativ zu sehen ist. Positiv ist, dass die konkrete Implementation
-einer \sexp{}-Sprache so versteckt wird und nachträglich verändert
-werden kann. Negativ sind unerwünschtes Verhalten wie Mehrfachevaluation
-oder Namenskonflikte - im Gegensatz zu C stellt Lisp allerdings
-Möglichkeiten bereit, um diese zu vermeiden. Beispielsweise kann mit dem
-\icode{gensym}-Befehl ein global eindeutiger Variablenname erzeugt
-werden. Manchmal aber ist die Erzeugung von nicht-eindeutigen
-Variablennamen aber auch erwünscht - so zeigt \abb{lisp-aif} das
-"`anaphorische"' Makro \icode{aif}\cite{OnLisp}, welches ein
-\icode{if}-Konstrukt ermöglicht, das die Variable \icode{it} an die
-abgefragte Bedingung bindet. Dies ist praktisch, da \icode{if} nicht
-zwischen true und false, sondern zwischen \icode{nil} und nicht
-\icode{nil} unterscheidet, welshalb die Bedingung selbst Information
-enthalten kann. Die Abbildung zeigt dies am Beispiel einer einfachen
-Datenbankabfrage, die sich mittels \icode{aif} kürzer schreiben lässt.
+Metaprogramme.
+
+\todo{beschreiben}
+Denn es gibt nur eine einzige globale Zuordnungliste von
+Knotennamen zu Makros, die bei jedem Makroexpansionsschritt durchsucht
+wird. Nach der Expansion wird die gesamte Liste wieder ...
+
+Lisp-Makros können nicht direkt aufgerufen werden, stattdessen wird ein
+\sexp{}-Knoten ähnlich wie bei C-Makros als Makroaufruf interpretiert,
+wenn der Knotenname mit einem Makronamen übereinstimmt. Hier stellt sich
+wieder die Frage, ob die äußere Ununterscheidbarkeit von Makros und
+Funktionsaufruf eher positiv oder negativ zu sehen ist. Positiv ist,
+dass die konkrete Implementation einer \sexp{}-Sprache so versteckt wird
+und nachträglich verändert werden kann. Negativ sind unerwünschtes
+Verhalten wie Mehrfachevaluation oder Namenskonflikte - im Gegensatz zu
+C stellt Lisp allerdings Möglichkeiten bereit, um diese zu
+vermeiden. Beispielsweise kann mit dem \icode{gensym}-Befehl ein global
+eindeutiger Variablenname erzeugt werden. Manchmal aber ist die
+Erzeugung von nicht-eindeutigen Variablennamen aber auch erwünscht - so
+zeigt \abb{lisp-aif} das "`anaphorische"' Makro
+\icode{aif}\cite{OnLisp}, welches ein \icode{if}-Konstrukt ermöglicht,
+das die Variable \icode{it} an die abgefragte Bedingung bindet. Dies ist
+praktisch, da \icode{if} nicht zwischen true und false, sondern zwischen
+\icode{nil} und nicht \icode{nil} unterscheidet, welshalb die Bedingung
+selbst Information enthalten kann. Die Abbildung zeigt dies am Beispiel
+einer einfachen Datenbankabfrage, die sich mittels \icode{aif} kürzer
+schreiben lässt.
 \begin{figure}[htp]
   \centering
   \begin{code}
@@ -1441,43 +1494,144 @@ Code, wodurch praktisch Compiler-Plugins mit minimalem Aufwand erzeugt
 werden können. Dadurch lassen sich in Lisp leicht mächtige, voll
 integrierte DSLs konstruieren.
 
-\lchapter[reqs]{Anforderungsanalyse}
+\lchapter[reqs]{Anforderungen}
 
-\begin{itemize}
-\item Schachtelung von Makros
-\item EBNF wünschenswert
-\item Generischer Pretty-Printer
-\item Robusterer \sexp-{Parser}
-\item Typisiert vs untypisierte Zwischenmodelle
-\item Vorteile Typisiert
-  \begin{itemize}
-  \item "`Freier"' statischer Typcheck - Extra-Arbeit in \sexp{}-Modell
-  \item simpler als bq-code
-  \item Selbstdokumentation des Modells
-  \end{itemize}
-\item Vorteile untypisiert
-  \begin{itemize}
-  \item Kommunikation (externe Anwendungen, Netzwerk)
-  \item Modellerstellung fällt weg $\Rightarrow$ Zeitersparnis
-  \item Redundanzen können in \sexp{}-Version herausgenommen werden
-  \end{itemize}
-\item MagicL:
-  \begin{itemize}
-  \item Untypisierte Eingabe (Sexp)
-  \item Typisierte Verarbeitung/Ausgabe (z.B. \icode{Code})
-  \end{itemize}
-\item Repräsentation von \sexps{}
-  \begin{itemize}
-  \item Sexp-Strachen sollten immer besonderen Head haben (klare
-    Semantik, vgl. XML, Pretty-Print)
-  \item Gesondert repräsentieren zum erzwingen?
-  \item Nein, denn Missbrauch noch immer möglich und behandelnder Code
-    wird komplizierter
-  \item Definition
-  \end{itemize}
-\end{itemize}
+Grundsätzlich soll mit MagicL ein sprachunabhängiges Framework für
+\cgen{} entwickelt werden, das eine an Lisp angelehnte, modulare und
+inkrementelle Compiler-Entwicklung durch kurzen und prägnanten Meta-Code
+unterstützt. Zudem sollten allgemein zugleich eine möglichst hohe
+Flexibilität und Einfachheit angestrebt werden. Die folgenden Abschnitte
+diskutieren die konkrete Umsetzung dieser Prinzipien in Hinblick auf
+Modellrepräsentationen und den Kompilationsprozess.
+
+\lsection[reqs:model]{Modellrepräsentation}
+
+Repräsentationen als pure Zeichenkette sollten nur ganz am Anfang sowie
+ganz am Ende der Verarbeitungskette liegen - im Idealfall wird diese
+Ebene durch den vom Metaprogrammierer entworfenen Generator-Code
+überhaupt nicht berührt. Stattdessen sollten möglichst viele
+Verarbeitungsschritte strukturierte Modelle benutzen. Hier stellt
+sich die Frage nach dem Typisierungsgrad:
+
+Für typisierte Objekte spricht das automatische Finden von Fehlern
+bereits während der Kompilation des Generators, während diese bei einer
+Verarbeitungskette mit untypisierten Zwischenmodellen erst im nächsten
+Verarbeitungsschritt sichtbar werden - oder gar noch später, falls
+dieser unvorsichtig implementiert wurde. Für umfangreiche Berechnungen
+sind typisierte Datenstrukturen generell von Nöten. Modelldefinitionen
+mit Typsignaturen sind außerdem bereits zu einem gewissen Grad
+selbstdokumentierend.
+
+\sexps{} hingegen sind allgemein flexibler und ersparen die Phase der
+Modellerstellung. Dies ist besonders dann von Vorteil, wenn eine
+bestehende Modellsprache nur geringfügig erweitert oder angepasst werden
+soll, so dass ein komplett neues, fast identisches Modell einen
+übertriebenden Arbeitsaufwand bedeuten würde. Auch können \sexps{} ohne
+weiteren Aufwand in Zeichenketten serialisiert und so zwischen
+verschiedenen Programmen oder über das Netzwerk kommuniziert
+werden. Zudem lassen sich Modelle in \sexps{} oft kürzer und
+redundanzfreier notieren als in einer typisierten Form.
+
+Da sowohl Objekte als auch \sexps{} in bestimmten Anwendungsfällen von
+Vorteil sind, sollte MagicL sowohl beide Formen unterstützen. Auch die
+einfache Umwandlung von einer Repräsentation in die andere sollte
+möglich sein. Eingabesprachen werden dann üblicherweise in \sexps{}
+repräsentiert, Modelltypen für die weitere Verarbeitung können variiert
+werden.
+
+Der verwendete \sexp{}-Datentyp sowie die konkrete Syntax sollten
+zunächst möglichst einfach und domänenunabhängig gehalten werden,
+weshalb beispielsweise auf eine automatische Typisierung beim Einlesen
+von Zahlen verzichtet wird. Auch spezielle Syntax für Strings,
+Kommentare, Quasiquotes oder Leerzeichen in Symbolnamen wird zunächst
+nicht für nötig befunden, da auch dies alles bereits mittels primitiver
+\sexps{} repräsentiert werden kann. Für den Fall, dass besondere Syntax
+für einzelne Anwendungen dennoch erwünscht sein sollte, könnte diese
+beispielsweise über einen Präprozessor in die entsprechende
+\sexp{}-Darstellung überführt werden. Eine weiter Überlegung ist, ob der
+\sexp{}-Datentyp eine "`kanonische Form"' erzwingen soll, bei der das
+erste Element eines Knotens immer der Knotenname ist, indem ein
+gesondertes Datenfeld für den Namen angelegt wird. Eine derartige Form
+wäre analog zu XML, wo der Name ebenfalls einzeln behandelt wird. Zudem
+wird die Semantik von \sexps{} so klarer und eine automatische
+Visualisierung als Baum oder mittels Einrückung sinnvoller.  Wird hier
+allerdings festgelegt, dass es sich bei diesen Namen ausschließlich um
+Symbole handeln muss, werden die möglichen Modellierungssprachen unnötig
+eingeschränkt. Beispielsweise könnte eine funktionale Programmiersprache
+einen \sexp{} als Funktionsaufruf in Präfixnotation interpretieren und
+die Möglichkeit zulassen wollen, die aufgerufene Funktion selbst durch
+einen Funktionsaufruf zu erzeugen. Werden aber beliebige \sexps{} als
+Namen zugelassen, ist der "`Missbrauch"' für nichtkanonische Strukturen
+dennoch möglich - wenn auch etwas aufwändiger. Generell wird die
+Verarbeitung von \sexps{} durch das Sonderfeld allerdings komplexer,
+weshalb die einfache Struktur bevorzugt wird:
+\begin{quote}
+  Ein \sexp{} ist entweder ein Symbol oder eine Liste von \sexps{}.
+\end{quote}
+Die Konvention, das erste Element als Knotennamen anzusehen, ist dennoch
+sinnvoll und wird von MagicL vorausgesetzt.
+
+\lsection[reqs:proc]{Verarbeitungsprozess}
+
+Zunächst ist ein Parser für das Einlesen von \sexps{} aus Strings
+erforderlich. Um möglichst auch mit anderen bestehenden Datenformaten
+umgehen zu können wäre es wünschenswert, weitere Parser einfach
+konstruieren und einbinden zu können.
+
+Die weitere Verarbeitung von \sexps{} wie in Lisp in kleinen Einheiten
+erfolgen und auch die Möglichkeit, die für einen \sexp{} zuständige
+Verarbeitungseinheit über den Knotennamen zu bestimmen, sollte
+implementiert werden, so dass diese Einheiten ebenfalls als Makros
+bezeichnet werden. Allerdings wäre es interessant, wenn nicht nur der
+Name, sondern der gesamte Knoten in einer Art Pattern-Matching ähnlich
+XPath berücksichtigt werden könnte. Alternativ wäre auch eine mit EBNF
+vergleichbare Grammatik auf \sexps{} vorstellbar.
+
+Zudem ist der Kontrollfluss im Makrosystem von Lisp relativ unflexibel,
+da es lediglich eine globale Zuordnung von Namen zu Makros gibt. In
+konkreten Sprachen hingegen gibt es häufig Konstrukte, die nur im
+Kontext bestimmter Oberkonstrukte verwendet werden können. Lisp-Makros,
+die solche Oberkonstrukte verarbeiten, benutzen für die Unterkonstrukte
+keine weiteren Makros - sonst wären die Konstrukte auch außerhalb
+verfügbar - sondern zerlegen die inneren \sexps{} manuell. Praktischer
+wäre ein Konzept von "`lokalen Makros"', die nur an gewünschten Stellen
+aufgerufen werden. Dies ist vergleichbar mit dem Aufruf von
+XSLT-Templates über Namen - im Gegensatz zu diesen sollte aber auch ein
+lokal aufgerufenes Makro seine Anwendbarkeit durch Pattern-Matching
+überprüfen und im Falle eines Scheiterns den Kontrollfluss an das
+nächste Lokalmakro weiterreichen.
+
+Aufgrund der im vorigen Abschnitt geforderten Integration verschiedener
+Modellrepräsentationsformen sollten Makros neben \sexps{} auch beliebige
+andere Objekte zurückliefern können. Die Erzeugung von \sexps{} sollte
+dennoch mit einem Lisp-ähnlichen Template-System besonders unterstützt
+werden. Auch Funktionen, die von Objekt zu Objekt kompilieren, sollen
+über eine allgemeine Compiler-Schnittstelle neben Makros und Parsern
+angesprochen und so integriert werden können.
+
+Die Erzeugung von Quelltext aus Meta-Code sollte möglichst nicht durch
+direkte oder Template-basierte String-Manipulation geschehen. Vielmehr
+ist ein Modell für die allgemeine Repräsentation von Quelltext für die
+Ausgabe von Metaprogrammen zu bevorzugen, welches zuletzt automatisch
+und Framework-intern in einen String umgewandelt wird.
 
 \lsection[reqs:sum]{Zusammenfassung}
+
+Das zu entwickelnde \cgen{}sframework soll eine Makro-basierte,
+baukastenartige Konstruktion von Compilern ähnlich Lisp ermöglichen. Das
+Level von Zeichenketten soll für die Metaprogrammierung möglichst keine
+Rolle spielen - stattdessen sollen als Modellrepräsentationen sowohl
+\sexps{} - welche so einfach wie möglich definiert werden - als auch
+getypte Objekte verwendet werden können. Dies gilt auch für die
+Ausgabetypen von Makros, welche auch im Gegensatz zu Lisp nicht nur über
+den Knotennamen, sondern den gesamten \sexp{} ein Pattern-Matching
+durchführen können sollen. Der Kontrollfluss von Makroaufrufen soll
+besser als in Lisp gesteuert werden können, um "`lokale Makros"' zu
+ermöglichen. Neben der textuellen Repräsentation von \sexps{} sollen
+prinzipiell auch andere Datenformate unterstützt werden, weshalb eigene
+Parser erstellt und eingebunden werden können sollen. Eine allgemeine
+Schnittstelle soll schließlich die Integration von Makros, Parsern und
+durch Funktionen implementierte Compiler ermöglichen.
 
 \lchapter[cats]{Kategorientheorie}
 
@@ -1759,26 +1913,27 @@ stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
 $\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
 Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
 Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
-Verknüpfen. Haskell (siehe \sref{haskell}) benutzt Monaden unter
+Verknüpfen. Haskell (\sref{haskell}) benutzt Monaden unter
 anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
-einzubauen, wie \sref{cats_hask:monads} erklärt.
+einzubauen, wie \sref{haskell:cats:monads} erläutert.
 
 \lsection[cats:sum]{Zusammenfassung}
 
 \lchapter[haskell]{Die Sprache Haskell}
 
-\todo{lazy evaluation}
-
 Haskell ist eine funktionale Programmiersprache, die generell sehr
 mathematisch inspiriert ist. Beispielsweise sind Funktionen hier
-grundsätzlich pur, d.h. ohne Nebeneffekte. Um dennoch mit Nebeneffekten
-umgehen zu können, welche für konkrete Anwendung nötig sind, wird das
-mächtige Konzept der Monaden bereitgestellt (siehe
-\sref{cats:monads} und \sref{cats_hask:monads}. Auch
-Objekte gibt es hier in der Form nicht - stattdessen wird mittels
-algebraischer Datentypen und Typklassen modelliert. Unterstützt wird
-dieser Ansatz durch ein statisches Typsystem, welches praktische
-Features wie Typinferenz oder abhängige Typen bereitstellt.
+grundsätzlich pur, d.h. ohne Nebeneffekte. Dank der Haskell-Umsetzung
+von Monaden sind Berechnungen mit Nebeneffekten dennoch möglich. siehe
+\sref{cats:monads} und \sref{haskell:cats:monads}. Auch Objekte gibt es
+hier in der Form nicht - stattdessen wird mittels algebraischer
+Datentypen und Typklassen modelliert. Unterstützt wird dieser Ansatz
+durch ein statisches Typsystem, welches praktische Features wie
+Typinferenz oder abhängige Typen bereitstellt. Haskell arbeitet mit lazy
+evaluation, es werden also Funktionen und Datenstrukturen erst dann
+ausgewertet, wenn diese wirklich benötigt werden. Dies ermöglicht
+beispielsweise die Konstruktion unendlicher Listen und Bäume, solange
+nur endliche Teilmengen am Ende abgerufen werden.
 
 \lsection[haskell:functions]{Funktionen}
 
@@ -1961,10 +2116,10 @@ showList [1, 2, 3] -- ergibt "{1 - 2 - 3}"
  Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
  Hier: (...) => als auslassung
 
-\lsection[cats_hask]{Kategorien in Haskell}
+\lsection[haskell:cats]{Kategorien in Haskell}
 
 Die Haskell-Bibliotheken bieten viele kategorientheotische Begriffe an,
-die allerdings immer bestimmten Einschränkungen
+die allerdings alle bestimmten Einschränkungen
 unterliegen. Beispielsweise sind die Objekte einer Kategorie hier immer
 Haskell-Typen. Die Typklasse \icode{Category} ist wie folgt definiert:
 \begin{code}
@@ -1987,7 +2142,7 @@ Haskell-Funktionen, bezeichnet als $\mathbf{Hask}$.
 Oft wird statt \icode{.} der \icode{>>>}-Operator (genannt "`vor"') %<<
 benutzt mit \icode{f >>> g = g . f}. %<<
 
-\lsubsection[cats_hask:arrows]{Arrows}
+\lsubsection[haskell:cats:arrows]{Arrows}
 
 Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
@@ -2043,7 +2198,7 @@ f >>^ func = f >>> arr func
 \end{code}% <<
 noch etwas syntaktischen Zucker.
 
-\lsubsection[cats_hask:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
+\lsubsection[haskell:cats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
 
 Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
 \icode{Either}-Datentyp, der folgendermaßen definiert ist:
@@ -2089,7 +2244,7 @@ Produkt-Operationen:
   \dref{Coprodukt}
 \end{itemize}
 
-\lsubsection[cats_hask:functors]{Funktoren}
+\lsubsection[haskell:cats:functors]{Funktoren}
 
 Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
 allerdings nur Endofunktoren über der Kategorie $\mathbf{Hask}$ repräsentieren:
@@ -2131,7 +2286,7 @@ instance (Arrow ar) => Functor (FailFunctor ar) ar where
   lift f = ...
 \end{code}
 
-\lsubsection[cats_hask:monads]{Monaden}
+\lsubsection[haskell:cats:monads]{Monaden}
 
 Die Typklasse \icode{Monad} aus den Haskell-Bibliotheken beschreibt
 Monaden über der Kategorie $\mathbf{Hask}$. $\eta$ aus
@@ -2216,7 +2371,7 @@ foo >>= (\ x ->
 \end{code} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt -
 dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
-zuständig ist (siehe \sref{cats_hask:monads:examples:io}). Diese
+zuständig ist (siehe \sref{haskell:cats:monads:examples:io}). Diese
 Verwendung erklärt auch nachträglich den Namen \icode{return}, wobei es
 sich noch immer um die $\eta$-Transformation handelt und nicht etwa ein
 syntaktisches \icode{return}-Statement wie in imperativen Sprachen
@@ -2231,9 +2386,9 @@ Komposition zurückgegriffen wird. Punktfreie Notation wird auch bei
 Definitionen von Funktionen oft verwendet und ist für viele
 Haskell-Programmierer natürlicher und eleganter.
 
-\lsubsubsection[cats_hask:monads:examples]{Beispiele für Monaden}
+\lsubsubsection[haskell:cats:monads:examples]{Beispiele für Monaden}
 
-\lparagraph[cats_hask:monads:examples:maybe]{\icode{Maybe}}
+\lparagraph[haskell:cats:monads:examples:maybe]{\icode{Maybe}}
 
 Funktionen, die fehlschlagen können, lassen sich in der Form \icode{a
   -> Maybe b} darstellen. Möchte man mehrerer solcher Funktionen
@@ -2259,7 +2414,7 @@ daraufhin \icode{bar x} ebenfalls erfolgreich, wird dieses in \icode{y}
 gespeichert und als Ergebnis \icode{Just (x, y)} zurückgegeben. Schlägt
 eine der Funktionen fehl, ist das ergebnis \icode{Nothing}.
 
-\lparagraph[cats_hask:monads:examples:io]{\icode{IO}}
+\lparagraph[haskell:cats:monads:examples:io]{\icode{IO}}
 
 Jede Programmiersprache benötigt für die reale Welt Möglichkeiten,
 Operationen mit Nebeneffekten wie das Schreiben oder solche, die von
@@ -2394,7 +2549,7 @@ $B$ wollen wir also nun Morphismen von $A$ nach $\mathrm{String}+B$. Um
 den aufrufenden Code nicht komplizierter zu machen, empfiehlt es sich,
 diese Änderung in einer neuen Kategorie $\mathbf{C}_f$ zu
 verstecken. $f_{f} : A \rightarrow B$ aus der neuen Kategorie wird
-abgebildet auf $f : A \rightarrow \mathrm{String} + B$ Der Arrow
+abgebildet auf $f : A \rightarrow \mathrm{String} + B$. Der Arrow
 $\mathrm{fail}_{f} : \mathrm{String} \rightarrow a$ in $C_{f}$ schlägt
 immer fehl und entspricht $fail : \mathrm{String} \rightarrow
 \mathrm{String} + a$ in $C$.
@@ -2443,21 +2598,25 @@ instance (ArrowChoice ar) => ArrowFail (FailFunctor ar) where
   fail = FailF (arr Left)
 \end{code}
 
-Der Oder-Operator $\bigvee$ entspricht in Haskell \icode{<+>}, welchen
-die bereits in den Haskell-Bibliotheken definierte Typklasse
-\icode{ArrowPlus} bereitstellt:
+Dem Oder-Operator $\bigvee$ entspricht in Haskell \icode{<+>}, welcher
+von der Typklasse \icode{ArrowPlus} aus den Haskell-Bibliotheken
+bereitgestellt wird und für \icode{FailFunctor} wie folgt implementiert
+ist:
 
 \begin{code}
 instance (ArrowChoice ar) => ArrowPlus (FailFunctor ar) where
-  FailF f <+> FailF g = FailF ((f &&& g) >>> arr tupleOr)
-    where tupleOr (Left  _, y)  = y
-          tupleOr (Right x), _) = Right x
+  FailF f <+> FailF g = FailF ((f &&& id) >>> arr proc >>> (g ||| arr Right))
+   where proc :: (Either a b, c) -> Either c b
+         proc (Left  _, y) = Left y
+         proc (Right x, _) = Right x
 \end{code} % <<
 
-Es werden also \icode{f} und \icode{g} parallel evaluiert und
-anschließend von der Funktion \icode{tupleOr} verarbeitet, die, sollte
-\icode{f} fehlschlagen, das Ergebnis von \icode{g} zurückgibt, ansonsten
-das Ergebnis von \icode{f}.
+Es werden also zunächst \icode{f} und die Identität parallel evaluiert -
+dies ist nötig, um die Eingabe "`durchzuschleifen"'. Anschließend
+erfolgt ein Verarbeitungsschritt um das Tupel aufzulösen: Scheitert
+\icode{f}, wird dessen Ausgabe weggeschmissen, im Erfolgsfall die
+Eingabe. Anschließend wird im Fehlerfall \icode{g} auf die Eingabe
+angewendet, bei Erfolg wird das Ergebnis wieder in ein \icode{Right} eingepackt.
 
 \fig{cat_fail}{Komposition beim Fail-Funktor}
 
@@ -2478,8 +2637,6 @@ zurückführung auf ein Coprodukt in $\mathbf{C}$. Die Funktion, die $f_f$
 auf $f$ abbildet, kann nicht Teil eines Funktors sein. Ein solcher
 müsste nämlich das Objekt $B$ sowohl auf $\mathrm{String}+B$ (bei der
 Transformation von $f$ als auch auf $B$ selbst (bei $g$) abbilden.
-
-\todo{(Co)Produkt?}
 
 \lsection[arrowparser:state]{Arrows mit Zuständen}
 
@@ -2508,7 +2665,7 @@ instance (Arrow ar) => Functor (StateFunctor s ar) ar where
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
 unverändert weitergeben - dies entspricht genau der
-\icode{first}-Funktion aus \sref{cats_hask:arrows}.
+\icode{first}-Funktion aus \sref{haskell:cats:arrows}.
 
 Das Lesen und Schreiben von Zuständen wird von den Funktionen \icode{get} und
 \icode{put} bereitgestellt, welche in der Typklasse \icode{ArrowState}
@@ -2677,11 +2834,16 @@ werden kann.
 
 \lsubsection[arrowparser:lib:example]{Beispiel: Ein \sexp{}-Parser}
 
-Aufgrund der einfachen gewählten Struktur von \sexps{} und der
-praktischen Parser-Library ist es möglich, in vier kurzen Zeilen einen
-Parser für \sexps{}\footnote{Gemeint ist ein Parser von Text nach
-  \sexps{}, wogegen die \sexp{}-Parser in \sref{magicl:sexp} \sexps{}
-  lesen.} zu entwerfen:
+\sexps{} sind in MagicL wie folgt definiert:
+\begin{code}
+data Sexp = Symbol String
+          | Node [Sexp]
+\end{code}
+
+Aufgrund der Einfachheit diese Struktur und der praktischen
+Parser-Library ist es möglich, in vier kurzen Zeilen einen Parser zu
+entwerfen, der als Text repräsentierte \sexps{} in die typisierte
+Repräsentation überführt:
 
 \begin{code}
 whitespace = skip (many (member " \t\n"))
@@ -2841,7 +3003,7 @@ nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
   wird. Da Parser in MagicL immer als Compiler definiert werden (siehe
   \sref{magicl:arch:compiler}), heißt diese Funktion nicht \icode{parseNode}
 \item \icode{macro name innerComp} % <<
-  konsturiert nun einen Parser, der wie ein Macro das erste Element des
+  konsturiert nun einen Parser, der wie ein Makro das erste Element des
   Knotens mit dem Symbol \icode{name} vergleicht und im Erfolgsfall die
   restlichen Elemente mit \icode{innerComp} verarbeitet. Danach wird
   sichergestellt, dass der Knoten auch wirklich vollständig gelesen
@@ -2981,7 +3143,7 @@ spezifiziert werden.
 \lsection[magicl:test]{Test-Framework}
 
 MagicL enthält ein minimalistisches Testframework, um Compiler
-oder im speziellen Macros inkrementell zu testen.
+oder im speziellen MaKros inkrementell zu testen.
 
 \lsection[magicl:debug]{Debugging-Möglichkeiten}
 
@@ -2995,15 +3157,12 @@ oder im speziellen Macros inkrementell zu testen.
 
 \todo{überarbeiten}
 
-\begin{itemize}
-\item Übertragung von Makros
-\item Erster Prototyp
-\end{itemize}
+Makros für beliebige Zielsprachen
 
 MagicL ist ein Framework für \sexp-Compiler, welches 
 als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
 Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{cats_hask} beschrieben), mit deren Hilfe
+Konzepte (in \sref{haskell:cats} beschrieben), mit deren Hilfe
 beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
 \sexp{}-Parser konstruiert werden. In \sref{sexpproc} geht es um
 das Parsen von \sexps{} und die hierfür bereitgestellten
@@ -3023,12 +3182,11 @@ werden. Die Parser- und Compilererstellung erfolgt nach einem
 kategorientheoretisch motivierten Baukastenansatz, so dass
 unter anderem Parser durch die Kombination von Arrows erzeugt werden.
 
-...
 
-\lsection[end:disc]{Diskussion}
+\lsection[end:disc]{Diskussion und Ausblick}
 
   \begin{itemize}
-  \item MagicL sauberer und klarer als \sexy{}
+  \item MagicL sauberer und klarer als Lisps
     \begin{itemize}
     \item Getypte Modelle
     \item Praktische und flexible Parser-Konstruktion dank Kategorientheorie
@@ -3044,15 +3202,6 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
       mehr nötig) - würde auch wieder bei Generierung aus anderen
       Srpachen helfen
     \end{itemize}
-  \item Brauchen wir ein \icode{backquote}?
-    \begin{itemize}
-    \item Typisierte Modelle normalerweise besser
-    \item Evtl. Kommunikation mit anderen Programmiersprachen / über Streams
-    \end{itemize}
-  \end{itemize}
-
-\lsection[end:future]{Ausblick}
-\begin{itemize}
 \item DSL für Modell- und Compilerdefinition
 \item Verschiedene DSL's
   \begin{itemize}
@@ -3075,8 +3224,27 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
   \end{itemize}
 \end{itemize}
 
+\cleardoublepage
+
 \bibliographystyle{gerplain}
 \bibliography{diplomarbeit}
+\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+
+
+\listoffigures
+\addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
+
+\chapter*{Selbstständigkeitserklärung}
+\addcontentsline{toc}{chapter}{Selbstständigkeitserklärung}
+
+Ich erkläre, dass ich die vorliegende Arbeit selbstständig und nur unter
+Verwendung der angegebenen Quellen und Hilfsmittel angefertigt habe.
+\vskip 2cm
+\begin{flushright}
+Hamburg, \today
+\vskip 1cm
+Benjamin Teuber
+\end{flushright}
 
 \end{document}
 

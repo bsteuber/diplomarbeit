@@ -44,7 +44,7 @@ instance (ArrowChoice ar) => ArrowZero (FailFunctor ar) where
 instance (ArrowChoice ar) => ArrowPlus (FailFunctor ar) where
     FailF f <+> FailF g = FailF $ (f &&& id) >>> arr proc >>> (g ||| arr Right)
         where proc :: (Either a b, c) -> Either c b
-              proc (Left  _, y)  = Left y
+              proc (Left  _, y) = Left y
               proc (Right x, _) = Right x
 
 instance (ArrowChoice ar, ArrowApply ar) => ArrowApply (FailFunctor ar) where
