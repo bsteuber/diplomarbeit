@@ -193,7 +193,7 @@
 
 \chapter*{Abkürzungsverzeichnis}
 \begin{acronym}
-\acro{ASCII}{TODO}
+\acro{ASCII}{American Standard Code for Information Interchange}
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
@@ -374,48 +374,54 @@ vorgestellt und in Hinblick vorher erarbeiteter Kriterien evaluiert -
 unter anderem auch Lisp-Makros.
 
 Aus den vorangegangenen Untersuchungen über Modelle und Werkzeuge werden
-in \cref{reqs} Anforderungen für das universelle, im Rahmen dieser Arbeit
-entworfene Framework MagicL abgeleitet. \todo{mehr}
+in \cref{reqs} Anforderungen für das universelle, im Rahmen dieser
+Arbeit entworfene Framework MagicL abgeleitet. Wesentlich sind hier die
+Unterstützung von sowohl typisierten Objekten als auch \sexps{}, welche
+so einfach wie möglich definiert werden sollen. Auch das Makrosystem
+soll deutlich vielseitiger werden als bestehende Lisp-Dialekte.
 
-\cref{cats} führt in die Kategorientheorie - einen sehr abstrakten Zweig
-der Mathematik - ein, mit deren Hilfe - neben vielfältigen anderen
-Verwendungsmöglichkeiten - Verarbeitungsprozesse graphisch und
-semantisch korrekt beschrieben sowie elegant durch Operatoren kombiniert
-werden können. Aus diesem Grund basiert die gesamte Architektur von
-MagicL auf Morphismen und Funktoren, was zu einer sehr hohen
-Flexibilität des Frameworks führt.
+Um die hohe geforderte Flexibilität erreichen zu können, basiert die
+gesamte Architektur von MagicL auf Konzepten der Kategorientheorie,
+einem sehr abstrakten Zweig der Mathematik. Neben vielfältigen anderen
+Verwendungsmöglichkeiten können mit Kategorien beliebige Arten von
+Prozessketten derart beschrieben werden, dass Verarbeitungseinheiten
+über Operatoren nach dem Baukastenprinzip kombinierbar sind. \cref{cats}
+führt deshalb in die Kategorientheorie ein und erklärt die später
+benötigten Begriffe.
 
-Die Programmiersprache Haskell stellt dem Programmierer mit Arrows und
-Monaden Umsetzungen katogorientheoretischer Konzepte zur Verfügung, mit
-deren Hilfe es unter anderem gelingt, Nebeneffekte sauber isoliert in
-die ansonsten pur funktionale Sprache zu integrieren. MagicL ist aus
-diesem Grund in Haskell programmiert, weshalb \cref{haskell} die Sprache
-ausführlich vorstellt.
+Die Programmiersprache Haskell stellt unter anderem mit Arrows und
+Monaden die programmatischen Umsetzungen katogorientheoretischer
+Konzepte zur Verfügung, mit deren Hilfe es unter anderem gelingt,
+Nebeneffekte sauber isoliert in die ansonsten pur funktionale Sprache zu
+integrieren. MagicL ist in Haskell mittels Arrows implementiert, weshalb
+\cref{haskell} zunächst die Sprachgrundlagen und anschließend die
+kategorientheoretischen Typklassen und Funktionen erläutert.
 
 \cref{arrowparser} zeigt, wie sich durch die Kombination einfacher
-Funktoren eine Kategorie für Parser konstruieren lässt. Die
-Haskell-Umsetzung dieser Kategorie ergibt eine praktische und Bibliothek
-für die Erzeugung und Komposition von Parsern. Als Anwendungsbeispiel
-dient das Einlesen von \sexps{} aus einer
+Funktoren eine Parser-Kategorie konstruieren lässt. Die
+Haskell-Umsetzung dieser Kategorie ergibt eine praktische und elegante
+Bibliothek für die Erzeugung und Komposition von Parsern. Als
+Anwendungsbeispiel dient das Einlesen von \sexps{} aus einer
 Stringrepräsentation. Anschließend wird eine allgemeine, ebenfalls
 Arrow-basierte Compiler-Schnittstelle entwickelt, mit der verschiedene
-Parser, funktionale und imperative Compiler angesprochen werden
-können. Damit wird es möglich, Haskell mittels Typinferenz selbst den
-passenden Compiler für eine Aufgabe auswählen zu lassen.
+Parser sowie funktionale und imperative Compiler angesprochen werden
+können. Damit wird es sogar möglich, Haskell mittels Typinferenz selbst
+den passenden Compiler für eine Aufgabe auswählen zu lassen.
 
 Die hier entwickelten Parser können nicht nur auf Zeichenketten, sondern
 auf beliebigen Listen arbeiten. \cref{sexpproc} zeigt, wie damit die
-Verarbeitung von \sexps{} beschrieben werden kann, so dass Makros hier
-als Parser auf \sexps{} aufgefasst werden und damit universeller sind
-als Lisp-Makros, welche ausschließlich \sexps{} als Ausgabe liefern
-können. Diese werden benutzt, um HSexp, eine in \sexps{} repräsentierte
-Haskell-Teilmenge in ein typisiertes Modell zu überführen, welches
-anschließend nach Haskell kompiliert wird. Für die Generierung von
-\sexps{} wird eine DSL ähnlich Lisp konstruiert, die
-Quasiquote-Operatoren enthält, welche besser als bestehende
-Lisp-Varianten für die Erzeugung von Meta-Code selbst geeignet
-ist. Diese DSL wird metazirkulär nach HSexp und anschließend nach
-Haskell übersetzt.
+Verarbeitung von \sexps{} beschrieben werden kann, so dass Makros als
+Parser auf \sexps{} aufgefasst werden und damit die gewünschte
+Universalität erreichen. Mit Hilfe des Makrosystems wird unter anderem
+HaskSexp, eine in \sexps{} repräsentierte Haskell-Teilmenge, in ein
+typisiertes Modell überführt, welches anschließend nach Haskell
+kompiliert wird. Für die Generierung von \sexps{} wird mit CompSexp eine
+DSL ähnlich Lisp konstruiert, die Quasiquote-Operatoren enthält, welche
+besser als bestehende Lisp-Varianten für die Erzeugung von Meta-Code
+selbst geeignet ist. CompSexp wird metazirkulär nach HaskSexp und
+anschließend nach Haskell übersetzt, so dass nun sämtlicher Meta-Code in
+CompSexp, HaskSexp oder selbst bereitgestellten DSL geschrieben werden
+kann.
 
 Weitere Komponenten von MagicL, die in den vorigen Kapiteln keinen Platz
 gefunden haben, werden in \cref{magicl} vorgestellt: Die eigentliche
@@ -428,9 +434,9 @@ Compiler-Fehler wird kurz erläutert. Zuletzt wird auf das ebenfalls in
 Haskell geschriebene Build-Tool präsentiert, mit dem MagicL kompiliert
 und getestet wird.
 
-\cref{end} fasst die Arbeit zusammen und diskutiert das entstandene
-Framework. Anschließend wird im Ausblick auf weitere Verbesserungs- und
-Erweiterungsmöglichkeiten eingegangen, die in der Zukunft behandelt
+In \cref{end} wird die gesamte Arbeit zusammengefasst und
+diskutiert. Zudem werden weitere Verbesserungs- und
+Erweiterungsmöglichkeiten vorgestellt, die zukünftig weiter untersucht
 werden könnten.
 
 \lchapter[model]{Repräsentation von Modellen}
@@ -1301,20 +1307,22 @@ Lisp-Code aufrufen kann, ist die Metasprache mächtig, erweiterbar sowie
 modulisierbar und benötigt vergleichsweise kurze
 Metaprogramme.
 
-\todo{beschreiben}
-Denn es gibt nur eine einzige globale Zuordnungliste von
-Knotennamen zu Makros, die bei jedem Makroexpansionsschritt durchsucht
-wird. Nach der Expansion wird die gesamte Liste wieder ...
-
 Lisp-Makros können nicht direkt aufgerufen werden, stattdessen wird ein
-\sexp{}-Knoten ähnlich wie bei C-Makros als Makroaufruf interpretiert,
-wenn der Knotenname mit einem Makronamen übereinstimmt. Hier stellt sich
-wieder die Frage, ob die äußere Ununterscheidbarkeit von Makros und
-Funktionsaufruf eher positiv oder negativ zu sehen ist. Positiv ist,
-dass die konkrete Implementation einer \sexp{}-Sprache so versteckt wird
-und nachträglich verändert werden kann. Negativ sind unerwünschtes
-Verhalten wie Mehrfachevaluation oder Namenskonflikte - im Gegensatz zu
-C stellt Lisp allerdings Möglichkeiten bereit, um diese zu
+\sexp{}-Knoten ähnlich wie bei C nach seinem Knotennamen zu einem Makro
+zugeordnet. Es wird also bei jedem Expansionsschritt global geprüft, ob
+ein Makro so benannt ist wie das erste Element des zu expandierenden
+\sexp{}. Ist dies der Fall, werden die restlichen Elemente als Parameter
+an das Makro übergeben, woraufhin der vom Makro zurückgegebene \sexp{}
+erneut expandiert wird. Lässt sich kein Makro zu einem Ausdruck
+zuordnen, werden alle Elemente davon einzeln expandiert und der
+resultierende \sexp{} als Funktionsaufruf interpretiert.
+
+Hier stellt sich wieder die Frage, ob die äußere Ununterscheidbarkeit
+von Makros und Funktionsaufrufen eher positiv oder negativ zu sehen
+ist. Positiv ist, dass die konkrete Implementation einer \sexp{}-Sprache
+so versteckt wird und nachträglich verändert werden kann. Negativ sind
+unerwünschtes Verhalten wie Mehrfachevaluation oder Namenskonflikte - im
+Gegensatz zu C stellt Lisp allerdings Möglichkeiten bereit, um diese zu
 vermeiden. Beispielsweise kann mit dem \icode{gensym}-Befehl ein global
 eindeutiger Variablenname erzeugt werden. Manchmal aber ist die
 Erzeugung von nicht-eindeutigen Variablennamen aber auch erwünscht - so
@@ -1383,11 +1391,9 @@ Definition eines "Meta-Makros":
   `(defmacro ,name (x)
      `(,',cmd ,x)))    
 
-
 Beispiel-Aufruf:
 
 (metamacro mymacro print)
-
 
 Wird kompiliert nach:
 
@@ -1398,7 +1404,8 @@ Wird kompiliert nach:
   \label{magicl:fig:lisp-macrogen}
 \end{figure}
 
-\todo{Warum kann nicht beliebiger Code generiert werden? Letzlich Upcase}
+\todo{Generierung von beliebigem Code? Da macroexpand eine Funktion ist
+  prinzipiell möglich, aber nicht gut unterstützt. Upcase nervig}
 
 \lsection[template:sum]{Zusammenfassung}
 
@@ -1518,7 +1525,7 @@ bereits während der Kompilation des Generators, während diese bei einer
 Verarbeitungskette mit untypisierten Zwischenmodellen erst im nächsten
 Verarbeitungsschritt sichtbar werden - oder gar noch später, falls
 dieser unvorsichtig implementiert wurde. Für umfangreiche Berechnungen
-sind typisierte Datenstrukturen generell von Nöten. Modelldefinitionen
+sind typisierte Datenstrukturen generell vonnöten. Modelldefinitionen
 mit Typsignaturen sind außerdem bereits zu einem gewissen Grad
 selbstdokumentierend.
 
@@ -1649,8 +1656,6 @@ vor. Die Definitionen sind weitgehend aus \cite{Grundlagen} übernommen.
 
 \fig{cat_funs}{Ein simples Funktionensystem}
 
-\todo{abs=round}
-
 Der Grundansatz der Kategorientheorie ist die Verallgemeinerung der
 Art und Weise, wie mit Funktionstypen gerechnet wird - insbesondere
 hinsichtlich der Komposition von Funktionen. \abb{cat_funs} zeigt ein
@@ -1660,14 +1665,14 @@ Funktionen vor:
 \begin{itemize}
 \item $+ : \mathbb{R} \times \mathbb{R} \ato \mathbb{R}$ addiert zwei
   reelle Zahlen.
-\item $\mathrm{abs} : \mathbb{R} \ato \mathbb{Z}$ ist die Betragsfunktion.
+\item $\mathrm{round} : \mathbb{R} \ato \mathbb{Z}$ ist die Betragsfunktion.
 \item $+1 : \mathbb{Z} \ato \mathbb{Z}$ addiert $1$ zu einer ganzen Zahl.
-\item $\mathrm{abs} \circ + : \mathbb{R} \times \mathbb{R} \ato \mathbb{Z}$
+\item $\mathrm{round} \circ + : \mathbb{R} \times \mathbb{R} \ato \mathbb{Z}$
   addiert zwei reelle Zahlen und bildet anschließend den Betrag.
 \end{itemize}
 
-Die Komposition $\mathrm{abs} \circ +$ (gesprochen "`abs \textit{nach}
-+"') lässt sich bilden, weil der Definitionsbereich von $\mathrm{abs}$
+Die Komposition $\mathrm{round} \circ +$ (gesprochen "`round \textit{nach}
++"') lässt sich bilden, weil der Definitionsbereich von $\mathrm{round}$
 mit dem Zielbereich von $+$ übereinstimmt (nämlich $\mathbb{R}$). Es
 lassen sich also zwei im Diagramm aufeinander folgende Pfeile zu einem
 direkten zusammenfassen. Die Kategorientheorie "`vergisst"' nun den
@@ -2452,6 +2457,37 @@ type IOArrow = Kleisli IO
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
+Parser sind für die Umwandlung von Zeichenketten in Objekte
+verantwortlich und werden deshalb für Code-Generatoren benötigt, die
+ihre Eingaben aus Text-Dateien beziehen. In vielen Programmiersprachen
+ist die direkte Implementation von Parsern relativ aufwändig, weshalb
+der entsprechene Code oft häufig selbst aus einer DSL wie JavaCC
+generiert wird, die eine EBNF-ähnliche Notation mit bestimmten
+Abschnitten kombiniert, die Code in der Zielsprache enthalten.
+
+Die Haskell-Bibliothek Parsec\cite{Parsec} hingegen beschreitet einen
+anderen Weg: Hier werden Parser als monadische Funktionen konstruiert,
+so dass diese direkt in Haskell und ohne spezielle Syntax beschrieben
+werden können. Parser-Kombinatoren wie \icode{<|>} oder \icode{many}
+entsprechen den EBNF-Operationen. Darüber hinaus können sogar eigene
+Kombinatoren definiert werden - beispielsweise könnte \icode{sepBy}
+Listen mit Trennzeichen einlesen, wenn ein Parser für die Elemente und
+einer für die Trennzeichen übergeben werden. Aus diesem Grund können
+komplexe Parser in Parsec oft deutlich eleganter konstruiert werden als
+mit anderen Parser-Generatoren - außerdem können hier auch
+kontextsensitive Sprachen wie XML ausnahmslos verarbeitet werden, was
+mit anderen Bibliotheken nicht möglich ist.
+
+Es wäre möglich gewesen, Parser in MagicL mittels Parsec zu
+konstruieren. Dennoch wurde für diese Arbeit entschieden, ein eigenes
+Framework zu entwickeln, welches statt Monaden Arrows benutzt. Dies
+führt zum einen zu einer größeren Allgemeinheit, da neben der freien
+Auswahl des Token-Typs\footnote{Auch Parsec lässt es allerdings zu, dass
+statt Zeichenketten auch Listen beliebiger Token eingelesen werden
+können.} 
+
+\todo{weiter}
+
 Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
 Konstruktion von Parsern. Die obersten Ziele sind Allgemeinheit sowie
 sinnvolle Ausgaben im Fehlerfall. Mit Allgemeinheit sind zwei
@@ -2461,7 +2497,7 @@ verarbeitet werden können und so eine Art alternativer Makroprozessor
 erstellt wird. Zum anderen soll das Interface so allgemein sein, dass
 später beliebige andere Parser-Architekturen integriert werden können.
 
-Haskell besitzt mit Parsec\cite{Parsec} bereits eine sehr
+Haskell besitzt mit Parsec bereits eine sehr
 performante und praktische Parser-Kombinator-Bibliothek, die auf Monaden
 basiert. Diese ist allerdings auf die Verarbeitung von Zeichenketten
 beschränkt, weshalb sie in MagicL keine Verwendung findet.
@@ -2491,51 +2527,6 @@ Arrows. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
 \end{itemize}
 Diese beiden Eigenschaften lassen sich einzeln mittels Funktoren auf
 bestehenden Kategorien ausdrücken.
-
-
-\lsection[parsergen]{Parser-Generatoren}
-
-Parser sind für die Umwandlung von Zeichenketten in typisierte Modelle
-verantwortlich und werden deshalb für Code-Generatoren benötigt, die
-ihre Eingaben aus Text-Dateien beziehen. Parser selbst werden oft nicht
-von Hand in einer allgemeinen Programmiersprache entwickelt, sondern aus
-einer EBNF-ähnlichen Notation generiert. Dafür gibt es eine Reihe von
-Frameworks, von denen eine kleine Auswahl in diesem Abschnitt
-vorgestellt und verglichen wird.
-
-\lsubsection[parsergen:yacc]{Lex / Yacc}
-Verschiedene Schritte - lexikalische Analyse, syntaktische Analyse
-LALR(1)-Parser
-
-\lsubsection[parsergen:javacc]{JavaCC}
- Integriert EBNF mit Java-Code
- LL(k)-Parser
-
-\lsubsection[parsergen:parsec]{Parsec}
- Haskell-Bibliothek
- Keine eigene Syntax, embedded DSL
- Basiert auf Monaden
- Kontextsensitiv und beliebiges Lookahead, beste Performance bei LL(1)
-
-\lsubsection[parsergen:sum]{Zusammenfassung}
-
-\begin{figure}
-  \centering
-  \begin{tabular}{|l|l|l|l|l|} \hline
-\bf Parser-Generator  & \bf Lex / Yacc & \bf JavaCC  & \bf Treetop & \bf Parsec        \\\hline\hline
-\bf Art               & LALR(1)        & LL(k)       & PEG         & monadisch         \\\hline 
-\bf Getrennter Lexer  & ja             &             &             &                   \\\hline  
-\bf Sprachklasse      &                &             &             & kontextsensitiv   \\\hline 
-\bf Lookahead         &                &             &             & beliebig          \\\hline 
-\bf Ausgabeformat     &                & Java-Objekt & Ruby-Objekt & Haskell-Objekt    \\\hline 
-\bf Metasprache       &                &             &             & Haskell           \\\hline 
-\bf Aufwand           & hoch           &             &             &                   \\\hline 
-\bf Performance       &                &             &             &                   \\\hline 
-%bf                   &                &             &             &                   \\\hline     
-  \end{tabular}
-  \caption{Tabellarischer Vergleich von Parser-Generatoren}
-  \label{magicl:fig:parser_comp}
-\end{figure}
 
 \lsection[arrowparser:fail]{Fehlschlagende Arrows}
 
@@ -2686,8 +2677,6 @@ instance (Arrow ar) => ArrowState s (StateFunctor s ar)
 Zustand zurück, während \icode{put} den übergebenen Zustand
 "`abspeichert"' und (bis auf diesen) nichts zurückgibt.
 
-\todo{Prod/Coprod?}
-
 \lsection[arrowparser:parse]{Der Parse-Funktor}
 
 Nun lassen sich obige Kategorie-Erweiterungen zu einer Parser-Kategorie
@@ -2723,7 +2712,7 @@ Funktion \icode{forceParser} an, die einen (Sub-)Parser derart
 modifiziert, dass, falls dieser Scheitert, der Fehler in die "`inneren"'
 und damit nicht-recover-fähigen Fail-Kategorie übernommen wird. Hiervon
 wird beispielsweise bei der Funktion \icode{macro}
-\sees{magicl:sexp} Gebrauch gemacht.
+\sees{sexpproc:sexpparser} Gebrauch gemacht.
 
 Die Haskell-Definition vom \icode{FailFunctor} benutzt als Zustandstyp
 einen Stream (als Liste repräsentiert) vom Token-Typ \icode{t}:
@@ -2832,7 +2821,7 @@ werden kann. Die Rückgabe wird mittels \icode{unMaybeList} vom durch
 \icode{Nothing} eine leere Liste zurückgegeben wird, wenn nichts gelesen
 werden kann.
 
-\lsubsection[arrowparser:lib:example]{Beispiel: Ein \sexp{}-Parser}
+\lsection[arrowparser:sexp]{Ein Parser für \sexps{}}
 
 \sexps{} sind in MagicL wie folgt definiert:
 \begin{code}
@@ -2876,8 +2865,10 @@ ausgegeben, z.B.
 
 \lsection[arrowparser:compinterface]{Generische Compiler-Schnittstelle}
 
+\todo{Compilable heißt nun Compiler?}
+
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
-Interface für die beschreibung von Compilern bestehen. Ziel ist die
+Interface für die Beschreibung von Compilern bestehen. Ziel ist die
 selbstständige Suche nach einem passenden Compiler, wenn nur Ein- und
 Ausgabetyp spezifiziert sind. Compiler sollen unter anderem als pure
 Funktionen oder als Parser spezifiziert werden können.
@@ -2948,7 +2939,10 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 \lsection[arrowparser:sum]{Zusammenfassung}
 
 \lchapter[sexpproc]{Inkrementelle Kompilation von \sexps{}}
+
 \lsection[sexpproc:sexpparser]{Parser auf \sexps}
+
+Unter \sexp{}-Parser würde man normalerweise 
 
 \todo{Begriffsklärung \sexp{}-Parser}
 
@@ -3034,7 +3028,7 @@ werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}
 
-\lsection[sepxproc:sexphs]{Metarekursive Kompilation nach Haskell}
+\lsection[sexpproc:sexphs]{Metarekursive Kompilation nach Haskell}
 
 \todo{überarbeiten}
 
