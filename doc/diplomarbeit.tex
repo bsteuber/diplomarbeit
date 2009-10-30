@@ -2475,58 +2475,47 @@ Listen mit Trennzeichen einlesen, wenn ein Parser für die Elemente und
 einer für die Trennzeichen übergeben werden. Aus diesem Grund können
 komplexe Parser in Parsec oft deutlich eleganter konstruiert werden als
 mit anderen Parser-Generatoren - außerdem können hier auch
-kontextsensitive Sprachen wie XML ausnahmslos verarbeitet werden, was
-mit anderen Bibliotheken nicht möglich ist.
+kontextsensitive Sprachen wie XML ausnahmslos verarbeitet werden (siehe
+\cite[S. 3]{Parsec}), was mit anderen Bibliotheken nicht möglich ist.
 
 Es wäre möglich gewesen, Parser in MagicL mittels Parsec zu
 konstruieren. Dennoch wurde für diese Arbeit entschieden, ein eigenes
-Framework zu entwickeln, welches statt Monaden Arrows benutzt. Dies
-führt zum einen zu einer größeren Allgemeinheit, da neben der freien
-Auswahl des Token-Typs\footnote{Auch Parsec lässt es allerdings zu, dass
-statt Zeichenketten auch Listen beliebiger Token eingelesen werden
-können.} 
-
-\todo{weiter}
-
-Das Herzstück von MagicL ist ein Arrow-basiertes Framework für die
-Konstruktion von Parsern. Die obersten Ziele sind Allgemeinheit sowie
-sinnvolle Ausgaben im Fehlerfall. Mit Allgemeinheit sind zwei
-Anforderungen gemeint: Zum einen sollen beliebige Streams gelesen
-werden können und nicht etwa nur Zeichenketten, damit auch \sexps{}
-verarbeitet werden können und so eine Art alternativer Makroprozessor
-erstellt wird. Zum anderen soll das Interface so allgemein sein, dass
-später beliebige andere Parser-Architekturen integriert werden können.
-
-Haskell besitzt mit Parsec bereits eine sehr
-performante und praktische Parser-Kombinator-Bibliothek, die auf Monaden
-basiert. Diese ist allerdings auf die Verarbeitung von Zeichenketten
-beschränkt, weshalb sie in MagicL keine Verwendung findet.
+Framework, allgemeineres Framework für die Parser-Konstruktion zu
+entwickeln. Dadurch wird neben der freien Auswahl des
+Token-Typs\footnote{Auch Parsec lässt es allerdings zu, dass statt
+  Zeichenketten auch Listen beliebiger Token eingelesen werden können.}
+auch eine freie Auswahl der Katogie ermöglicht, in der Parser ausgeführt
+werden.  Beispielsweise kann \icode{IOArrow} benutzt werden, um
+Debug-Ausgaben oder andere Nebeneffekte in Parser einzubauen. Dies ist
+in Parsec nicht möglich.
 
 MagicL benutzt Arrows und Funktoren, um möglichst allgemein zu
 sein. Alles, was im Rahmen dieser Arbeit implementiert wurde, hätte zwar
-auch über Monaden und Monaden-Transformatoren konstruiert werden
-können. Dennoch besteht die Möglichkeit, dass später Ergänzungen
+auch wie in Parsec über Monaden und Monaden-Transformatoren konstruiert
+werden können. Dennoch besteht die Möglichkeit, dass später Ergänzungen
 vorgenommen werden sollen, die sich nicht mittels Monaden ausdrücken
 lassen - beispielsweise ein effizienterer Parsing-Algorithmus, der
 sowohl statische als auch dynamische Komponenten enthält, wie ihn
-Swierstra und Duponcheel entworfen haben (siehe \cite[S. 8ff]{Hughes}).
+Swierstra und Duponcheel entworfen haben (siehe
+\cite[S. 8ff]{Hughes}). Zudem sind Arrows als programmiersprachliche
+Umsetzung von Morphismen anschaulicher als Monaden und besitzen eine
+praktische graphische Repräsentation.
 
-Wenn, wie in Parsec möglich (siehe \cite[S. 3]{Parsec}),
-kontextsensitive Parser - beispielsweise für die Zuordnung von
-schließenden Tags in XML-Dokumenten - konstruiert werden sollen,
-müssen die zugrundeliegenden Arrows allerdings äquivalent zu Monaden
-sein und \icode{ArrowApply} implementieren
+Wenn allerdings kontextsensitive Parser wie in Parsec konstruiert werden
+sollen, müssen die zugrundeliegenden Arrows äquivalent zu Monaden sein,
+also die Typklasse \icode{ArrowApply} implementieren.
 
-Dieser Abschnitt entwickelt nun schrittweise einen Parser-Datentyp aus
-Arrows. Parser zeichnen sich hauptsächlich durch zwei Eigenschaften aus:
+Dieses Kapitel entwickelt nun schrittweise einen Parser-Datentyp durch
+die Kombination einfacher Funktoren. Parser zeichnen sich hauptsächlich
+durch zwei Eigenschaften aus:
 \begin{itemize}
 \item Sie können fehlschlagen sowie Alternativmöglichkeiten im Falle des
   Scheiterns besitzen.
 \item Sie bearbeiten einen Zustand, der die Position im Eingabestream
   beschreibt.
 \end{itemize}
-Diese beiden Eigenschaften lassen sich einzeln mittels Funktoren auf
-bestehenden Kategorien ausdrücken.
+Diese beiden Eigenschaften werden von den Datentypen \icode{FailFunctor}
+und \icode{StateFunctor} umgesetzt.
 
 \lsection[arrowparser:fail]{Fehlschlagende Arrows}
 
@@ -2938,7 +2927,7 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 
 \lsection[arrowparser:sum]{Zusammenfassung}
 
-\lchapter[sexpproc]{Inkrementelle Kompilation von \sexps{}}
+\lchapter[sexpproc]{Kompilieren von \sexps{}}
 
 \lsection[sexpproc:sexpparser]{Parser auf \sexps}
 
