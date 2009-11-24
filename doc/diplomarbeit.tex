@@ -222,12 +222,12 @@
 \pagenumbering{arabic}
 
 Modellgetriebene Softwareentwicklung ist in aller Munde: UML
-feiert bald sein 15-Jähriges bestehen \footnote{Der
+feiert bald sein 15-jähriges Bestehen \footnote{Der
   Standarisierungsprozess von UML begann 1994, als Gary Booch und Jim
   Rumbaugh mit der Vereinheitlichung ihrer Modellierungstechniken
   begannen. \cite{TODO}}, IBM vermarktet seit Jahren das Produkt
 \textit{Rational Application Developer} (\cite{TODO}), das, wie auch das freie
-\textit{Eclipse Modelling Framework} oder auch \textit{Enterprise
+\textit{Eclipse Modelling Framework} sowie \textit{Enterprise
   Architect}, Eclipse um modellbasierte \cgen{}
 bereichert. Seit neuestem zeigt auch Microsoft Interesse und
 verspricht mit \textit{Oslo} \cite{TODO} einen ``Mainstream"=Ansatz
@@ -243,20 +243,20 @@ Abstraktionsgrad, so dass Modellarchitekten mit Domain Specific
 Languages (DSLs) arbeiten können und so die Ziel-Programmiersprache
 nicht kennen müssen. Auch ist es möglich, durch Austauschen des
 Generator-Backends die Zielsprache zu wechseln, ohne Modelle anpassen zu
-müssen. Alternativ sind durch \cgen{} auch integrierte DSLs oder
+müssen. Alternativ sind durch \cgen{} integrierte DSLs oder
 Spracherweiterungen möglich, die dann beliebig mit der Backendsprache
 vermischt werden können - die Möglichkeit, eine Programmiersprache zu
 modifizieren, liegt somit nicht mehr ausschließlich beim
 Hersteller. \cgen{} erhöht die Produktivität, da sich Algorithmen in
 einer speziell auf die Problemdomäne zugeschnittenen Sprache mit weniger
-Aufwand formulieren lassen. Sie kann auch die Qualität erhöhen, da ein
+Aufwand formulieren lassen. Sie kann ebenfalls die Qualität verbessern, da ein
 korrekter Generator auch aus neuen Modellen - sofern diese verifiziert
-sind - immer fehlerfreien Code erzeugt. Auch weist generierter Code eine
+sind - immer fehlerfreien Code erzeugt. Daneben weist generierter Code eine
 höhere Konsistenz auf, da generierte Strukturen, Funktionsnamen
 etc. immer einheitlich sind. Dies erleichtert die Benutzung von
 generierten Schnittstellen enorm.
 
-Mit \cgen{} sind allerdings auch Nachteile verbunden: Die Kompexität des
+Mit \cgen{} sind allerdings auch Nachteile verbunden: Die Komplexität des
 Software-Systems wird durch die zusätzliche Ebene erhöht und es
 entstehen neue mögliche Fehlerquellen. Auch die Suche nach Fehlern in
 den Modellen kann erschwert werden, wenn die Probleme sich erst im
@@ -271,7 +271,7 @@ der Leichtigkeit, mit der die Sprache erweitert werden kann, durchaus
 vor, dass jeder Programmierer in seiner eigenen Sprache programmiert, so
 dass die Wartung von fremden Code sehr aufwändig wird. Um dies zu
 vermeiden, ist der rege Austausch von Sprachen und Spracherweiterungen
-wichtig, so dass die Community schnell zu gemeinsamen Standards kommt
+wichtig, damit die Community schnell zu gemeinsamen Standards kommt
 und nicht jeder Programmierer "`das Rad neu erfindet"'.
 
 Trotz dieser möglichen Probleme überwiegen in vielen Fällen die
@@ -282,7 +282,7 @@ einheitlicher gestaltet werden kann als bisher.
 
 \lsection[intro:motiv]{Motivation}
 
-Die Entwiklung eines Code-Generators ist gewöhnlich mit großem Aufwand
+Die Entwicklung eines Code-Generators ist gewöhnlich mit großem Aufwand
 verbunden. So muss zunächst eine Eingabesprache festgelegt werden, für
 die dann eine typisiertes Modellrepräsentation sowie ein Parser zur
 Überführung in diese benötigt werden. Für den Parser wird eine eigene
@@ -303,10 +303,10 @@ einen strukturellen Ansatz der \cgen{}, der den mit Spracherweiterungen
 verbundenen Aufwand minimiert und Lisp Bezeichnungen wie "`The
 programmable programming language"'\cite{federano} beschert hat. Hier
 werden Ein- und Ausgabecode ausschließlich durch \sexps{}
-\sees{model:sexp} in einer Baumstruktur repräsentiert, so dass
-Zeichenketten weder eingelesen noch erzeugt werden müssen, wodurch ein
-großer Teil des Generators bereits wegfällt - denn das Verarbeiten und
-Erzeugen von Bäumen ist simpler und weniger fehlerbehaftet. \sexps{}
+\sees{model:sexp} in einer untypisierten Baumstruktur repräsentiert, so
+dass Zeichenketten weder eingelesen noch erzeugt werden müssen, wodurch
+ein großer Teil des Generators bereits wegfällt - denn das Verarbeiten
+und Erzeugen von Bäumen ist simpler und weniger fehlerbehaftet. \sexps{}
 fungieren auch direkt als Modelle, so dass weitere Datenstrukturen für
 die Verarbeitung nur noch selten benötigt werden. Lisp-Makros
 \sees{template:lisp} stellen kleine Compiler-Plugins dar, die jeweils
@@ -328,7 +328,7 @@ heutzutage nur noch von einer kleinen Community benutzt, was teils an
 veraltetem Sprachdesign, hauptsächlich aber an der geringen Anzahl
 verfügbarer Bibliotheken im Vergleich zu Mainstream-Sprachen
 liegt. Während viele andere Lisp-Konzepte wie Garbage Collection oder
-Konstrukte wie der REPL, einer Lisp-Kommandozeile zum interaktiven
+Konstrukte wie der REPL, eine Lisp-Kommandozeile zum interaktiven
 Programmieren und Testen, bereits von modernen Sprachen nachgeahmt
 wurden, ist der Ansatz einer \sexp-basierten \cgen mittels
 Makros\footnote{Der C-Preprozessor bietet ebenfalls Makros an
@@ -405,8 +405,9 @@ Anwendungsbeispiel dient das Einlesen von \sexps{} aus einer
 Stringrepräsentation. Anschließend wird eine allgemeine, ebenfalls
 Arrow-basierte Compiler-Schnittstelle entwickelt, mit der verschiedene
 Parser sowie funktionale und imperative Compiler angesprochen werden
-können. Damit wird es sogar möglich, Haskell mittels Typinferenz selbst
-den passenden Compiler für eine Aufgabe auswählen zu lassen.
+können. Damit wird es sogar möglich, Haskell mittels Typinferenz
+selbstständig den passenden Compiler für eine Aufgabe auswählen zu
+lassen.
 
 Die hier entwickelten Parser können nicht nur auf Zeichenketten, sondern
 auf beliebigen Listen arbeiten. \cref{sexpproc} zeigt, wie damit die
@@ -443,9 +444,11 @@ werden könnten.
 
 Es gibt im Wesentlichen drei Arten, ein Modell zu repräsentieren: Als
 rohe Zeichenkette, als typisiertes Objekt oder durch eine ungetypte
-Baumrepräsentation wie \sexps{}, XML oder JSON. In diesem Kapitel
-werden diese drei Ansätze sowie die graphische Repräsentationssprache
-UML vorgestellt und anhand vorher zu bestimmenden Kriterien bewertet.
+Baumrepräsentation. Beispiele für letztere sind unter anderem \sexps{}, XML
+sowie JSON. Dieses Kapitel erarbeitet zunächst Vergleichskriterien für
+Repräsentationsformen. Anschließend werden alle diese Ansätze sowie die
+graphische Repräsentationssprache UML vorgestellt und anhand der
+Kriterien bewertet.
 
 \lsection[model:crit]{Vergleichskriterien}
 
@@ -459,8 +462,8 @@ Repräsentationen wie beispielsweise Bitstreams, die viel Flexibilität,
 aber keinerlei Typsicherheit oder strukturellen Datenzugriff mit sich
 bringen. Auf der anderen Seite stehen statisch getypte Objekte, die
 komfortablen Zugriff und Typsicherheit garantieren, im Gegenzug aber
-sehr unflexibel sind. Dazwischen stehen unverselle Notationen wie XML,
-die eine Struktur, aber keine Typisierung, besitzen.
+sehr unflexibel sind. Dazwischen stehen universelle Notationen wie XML,
+die eine Struktur, aber keine Typisierung besitzen.
 
 \lsubsection[model:crit:univ]{Universalität} Manche
 Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
@@ -473,9 +476,9 @@ allerdings mit einem kleinen Mehraufwand verbunden ist.
 \lsubsection[model:crit:graphic]{Graphische Darstellung}
 
 Die Möglichkeit, ein Modell zu visualisieren oder gar mit einem GUI zu
-bearbeten, ist sehr praktisch für Dokumentation, Übersichtlichkeit sowie
-Zusammenarbeit mit Domänenexperten, die das verwendete System nicht
-genau verstehen müssen.
+bearbeiten, ist sehr praktisch für Dokumentation, Übersichtlichkeit
+sowie Zusammenarbeit mit Domänenexperten, die das verwendete System
+nicht genau verstehen müssen.
 
 \lsubsection[model:crit:compose]{Komposition}
 
@@ -496,7 +499,7 @@ simulieren.
 \lsubsection[model:crit:list]{Repräsentation von Listen}
 
 Aufzählungen kommen in Modellen ebenfalls häufig vor, weshalb diese
-dargestelt werden können sollten. Auch hier gibt es Repräsentation wie
+dargestellt werden können sollten. Auch hier gibt es Repräsentation wie
 JSON, die Listen direkt unterstützen, und solche, die sie durch
 Unterknoten repräsentieren.
 
@@ -522,24 +525,22 @@ einer Programmiersprache"' gemeint, so dass auch nicht objektorientierte
 Sprachen einbezogen werden. Objekte bieten den höchsten Typisierungsgrad
 und die damit verbundene Sicherheit\footnote{Eine weitere Steigerung der
   Sicherheit wäre über Typen hinausgehende Validierung von
-  Modellen.}. Es wird zwischen Objekten in statisch und dynamisch
+  Modellen.}. Es muss zwischen Objekten in statisch und dynamisch
 getypten Sprachen unterschieden werden, denn in dynamischen Typsystemen
 werden Typfehler erst beim Zugriff, bei \cgen{} also vermutlich erst im
 Übersetzungsvorgang erkannt. In den meisten Sprachen gibt es Attribute
-für Objekten sowie einen Listen- oder Arraydatentyp. Unbenannte
+für Objekte sowie einen Listen- oder Arraydatentyp. Unbenannte
 Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
 Haskell-Datentypen \sees{haskell}. Eine Visualisierung von
 Objekten kann als Baum mit benannnten Kanten erfolgen.
 
 \lsection[model:sexp]{\sexps}
 
-\todo{sexps in lisp enthalten zahlen, strings und symbole - kontextfrei (XML)}
-
 \sexps{} bilden die grundlegende Syntax aller Lisp-Dialekte. Die
 Definition ist sehr einfach: Ein \sexp{} ist entweder ein Symbol oder
 eine Liste von \sexps{}. Symbole sind Zeichenketten\footnote{Die meisten
   Lisp-Dialekte unterscheiden nicht zwischen Groß- und Kleinbuchstaben
-  in Symbolen - das im Rahmen dieser Arbeit entwickelte Frameworks
+  in Symbolen - das im Rahmen dieser Arbeit entwickelte Framework
   hingegen schon.}, die keine Leerzeichen oder andere vom Lisp
 verwendeten Sonderzeichen enthalten. Listen werden in runde Klammern
 gesetzt - mit Leerzeichen als Trennsymbol. Beispiele für \sexps{} sind:
@@ -549,20 +550,19 @@ gesetzt - mit Leerzeichen als Trennsymbol. Beispiele für \sexps{} sind:
 \item \icode{(user (name Harald) (email Harry@baz.com))}
 \end{itemize}
 
-\sexps{} sind zwar formal als Listen definiert, können aber auch als
-Bäume mit benannten Knoten aufgefasst werden - hierfür wird das erste
-Element einer Liste - typischerweise ein Symbol - als Name, sowie alle
-weiteren als Unterknoten interpretiert. Zwischen \icode{(foo)} und
-\icode{foo} wird weiterhin unterschieden. Das letzte Beispiel entspricht
-damit dem Baum aus \abb{TODO}. In dieser Arbeit werden \sexps{}
-ausschließlich als derartige Bäume verwendet, um ein möglichst klares
-und eindeutiges Modell zu haben. Hierdurch werden allerdings Ausdrücke
-wie \icode{()} oder \icode{((lambda (x) (+ x 1)) 41)} illegal, welche
-beispielsweise in Scheme\cite{TODO} durchaus möglich sind. Dieses
-Problem ließe sich durch Einfügen eines Knotennamens beheben. Ähnliches
-gilt für Ausdrücke, die zwar noch legal sind, aber die Semantik des
-Knotennamens verzerren, wie \icode{(interval (1 10))} - statt dessen
-sollte lieber \icode{(interval 1 10)} verwendet werden.
+\sexps{} sind zwar formal als Listen definiert, werden aber meist als
+Bäume mit benannten Knoten interpretiert - hierfür wird das erste
+Element einer Liste - typischerweise ein Symbol - als Name sowie alle
+weiteren als Unterknoten aufgefasst. Zwischen \icode{(foo)} und
+\icode{foo} wird dabei weiterhin unterschieden. Das letzte Beispiel
+entspricht damit dem Baum aus \abb{TODO}. Nicht alle gängigen
+Verwendungen von \sexps{} fügen sich jedoch in dieses Baumschema
+ein. Beispielsweise enthält Common Lisp oft Konstrukte in der Art von
+\icode{(interval (1 10))}, wo in \icode{(1 10)} die 1 keinen Namen,
+sondern einen Wert darstellt. Konsistenter wäre hier \icode{(interval 1
+  10)}. Darüber hinaus kommen oft der ``leere \sexp{}'' \icode{()} sowie
+nicht-symbolische Knotennamen wie in \icode{((lambda x (+ x 1)) 41)}
+vor, wo eine anonyme Funktion direkt auf einen Wert angewendet wird.
 
 Über die bloße \sexp{}-Syntax hinaus besitzen Lisp-Dialekte oft noch
 Syntax für Kommentare, Strings, Symbolnamen mit Leerzeichen
@@ -575,8 +575,8 @@ Attribute und Listen\footnote{Hier wird die oben erläuterte
   Interpretation als Baum vorausgesetzt - ansonsten wären Listen
   explizit verfügbar.} sind in der Grundstruktur zunächst nicht
 vorgesehen, können aber über Unterknoten simuliert
-werden. Beispielsweise könnte ein Auto mit dem Attributen \icode{color :
-  red} und \icode{specials : [ac, navigation]} wie folgt dargestellt
+werden. Beispielsweise könnte ein rotes Auto mit den Extras Klimaanlage
+und Navigationssystem wie folgt dargestellt
 werden:
 \begin{code}
 (car
@@ -616,14 +616,14 @@ zeigt, dass die XML-Syntax im Vergleich zu \sexps{} eine erhöhte
 Redundanz aufweist. Die erzwungene Wiederholung des Knotennamens in
 schließenden Tags soll die Robustheit im Falle vergessener Tags erhöhen,
 hat aber neben dem erhöhten Schreibaufwand den Nachteil, dass XML damit
-eine kontextsensitive Sprache und folglich aufwändiger zu parsen
-wird. XML-Parser, die kontextfreie Parser-Generatoren benutzen, müssen
-deshalb anschließend in einem zusätzlichen Durchlauf die korrekte
-Zuordnung der Schließ-Tags überprüfen. Die Schreibarbeit lässt sich zwar
-durch die Verwendung eines speziellen XML-Editors wieder verringern,
-allerdings könnte ein solcher auch die Zuordnung von Unterknoten -
-beispielsweise durch Einrückung - verdeutlichen, was die Redundanz
-wieder unnötig erscheinen lässt.
+im Gegensatz zu \sexps{} eine kontextsensitive Sprache und folglich
+aufwändiger zu parsen wird. XML-Parser, die kontextfreie
+Parser-Generatoren benutzen, müssen deshalb anschließend in einem
+zusätzlichen Durchlauf die korrekte Zuordnung der Schließ-Tags
+überprüfen. Die Schreibarbeit lässt sich zwar durch die Verwendung eines
+speziellen XML-Editors wieder verringern, allerdings könnte ein solcher
+auch die Zuordnung von Unterknoten - beispielsweise durch Einrückung -
+verdeutlichen, was die Redundanz wieder unnötig erscheinen lässt.
 
 Ein anderer Grund weshalb das Beispiel umständlich wirkt ist, dass
 XML-Knoten als Unterknoten zwar beliebig viele XML-Knoten, aber - im
@@ -674,7 +674,7 @@ besser, von Anfang an auf Attribute zu verzichten.
 
 Eine ähnliche Diskussion lässt sich über Namespaces führen. Auch wenn
 deren Nützlichkeit unbestritten ist, ist es fraglich, ob sie unbedingt
-Teil des Grund-XML sein müssen. Moderner wäre wohl ein Entwurf mit
+Teil des Grund-XML sein müssen. Moderner wäre ein Entwurf mit
 minimaler Basissprache, in der Doppelpunkte in Knotennamen zugelassen
 sind, sowie einem Plugin-System, welches unter anderem einen
 Namespace-Preprocessor bereitstellt, der die Doppelpunkte korrekt
@@ -713,12 +713,12 @@ hingegen ein Wert steht.
 
 UML ist eine graphische Modellierungssprache, die speziell für die
 Spezifikation von Softwaresystemen entworfen wurde und insbesondere den
-Objektorientierten, imperativen Entwurf unterstützt. Viele Tools können
+objektorientierten, imperativen Entwurf unterstützt. Viele Tools können
 aus UML beispielsweise Java-Quellcode generieren. Es gibt in UML eine
 Reihe verschiedener Diagrammarten, die verschiedene Knoten- und
 Kantentypen in einem Graphen erlauben. Teilweise können auch Unterknoten
 in einen Knoten eingebettet werden. Abgespeichert werden UML-Diagramme
-meist in einem XML-Format.
+meist in einem XML-Format, da UML keine eigene Serialisierung definiert.
 
 Nach graphischen Elementen ist bereits eine Teilmenge der
 UML-Klassen\-diagramme äquivalent zu XML etc., da diese bereits
@@ -732,6 +732,10 @@ größeren Aufwand verbunden. \abb{car_uml} zeigt das Auto-Beispiel als
 Objektdiagramm.
 
 \fig{car_uml}{Auto-Beispiel als UML-Objektdiagramm}
+
+Obwohl UML also als universelle Modellierungssprache betitelt ist und
+dies theoretisch auch ist, handelt es sich aus praktischer Sicht doch
+eher um eine DSL für objektorientierte Software-Architekturen.
 
 \lsection[model:sum]{Zusammenfassung}
 
@@ -777,7 +781,7 @@ können mit Bäumen ebenfalls gut durchgeführt werden.
 \end{sidewaysfigure}
 
 \abb{model_sum} zeigt eine tabellarische Zusammenfassung des in diesem
-Abschnitt erfolgten Vergleichs von Stings, Objekten, den
+Abschnitt erfolgten Vergleichs von Strings, Objekten, den
 Baumrepräsentationssprachen \sexps{}, XML und JSON sowie der graphischen
 Modellierungssprache UML. Den \sexps{} fällt unter den
 Baumrepräsentationen eine besondere Rolle zu, da diese im Gegensatz zu
