@@ -47,19 +47,25 @@ typeCases = [ ( "Int"
               , "(a, b, (a -> b))" )
             ]
 
-typeDefCases = [ ( "(type x Int)"
+hasTypeCases = [ ( "(hasType x Int)"
               , "x :: Int" )
-            , ( "(type myMap (Fun (Fun a b) (List a) (List b)))" 
+            , ( "(hasType myMap (Fun (Fun a b) (List a) (List b)))" 
               , "myMap :: ((a -> b) -> [a] -> [b])" )
-            , ( "(type x Sexp)" 
+            , ( "(hasType x Sexp)" 
               , "x :: Sexp" )
-            , ( "(type x (Failing Int))" 
+            , ( "(hasType x (Failing Int))" 
               , "x :: (Failing Int)" )
-            , ( "(type (f x y) Unit)" 
+            , ( "(hasType (f x y) Unit)" 
               , "(f x y) :: ()" )
-            , ( "(type (f x y) (dep (Show a) (Eq a)) (List a))" 
+            , ( "(hasType (f x y) (dep (Show a) (Eq a)) (List a))" 
               , "(f x y) :: ((Show a), (Eq a)) => [a]" )
             ]
+
+typeAliasCases = [ ( "(type Blub String)"
+                   , "type Blub = String" )
+                 , ( "(type (Cool a b) (List (Tuple a b)))"
+                   , "type (Cool a b) = [(a, b)]" )
+                 ]
 
 dataCases = [ ( "(data Blub (Blub String))"
               , "data Blub =\n  Blub String" )
@@ -67,9 +73,9 @@ dataCases = [ ( "(data Blub (Blub String))"
               , "data (StrangeEither a b) =\n  Left a |\n  Right b |\n  Nada" )
             ]
 
-classCases = [ ( "(class (X a) (where (type bla Unit)))"
+classCases = [ ( "(class (X a) (where (hasType bla Unit)))"
                , "class (X a)\n  where\n    bla :: ()" )
-             , ( "(class (dep (Show a) (Eq b)) (MyClass a b) (where (type f (Fun a b)) (type g (Fun b a))))"
+             , ( "(class (dep (Show a) (Eq b)) (MyClass a b) (where (hasType f (Fun a b)) (hasType g (Fun b a))))"
                , "class ((Show a), (Eq b)) => (MyClass a b)\n  where\n    f :: (a -> b)\n    g :: (b -> a)" )
              ]
 
@@ -130,15 +136,16 @@ doCases = [ ( "(do 42)"
             , "(do\n  x <- 42\n  y <- (a + b)\n  (return x))" )
           ]
 
-main = do testMacro "import"   (comp :: SexpParser Import)     importCases
-          testMacro "module"   (comp :: SexpParser Module)     moduleCases
-          testMacro "type"     (comp :: SexpParser Type)         typeCases
-          testMacro "typedef"  (comp :: SexpParser Toplevel)  typeDefCases
-          testMacro "data"     (comp :: SexpParser Toplevel)     dataCases
-          testMacro "class"    (comp :: SexpParser Toplevel)    classCases
-          testMacro "instance" (comp :: SexpParser Toplevel) instanceCases
-          testMacro "def"      (comp :: SexpParser Toplevel)      defCases
-          testMacro "expr"     (comp :: SexpParser Expr)         exprCases
-          testMacro "lambda"   (comp :: SexpParser Expr)       lambdaCases
-          testMacro "do"       (comp :: SexpParser Expr)           doCases
+main = do testMacro "import"    (comp :: SexpParser Import)      importCases
+          testMacro "module"    (comp :: SexpParser Module)      moduleCases
+          testMacro "types"     (comp :: SexpParser Type)          typeCases
+          testMacro "hasType"   (comp :: SexpParser Toplevel)   hasTypeCases
+          testMacro "typeAlias" (comp :: SexpParser Toplevel) typeAliasCases
+          testMacro "data"      (comp :: SexpParser Toplevel)      dataCases
+          testMacro "class"     (comp :: SexpParser Toplevel)     classCases
+          testMacro "instance"  (comp :: SexpParser Toplevel)  instanceCases
+          testMacro "def"       (comp :: SexpParser Toplevel)       defCases
+          testMacro "expr"      (comp :: SexpParser Expr)          exprCases
+          testMacro "lambda"    (comp :: SexpParser Expr)        lambdaCases
+          testMacro "do"        (comp :: SexpParser Expr)            doCases
 

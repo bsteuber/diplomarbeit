@@ -28,19 +28,20 @@ instance Compilable (SexpParser Import) [Sexp] Import where
              compNode (liftA2 Import comp compArgs)
         where compArgs =
                   ((empty >>> constArrow Simple)               <+> 
-                   (macro "qualified" comp >>> arr Qualified) <+>
-                   (macro "only" (many comp) >>> arr Only)           <+>
+                   (macro "qualified" comp >>> arr Qualified)  <+>
+                   (macro "only" (many comp) >>> arr Only)     <+>
                    (macro "hiding" (many comp) >>> arr Hiding))
 
 instance Compilable (SexpParser Toplevel) [Sexp] Toplevel where
-    comp = (comp >>^ TopTypeDef) <+> 
-           (comp >>^ TopDef)     <+> 
-           (comp >>^ TopData)    <+> 
-           (comp >>^ TopClass)   <+> 
+    comp = (comp >>^ TopHasType)   <+> 
+           (comp >>^ TopDef)       <+> 
+           (comp >>^ TopTypeAlias) <+>
+           (comp >>^ TopData)      <+> 
+           (comp >>^ TopClass)     <+> 
            (comp >>^ TopInstance)
 
-instance Compilable (SexpParser TypeDef) [Sexp] TypeDef where
-    comp = macro "type" (liftA3 TypeDef comp comp comp)
+instance Compilable (SexpParser HasType) [Sexp] HasType where
+    comp = macro "hasType" (liftA3 HasType comp comp comp)
 
 instance Compilable (SexpParser Type) [Sexp] Type where
     comp = ((symbolMacro "Unit" >>> constArrow (TupleType [])) <+> 
@@ -89,6 +90,9 @@ instance Compilable (SexpParser Call) [Sexp] Call where
                     (comp >>> failUnless isOp)
                     comp)                              <+>
          compNode (liftA1 FunCall comp))
+
+instance Compilable (SexpParser TypeAlias) [Sexp] TypeAlias where
+    comp = macro "type" (liftA2 TypeAlias comp comp)
 
 instance Compilable (SexpParser Data) [Sexp] Data where
     comp = macro "data" (liftA2 Data comp comp)

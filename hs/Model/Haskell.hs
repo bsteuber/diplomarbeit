@@ -1,29 +1,27 @@
 module Haskell where
 
-type ModuleName = String
-type FunctionName = String
-type ModuleAbbrev = String
-
 data Haskell = Haskell (Maybe Module) [Toplevel]
 
 data Module = Module ModuleName (Maybe Export) [Import]
-
+type ModuleName = String
 data Export = Export [String]
-
+data Import = Import ModuleName ImportArgs
 data ImportArgs = Simple
                 | Qualified ModuleAbbrev
                 | Only [FunctionName]
                 | Hiding [FunctionName]
+type ModuleAbbrev = String
+type FunctionName = String
 
-data Import = Import ModuleName ImportArgs
 
-data Toplevel = TopTypeDef TypeDef
+data Toplevel = TopHasType HasType
               | TopDef Def
+              | TopTypeAlias TypeAlias 
               | TopData Data
               | TopClass Class
               | TopInstance Instance
 
-data TypeDef = TypeDef Expr (Maybe TypeDependancy) Type
+data HasType = HasType Expr (Maybe TypeDependancy) Type
 
 data Type = NormalType String
           | ListType Type
@@ -35,7 +33,7 @@ data Def = Def Pattern Expr (Maybe Where)
 
 data Expr = LambdaExpr  [Pattern] Expr
           | DoExpr      [DoCmd]
-          | TypeExpr    TypeDef
+          | TypeExpr    HasType
           | PatternExpr Pattern
 
 data DoCmd = DoAssign Pattern Expr
@@ -52,6 +50,8 @@ data Call = ConstCall String
           | ConstOpCall String
           | FunCall [Expr]
           | OpFoldCall String [Expr]
+
+data TypeAlias = TypeAlias Type Type
 
 data Data = Data Type [Constructor]
 

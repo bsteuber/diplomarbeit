@@ -31,14 +31,14 @@ instance Compilable (Import -> Code) Import Code where
                              Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
 
 instance Compilable (Toplevel -> Code) Toplevel Code where
-    comp (TopTypeDef td) = comp td
+    comp (TopHasType td) = comp td
     comp (TopDef d)      = comp d
     comp (TopData d)     = comp d
     comp (TopClass c)    = comp c
     comp (TopInstance i) = comp i
 
-instance Compilable (TypeDef -> Code) TypeDef Code where
-    comp (TypeDef expr mayDep typ) = binOp "::" (comp expr) (append (layoutMaybe comp mayDep) (comp typ))
+instance Compilable (HasType -> Code) HasType Code where
+    comp (HasType expr mayDep typ) = binOp "::" (comp expr) (append (layoutMaybe comp mayDep) (comp typ))
 
 instance Compilable (Type -> Code) Type Code where
     comp (NormalType str)   = text str
@@ -88,6 +88,10 @@ instance Compilable (Call -> Code) Call Code where
     comp (ConstOpCall str)      = parens $ text str
     comp (FunCall exprs)        = words (map comp exprs)
     comp (OpFoldCall str exprs) = foldOp str (map comp exprs)
+
+instance Compilable (TypeAlias -> Code) TypeAlias Code where
+    comp (TypeAlias new old) =
+        words [text "type", comp new, text "=", comp old] 
 
 instance Compilable (Data -> Code) Data Code where
     comp (Data typ constrs) =

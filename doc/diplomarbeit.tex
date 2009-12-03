@@ -2858,8 +2858,6 @@ ausgegeben, z.B.
 
 \lsection[arrowparser:compinterface]{Generische Compiler-Schnittstelle}
 
-\todo{Compilable heißt nun Compiler?}
-
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
 Interface für die Beschreibung von Compilern bestehen. Ziel ist die
 selbstständige Suche nach einem passenden Compiler, wenn nur Ein- und
@@ -2927,7 +2925,9 @@ instance (Compilable x a b) => Compiler a b where
 \end{code}
 Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 \icode{compile}-Aufruf, wie etwa \icode{compile :: IOArrow String
-  [Sexp]}, gefunden
+  [Sexp]}, gefunden werden.
+
+\todo{mehr Beispiele, Diskussion (umständlich)}
 
 \lsection[arrowparser:sum]{Zusammenfassung}
 
@@ -3021,17 +3021,44 @@ werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}
 
-\lsection[sexpproc:sexphs]{Metarekursive Kompilation nach Haskell}
+\lsection[sexpproc:sexphs]{Erzeugung von Haskell-Code}
 
-\todo{überarbeiten}
+Die Implementation einiger Komponenten von MagicL erfordert selbst
+\cgen{} - beispielsweise muss eine etwaige DSL für Template-basierte
+\sexp{}-Erzeugung nach Haskell kompiliert werden. Da diese Generierung
+ebenfalls auf \sexp{}-Basis erfolgen soll, wird in diesem Abschnitt ein
+Compiler vorgestellt, welcher eine in \sexps{} definierte, einer
+Haskell-Teilmenge entsprechende Sprache in legalen Haskell-Quellcode
+übersetzt. Der Compiler dient gleichzeitig als Anschauungsbeispiel für
+die Benutzung eines typisierten Zwischenmodells in MagicL - alternativ
+hätte dieser auch untypisiert von \sexps{} nach \sexps{} mit den in
+\sref{sexpproc:gen} beschriebenen Hilfsmitteln erstellt werden können,
+was eine kürzere, aber fehleranfälligere Implementation mit sich geführt
+hätte.
 
-Wie auch \sexy{} besitzt auch MagicL eine \sexp{}-basierte und damit für
-\cgen{} geeignete Version seiner Implementationssprache, hier
-also Haskell. Diese ist zwar nicht vollständig, enthält aber die
-wichtigsten Konstrukte, um sinnvoll Programmieren zu können.
+\lsubsection[sexpproc:sexphs:model]{Typisiertes Haskell-Modell}
+
+Als erster Schritt wird das Haskell-Modell entwickelt.  Eine
+Haskell-Codedatei enthält eine optionale Modulbeschreibung sowie eine
+Liste von Toplevel-Definitionen:
+\begin{code}
+data Haskell = Haskell (Maybe Module) [Toplevel]  
+\end{code}
+Die Definition von \icode{Module} wird der Übersichtlichkeit halber
+ausgelassen. Toplevel-Forms können Typ- oder Funktionsdeklaration oder
+die Definition neuer Typaliase, Datentypen, Klassen oder Instanzen sein:
+\begin{code}
+data Toplevel = TopTypeDef TypeDef
+              | TopDef Def
+              | TopTypeAlias TypeAlias
+              | TopData Data
+              | TopClass Class
+              | TopInstance Instance
+\end{code}
+
+
 
 \begin{itemize}
-\item Typisiertes \icode{Haskell}-Modell vs. direkt Sexp -> Code
 \item Funktionsaufrufe simpel
 \item Operatoren
 \item Typen
