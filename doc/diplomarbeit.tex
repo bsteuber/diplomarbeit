@@ -642,7 +642,7 @@ aber weniger ausdrucksmächtig als Unterknoten, da sie nur Strings,
 nicht aber Werte mit innerer Struktur\footnote{Es ist zwar möglich,
   über einen Attribut-String im XML-Format innere Struktur in
   Attribute einzubauen - dieser würde dann aber nicht automatisch
-  geparst werden, so dass von diesem Trick eher abzuraten ist.}
+  geparst werde, so dass von diesem Trick eher abzuraten ist.}
 benutzen können. Es kommt deshalb durchaus vor, dass eine Eigenschaft
 zunächst als Attribut realisiert wird, dann aber später bei wachsender
 Komplexität und Modellierungsgenauigkeit durch einen Unterknoten
@@ -2908,14 +2908,34 @@ spezifikation eines simplen funktionalen Compilers würde so aussehen:
 instance Compilable (A -> B) A B where
   comp x = ...
 \end{code}
-Der Parser, der Strings in Listen von \sexp{} einliest, wird auch als
-Compiler spezifiziert:
+Der Parser, der einen \sexp{} aus einem String erzeugt, kann auch als
+Compiler spezifiziert werden:
 \begin{code}
-instance Compilable (FunParser Char () [Sexp]) String [Sexp] where
+instance Compilable (FunParser Char () Sexp) String Sexp where
   comp = many parseSexp
 \end{code}
-Die Typklasse \icode{Compiler} "`vergisst"' nun den zur Definition
-verwendeten Typen:
+Auf diese Weise kann der Parser automatisch durch einen Aufruf von
+\icode{comp} gefunden werden.
+
+Da Listen- und Maybe-Datentypen von Parsern fast immer mit \icode{many}
+und \icode{optional} verarbeitet werden, können für \icode{[a]} und
+\icode{Maybe a} Standard-Parser bereitgestellt werden, die den
+bestehenden Parser für \icode{a} mit diesen Funktionen transformieren:
+\begin{code}
+instance (Compilable (ParseFunctor t ar () a) [t] a, ...) =>
+  Compilable (ParseFunctor t ar () [a]) [t] [a] where
+    comp = many comp
+
+instance (Compilable (ParseFunctor t ar () a) [t] a. ...) =>
+  Compilable (ParseFunctor t ar () (Maybe a)) [t] (Maybe a) where
+    comp = optional comp
+\end{code}
+Nun können beispielsweise auch Streams von \sexps{} durch den Aufruf von
+\icode{comp :: FunParser Char () [Sexp]} geparst werden, ohne dass dieser
+  Parser manuell spezifiziert wurde.
+
+Zuletzt "`vergisst"' die Typklasse \icode{Compiler} den zur Definition
+verwendeten Typen und bietet eine allgemeine Umwandlung von A nach B an:
 \begin{code}
 class Compiler a b where
   compile :: IOArrow a b
@@ -2923,9 +2943,9 @@ class Compiler a b where
 instance (Compilable x a b) => Compiler a b where
   compile = toIO comp
 \end{code}
-Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
-\icode{compile}-Aufruf, wie etwa \icode{compile :: IOArrow String
-  [Sexp]}, gefunden werden.
+Nun kann ein beliebiger Compiler ungeachtet seines Implementationstyps
+einfach über einen explizit typisierten \icode{compile}-Aufruf, wie etwa
+\icode{compile :: IOArrow String [Sexp]}, gefunden werden.
 
 \todo{mehr Beispiele, Diskussion (umständlich)}
 
@@ -2935,7 +2955,7 @@ Nun kann ein beliebiger Compiler einfach über einen explizit typisierten
 
 \lsection[sexpproc:sexpparser]{Parser auf \sexps}
 
-Unter \sexp{}-Parser würde man normalerweise 
+Unter \sexp{}-Parser würde man normalerweise
 
 \todo{Begriffsklärung \sexp{}-Parser}
 
@@ -3021,7 +3041,7 @@ werden, und eine Oder-Verknüpfung ins Innere verlegt werden - hier also:
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}
 
-\lsection[sexpproc:sexphs]{Erzeugung von Haskell-Code}
+\lsection[sexpproc:sexphs]{\sexp{}-Haskell}
 
 Die Implementation einiger Komponenten von MagicL erfordert selbst
 \cgen{} - beispielsweise muss eine etwaige DSL für Template-basierte
@@ -3029,43 +3049,316 @@ Die Implementation einiger Komponenten von MagicL erfordert selbst
 ebenfalls auf \sexp{}-Basis erfolgen soll, wird in diesem Abschnitt ein
 Compiler vorgestellt, welcher eine in \sexps{} definierte, einer
 Haskell-Teilmenge entsprechende Sprache in legalen Haskell-Quellcode
-übersetzt. Der Compiler dient gleichzeitig als Anschauungsbeispiel für
-die Benutzung eines typisierten Zwischenmodells in MagicL - alternativ
-hätte dieser auch untypisiert von \sexps{} nach \sexps{} mit den in
-\sref{sexpproc:gen} beschriebenen Hilfsmitteln erstellt werden können,
-was eine kürzere, aber fehleranfälligere Implementation mit sich geführt
-hätte.
+übersetzt.
 
-\lsubsection[sexpproc:sexphs:model]{Typisiertes Haskell-Modell}
+Bei dem Entwurf eines neuen Compilers stellt sich grundsätzlich immer
+die Frage, ob die \sexp{}-basierten Eingabesprache vor der weiteren
+Verarbeitung in ein typisiertes Modell überführt werden soll. Dies
+bedeutet zwar einen erhöhten Entwicklungsaufwand\footnote{Die zukünftige
+  Entwicklung einer geeigneten DSL zur Modellbeschreibung, aus der
+  sowohl das typisierte Modell als auch Compiler generiert werden,
+  könnte den Entwicklungsaufwand wieder reduzieren.}, führt aber zu
+früherer Fehlererkennung in Compilern. Der Haskell-Generator beschreitet
+diesen Weg und dient damit gleichzeitig als Anschauungsbeispiel für die
+Benutzung typisierter Modelle. Die später in diesem Kapitel vorgestellte
+DSL für Lisp-Makros hingegen dient als Beispiel für rein
+\sexp{}-gestützte Kompilation.
 
-Als erster Schritt wird das Haskell-Modell entwickelt.  Eine
-Haskell-Codedatei enthält eine optionale Modulbeschreibung sowie eine
-Liste von Toplevel-Definitionen:
+\todo{DSL selbst mehr vorstellen (=, where, Operatoren, Klassen usw.)}
+
+\lsubsection[sexpproc:sexphs:model]{Typisiertes Modell}
+
+Als erster Schritt ist das Haskell-Modell zu entwickeln. Der Einfachheit
+halber wird hier nur ein kleiner Ausschnitt des Modells vorgestellt -
+alle nicht näher beschriebenen Datenstrukturen können dem
+MagicL-Quelltext entnommen werden.
+
+Eine Haskell-Codedatei enthält eine optionale Modulbeschreibung sowie
+eine Liste von Toplevel-Definitionen:
 \begin{code}
-data Haskell = Haskell (Maybe Module) [Toplevel]  
+data Haskell = Haskell (Maybe Module) [Toplevel]
 \end{code}
-Die Definition von \icode{Module} wird der Übersichtlichkeit halber
-ausgelassen. Toplevel-Forms können Typ- oder Funktionsdeklaration oder
-die Definition neuer Typaliase, Datentypen, Klassen oder Instanzen sein:
+Eine Modulbeschreibung besteht aus einem Namen, einer optionalen Liste
+exportierter Symbole sowie einer Liste von Imports, wobei es vier Arten
+gibt, ein Modul zu importieren: Standardimport, benannter Import mit
+einem Kurznamen, ausschließlicher Import bestimmter Symbole sowie der
+Import aller nicht aufgezählten Symbole:
 \begin{code}
-data Toplevel = TopTypeDef TypeDef
+data Module = Module ModuleName (Maybe Export) [Import]
+type ModuleName = String
+data Export = Export [String]
+data Import = Import ModuleName ImportArgs
+data ImportArgs = Simple
+                | Qualified ModuleAbbrev
+                | Only [FunctionName]
+                | Hiding [FunctionName]
+type ModuleAbbrev = String
+type FunctionName = String
+\end{code}
+Auf Toplevel-Ebene können Typzuweisungen, Funktionen, Typaliase,
+Datentypen, Klassen und Instanzen definiert werden:
+\begin{code}
+data Toplevel = TopHasType HasType
               | TopDef Def
               | TopTypeAlias TypeAlias
               | TopData Data
               | TopClass Class
               | TopInstance Instance
 \end{code}
+Hier wird lediglich auf Funktionen weiter eingegangen. Die linke Seite der
+Funktionszuweisung besteht aus einem Pattern, die rechte aus einem
+Ausdruck. Zusätzlich können mittels \icode{where} lokale Definitionen
+erfolgen.
+\begin{code}
+data Def = Def Pattern Expr (Maybe Where)
+\end{code}
+Ein Pattern kann eine Liste, ein Tupel, ein String oder ein
+Funktionsaufruf\footnote{Streng genommen dürfen in Patterns nur
+  Konstruktoren (großgeschrieben) aufgerufen werden, in Ausdrücken
+  hingegen Konstruktoren und Funktionen. Dies wird im Modell zur
+  Vereinfachung nicht unterschieden, könnte allerdings beim Einlesen
+  überprüft werden.} sein.
+\begin{code}
+data Pattern = ListPattern [Pattern]
+             | TuplePattern [Pattern]
+             | StringPattern String
+             | CallPattern Call
+\end{code}
+Ein Ausdruck kann eine Lambda-Funktion definieren, ein
+\icode{do}-Ausdruck für Monaden, eine Typdeklaration oder ein Pattern
+sein. Die Parameterliste anonymer Funktionen benutzt ebenfalls Patterns.
+\begin{code}
+data Expr = LambdaExpr  [Pattern] Expr
+          | DoExpr      [DoCmd]
+          | TypeExpr    HasType
+          | PatternExpr Pattern
+\end{code}
 
+Als nächstes wird ein Parser benötigt, der die \sexp{}-Sprache in das
+Modell überführt.
 
+\lsubsection[sexpproc:sexphs:parser]{Parser}
 
-\begin{itemize}
-\item Funktionsaufrufe simpel
-\item Operatoren
-\item Typen
-\item Syntaktische Konstrukte (where, do, Klassen, ...)
-\end{itemize}
+Compiler für größere, aus vielen Datentypen zusammengesetzte Modelle
+sollten möglichst immer in kleine Kompilationseinheiten (in Form von
+Arrows) aufgeteilt werden, die jeweils nur für einen Datantyp zuständig
+sind. Diese können auf zwei Arten definiert werden: Zum einen können
+benannte Arrows verwendet und von Hand verknüpft werden, was für den
+Haskell-Parser wie folgt aussehen könnte:
+\begin{code}
+compHaskell = liftA2 Haskell (optional compModule) (many compToplevel)
+
+compModule = macro "module" (liftA3 Module
+                                    compString
+                                    (optional compExport)
+                                    (many compImport))
+
+compToplevel = (liftA1 TopHasType   compHasType)   <+>
+               (liftA1 TopDef       compDef)       <+>
+               (liftA1 TopTypeAlias compTypeAlias) <+>
+               (liftA1 TopData      compData)      <+>
+               (liftA1 TopClass     compClass)     <+>
+               (liftA1 TopInstance  compInstance)
+\end{code}
+Um optionale Ausdrücke und Listen einzulesen, werden die benutzten Parser
+mittels \icode{many} und \icode{optional} transformiert.
+
+Alternativ ist es auch möglich, die Typklasse \icode{Compilable} aus
+\sref{arrowparser:compinterface} zu verwenden und den polymorphe
+Arrow \icode{comp} zu überladen. Dadurch erfolgt die Auswahl des
+passenden Parsers zur Kompilationszeit mittels Typinferenz anhand der
+Modelldefinitionen. Dies hat unter anderem den Vorteil, dass Aufrufe von
+\icode{many} und \icode{optional} nicht mehr nötig sind. Andererseits
+bedeuten die vielen Instanzdeklarationen einen erhöhten Schreibaufwand
+\footnote{Auch hier wäre also eine DSL wünschenswert, die diese Arbeit
+  sowie ein automatisches Funktionsliften erledigt.}. Der Haskell-Parser
+ist auf diese Art implementiert worden. Wie das Modell selbst wird
+dieser hier nur Ausschnittsweise vorgestellt - konkret wird
+hauptsächlich das Parsen der Moduldefinition erläutert:
+\begin{code}
+instance Compilable (SexpParser Haskell) [Sexp] Haskell where
+    comp = liftA2 Haskell comp comp
+
+instance Compilable (SexpParser Module) [Sexp] Module where
+    comp = macro "module" (liftA3 Module comp comp comp)
+
+instance Compilable (SexpParser Export) [Sexp] Export where
+    comp = macro "export" (liftA1 Export comp)
+
+instance Compilable (SexpParser Import) [Sexp] Import where
+    comp  = (comp >>^ \ n -> Import n Simple) <+>
+             compNode (liftA2 Import comp compArgs)
+        where compArgs =
+                  ((empty >>> constArrow Simple)               <+>
+                   (macro "qualified" comp >>> arr Qualified)  <+>
+                   (macro "only" (many comp) >>> arr Only)     <+>
+                   (macro "hiding" (many comp) >>> arr Hiding))
+
+instance Compilable (SexpParser Toplevel) [Sexp] Toplevel where
+    comp = (liftA1 TopHasType comp)   <+>
+           (liftA1 TopDef comp)       <+>
+           (liftA1 TopTypeAlias comp) <+>
+           (liftA1 TopData comp)      <+>
+           (liftA1 TopClass comp)     <+>
+           (liftA1 TopInstance comp)
+\end{code}
+Der Import-Parser ist so konstruiert, dass als Import sowohl Symbole,
+welche automatisch in einen \icode{Simple}-Import übersetzt werden, als
+auch Listen übergeben werden können. Der Aufruf \icode{comp >>^ \ n ->
+  Import n Simple} liest ein Symbol ein\footnote{MagicL beinhaltet einen
+Standard-Parser von \icode{Sexp} nach \icode{String}, welcher nur
+Symbole akzeptiert und ebenfalls durch Typinferenz aus \icode{comp}
+erzeugt wird.} und leitet dies an eine anonyme Funktion weiter, die den
+\icode{Import}-Aufruf erzeugt.
+
+Als Beispiel sei folgende Moduldefinition gegeben:
+\begin{code}
+(module MyModule
+  Data.List
+  (Prelude (hiding id Functor))
+  (Control.Exception (qualified E)))
+\end{code}
+Hier wird ein Modul \icode{MyModule} definiert, welches keine Exports
+angibt und drei Module importiert: \icode{Data.List} wird komplett
+importiert, während aus \icode{Prelude} die Funktion \icode{id} und den
+Datentyp \icode{Functor} ignoriert werden (um einen Namenskonflikt mit
+eigenen Definitionen gleichen Namens zu vermeiden). Das Modul
+\icode{Control.Exception} wird benannt als \icode{E} importiert, so dass
+beispielsweise die Funktion \icode{throw} mittels \icode{E.throw}
+angesprochen werden kann.
+
+Der Parser erzeugt daraus nun ein typisiertes Objekt:
+\begin{code}
+(Module "MyModule"
+         Nothing
+         [Import "Data.List" Simple,
+          Import "Prelude" (Hiding ["id", "Functor"]),
+          Import "Control.Exception" (Qualified "E")])
+\end{code}
+Dieses Objekt kann nun von weiterverarbeitet werden - konkret wird es in
+den Datentyp \icode{Code} überführt, welcher in \sref{magicl:code}
+erläutert wird. Aus diesem wird dann automatisch Quelltext erzeugt:
+\begin{code}
+module MyModule where
+import Data.List
+import Prelude hiding (id, Functor)
+import qualified Control.Exception as E
+\end{code}
+
+Die in diesem Abschnitt vorgestellte Modellverarbeitung schließt
+Typfehler aus und erlaubt die effiziente Durchführung beliebiger
+Berechnungen auf den Daten. Allerdings ist sie auch mit einem erhöhten
+Aufwand verbunden, der nicht für jede kleine Sprache oder
+Spracherweiterung sinnvoll erscheint. Deswegen stellt MagicL alternativ
+die Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
+bereit, welche in den folgenden Abschnitten präsentiert wird.
 
 \lsection[sexpproc:gen]{Templates für \sexps}
+
+Während das Einlesen von \sexps{} dank der in \sref{sexpproc:sexpparser}
+vorgestellten Funktionen bereits recht komfortabel geht, ist die
+Erzeugung von Instanzen des \icode{Sexp}-Datentyp zunächst
+aufwändig. Soll beispielsweise eine Funktion \icode{genUser userName
+  userEmail} mit den Parametern \icode{\"Harald\"} und
+\icode{\"Harry@baz.com\"} aufgerufen den Ausdruck
+\begin{code}
+(user (name Harald) (email Harry@baz.com))
+\end{code}
+zurückliefern, wäre
+in \sexp{}-Haskell \sees{sexpproc:sexphs} folgende Funktionsdefinition
+nötig:
+\begin{code}
+(= (genUser userName userEmail)
+   (Node (List (Symbol (Str user))
+               (Node (List (Symbol (Str  name)) (Symbol  userName)))
+               (Node (List (Symbol (Str email)) (Symbol userEmail))))))
+\end{code}
+Der entsprechende Haskell-Code liest sich aufgrund der syntaktischen
+Konstrukte \icode{\"\"} und \icode{[]} statt \icode{(Str)} und
+\icode{(List)} etwas leichter, ist aber davon abgesehen genauso komplex:
+\begin{code}
+genUser userName userEmail =
+   Node [Symbol "user",
+         Node [Symbol "name" , Symbol userName],
+         Node [Symbol "email", Symbol userEmail]]
+\end{code}
+Um die Konstruktion von \sexp{}-Objekten zu vereinfachen, bieten
+Lisp-Dialekte die Quasikquote-Syntax mit \icode{`} und \icode{,} an
+\sees{template:lisp}. In Common Lisp beispielsweise ließe sich diese
+Funktion sehr elegant formulieren:
+\begin{code}
+(defun gen-user (user-name user-email)
+  `(user (name ,user-name) (email ,user-email)))
+\end{code}
+Ein derartiger Operator soll nun konstruiert werden. Da in MagicL bisher
+keine syntaktischen Erweiterungen vorgesehen sind, sondern eine rein
+\sexp{}-basierte Repräsentation von Quelltext benutzt wird, müssen die
+Operatoren wie andere Ausdrücke geklammert werden. Zudem wird nicht
+zwischen Quote und Quasiquote unterschieden, so dass einheitlich der
+Quote-Operator \icode{'} benutzt wird. Die Funktion \icode{genUser}
+sollte sich letztlich wie folgt formulieren lassen:
+\begin{code}
+(= (genUser userName userEmail)
+   (' (user (name (, userName)) (email (, userEmail)))))
+\end{code}
+Dies sollte von einem geeigneten Compiler in obige, umständlichere
+Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
+Haskell-Code erzeugt werden kann.
+
+Dieser Compiler sollte selbst möglichst einfach formuliert werden. Da
+\sexps{} verarbeitet werden, macht eine Implementation als
+\icode{SexpParser} Sinn. Darüber hinaus werden aber auch \sexps{}
+erzeugt, so dass hier auch die Quasiquote-Notation selbst bereits
+benutzt werden sollte. Es wird sich daher um einen metarekursiven
+Compiler handeln, d.h. einen Compiler, der sich selbst übersetzt. Um
+hier das Henne-Ei-Problem zu lösen, wird wie im Compilerbau üblich
+später ein Bootstrapping\footnote{Der Begriff Bootstrapping ist eine
+  Anspielung auf Baron Münchhausen, der sich an seinen Schnürsenkeln aus
+  dem Sumpf gezogen haben will.} erforderlich sein. Metarekursive
+Programme sind in der Lisp-Welt nicht unüblich - bereits der erste
+LISP\footnote{LISP ist der erste Dialekt der Sprachfamilie
+  Lisp.}-Interpreter wurde als \icode{eval}-Funktion in LISP selbst
+implementiert und dann manuell in Maschinensprache
+übersetzt\cite{LispHistory}. Ein anderes prominentes Beispiel ist das
+Common Lisp Object System (CLOS)\cite{MetaobjectProtocol}, welches
+selbst objektorientiert mit CLOS implementiert ist und über Makros in
+ein Common Lisp ohne Objekte übersetzt werden kann.
+
+Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
+vorhanden.
+\begin{code}
+(=
+  compQuote
+  (macro (Str ') (>>^ inners single))
+  (where
+    (= inner (<+> unquote procSymbol procNode))
+    (= procSymbol (>>> takeSymbol (arr quoteSymbol)))
+    (= procNode (>>> (compNode inners) (arr quoteNode)))
+    (=
+      inners
+      (>>>
+        (many
+          (<+> unquoteAll (>>> inner (arr (namedNode (Str List))))))
+        (arr (namedNode (Str ++)))))
+    (= unquote (macro (Str ,) (>>^ take single)))
+    (= unquoteAll (macro (Str ,@) take))
+    (=
+      (quoteSymbol str)
+      (++
+        (List
+          (node
+            (++
+              (List (symbol (Str symbol)))
+              (List
+                (node
+                  (++
+                    (List (symbol (Str Str)))
+                    (List (symbol str))))))))))
+    (=
+      (quoteNode nod)
+      (++ (List (node (++ (List (symbol (Str node))) (List nod))))))))
+\end{code}
+
 
 \lsection[sexpproc:comp]{Lisp-artige Makroexpansion}
 \lsubsection[sexpproc:comp:preproc]{Beispiel: Ein simpler Preprocessor}
@@ -3173,7 +3466,7 @@ oder im speziellen MaKros inkrementell zu testen.
 
 Makros für beliebige Zielsprachen
 
-MagicL ist ein Framework für \sexp-Compiler, welches 
+MagicL ist ein Framework für \sexp-Compiler, welches
 als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
 Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
 Konzepte (in \sref{haskell:cats} beschrieben), mit deren Hilfe

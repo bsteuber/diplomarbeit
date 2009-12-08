@@ -61,8 +61,8 @@ parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
 
 parseSexps = many parseSexp
 
-instance Compilable (ExecFunParser Char [Sexp]) String [Sexp] where
-    comp = parseSexps 
+instance Compilable (ExecFunParser Char Sexp) String Sexp where
+    comp = parseSexp
 
 readSexps :: IOArrow String [Sexp]
 readSexps = compile  

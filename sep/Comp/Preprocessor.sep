@@ -6,8 +6,9 @@
          Sexp
          Parser
          Model)
- (type compComment LispMacro)
+
+ (hasType compComment LispMacro)
  (= compComment (looseMacro (Str comment) nilArrow))
 
- (type preprocess LispMacro)
+ (hasType preprocess LispMacro)
  (= preprocess (simpleTraverse (List compComment)))

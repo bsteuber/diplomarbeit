@@ -31,11 +31,12 @@ instance Compilable (Import -> Code) Import Code where
                              Hiding hides  -> ([], [text "hiding", tuple (map text hides)])
 
 instance Compilable (Toplevel -> Code) Toplevel Code where
-    comp (TopHasType td) = comp td
-    comp (TopDef d)      = comp d
-    comp (TopData d)     = comp d
-    comp (TopClass c)    = comp c
-    comp (TopInstance i) = comp i
+    comp (TopHasType ht)  = comp ht
+    comp (TopDef d)       = comp d
+    comp (TopTypeAlias t) = comp t
+    comp (TopData d)      = comp d
+    comp (TopClass c)     = comp c
+    comp (TopInstance i)  = comp i
 
 instance Compilable (HasType -> Code) HasType Code where
     comp (HasType expr mayDep typ) = binOp "::" (comp expr) (append (layoutMaybe comp mayDep) (comp typ))

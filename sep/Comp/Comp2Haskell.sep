@@ -1,6 +1,6 @@
 (expandCompiler Comp2Haskell 
 
-(type regMacs (IORef (List Sexp)))
+(hasType regMacs (IORef (List Sexp)))
 (= regMacs (unsafePerformIO (newIORef [])))
 
 (= addMac (ioToParser (fun m
@@ -28,7 +28,7 @@
                     Parser
                     Model)
             (,@ defs)
-            (type (, lowerName) LispMacro)
+            (hasType (, lowerName) LispMacro)
             (= (, lowerName) (simpleTraverse (allMacs)))))))                       
 
 (mac compAllMacs allMacs (>>^ getMacs listMacs)
@@ -37,7 +37,7 @@
 (mac compMac mac 
      (liftA4 gen (>>> compSymbol addMac) compSymbol take (many take))
      (where (= (gen fun sym cmd cmds)
-               (' (type (, fun) LispMacro)
+               (' (hasType (, fun) LispMacro)
                   (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
 
 (mac genQuotes quotes (constArrow qts)
