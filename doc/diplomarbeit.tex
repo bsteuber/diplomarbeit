@@ -3290,7 +3290,14 @@ Funktion sehr elegant formulieren:
 (defun gen-user (user-name user-email)
   `(user (name ,user-name) (email ,user-email)))
 \end{code}
-Ein derartiger Operator soll nun konstruiert werden. Da in MagicL bisher
+Ein derartiger Operator soll nun konstruiert werden. Da dieser aber
+speziell auf MagicL zugeschnitten sein soll und keine bloße Kopie
+bestehender Lisp-Quasiquotes, müssen zunächst die genauen Anforderungen
+diskutiert werden:
+
+\lsubsection[sexpproc:gen:reqs]{Anforderungen}
+
+Da in MagicL bisher
 keine syntaktischen Erweiterungen vorgesehen sind, sondern eine rein
 \sexp{}-basierte Repräsentation von Quelltext benutzt wird, müssen die
 Operatoren wie andere Ausdrücke geklammert werden. Zudem wird nicht
@@ -3304,6 +3311,8 @@ sollte sich letztlich wie folgt formulieren lassen:
 Dies sollte von einem geeigneten Compiler in obige, umständlichere
 Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
 Haskell-Code erzeugt werden kann.
+
+\lsubsection[sexpproc:gen:impl]{Implementation}
 
 Dieser Compiler sollte selbst möglichst einfach formuliert werden. Da
 \sexps{} verarbeitet werden, macht eine Implementation als
@@ -3325,7 +3334,9 @@ selbst objektorientiert mit CLOS implementiert ist und über Makros in
 ein Common Lisp ohne Objekte übersetzt werden kann.
 
 Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
-vorhanden.
+vorhanden und könnte für die Implementation bereits genutzt werden.
+
+
 \begin{code}
 (=
   compQuote
