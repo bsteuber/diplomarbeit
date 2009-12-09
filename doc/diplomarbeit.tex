@@ -3297,13 +3297,12 @@ diskutiert werden:
 
 \lsubsection[sexpproc:gen:reqs]{Anforderungen}
 
-Da in MagicL bisher
-keine syntaktischen Erweiterungen vorgesehen sind, sondern eine rein
-\sexp{}-basierte Repräsentation von Quelltext benutzt wird, müssen die
-Operatoren wie andere Ausdrücke geklammert werden. Zudem wird nicht
-zwischen Quote und Quasiquote unterschieden, so dass einheitlich der
-Quote-Operator \icode{'} benutzt wird. Die Funktion \icode{genUser}
-sollte sich letztlich wie folgt formulieren lassen:
+Da in MagicL bisher keine syntaktischen Erweiterungen vorgesehen sind,
+sondern eine rein \sexp{}-basierte Repräsentation von Quelltext benutzt
+wird, müssen die Operatoren wie andere Ausdrücke geklammert
+werden. Zudem wird nicht zwischen Quote und Quasiquote unterschieden, so
+dass einheitlich der Quote-Operator \icode{'} benutzt wird. Die Funktion
+\icode{genUser} sollte sich letztlich wie folgt formulieren lassen:
 \begin{code}
 (= (genUser userName userEmail)
    (' (user (name (, userName)) (email (, userEmail)))))
