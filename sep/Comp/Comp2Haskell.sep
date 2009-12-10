@@ -56,8 +56,7 @@
                             (Str ,)        
                             (Str ,@))))        
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
-                 ('1 (autoMac (,1 name) (,1 symQuote)
-                         (>>^ inners single)
+                 ('1 (autoMac (,1 name) (,1 symQuote) inners                          
                       (where 
                        (= inner (<+> unquote procSymbol procNode))           
                        (= procSymbol                                      
@@ -69,14 +68,19 @@
                        (= inners                     
                           (>>> (many (<+> unquoteAll 
                                           (>>> inner 
-                                               (arr (namedNode (Str List))))))
-                               (arr (namedNode (Str ++)))))
+                                               (arr quoteList))))
+			       (arr concat)
+                               (arr quoteAppend)))
                        (mac unquote (,1 symUnquote) (>>^ take single))
                        (mac unquoteAll (,1 symUnquoteAll) take)
-                       (= (quoteSymbol str)
-                          (' (symbol (Str (, (symbol str))))))
-                       (= (quoteNode nod)
-                          (' (node (, nod))))))))))
+                       (= (quoteSymbol sym)
+                          (' (Symbol (Str (, (Symbol sym))))))
+                       (= (quoteNode sexps)
+                          (' (Node (,@ sexps))))
+		       (= (quoteList sexps)
+			  (' (List (,@ sexps))))
+		       (= (quoteAppend sexps)
+			  (' (++ (,@ sexps))))))))))
 
 (quotes)
 
