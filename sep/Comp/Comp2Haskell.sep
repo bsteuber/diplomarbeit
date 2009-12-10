@@ -1,15 +1,15 @@
 (expandCompiler Comp2Haskell 
 
-(hasType regMacs (IORef (List Sexp)))
-(= regMacs (unsafePerformIO (newIORef [])))
+(hasType regAutoMacs (IORef (List Sexp)))
+(= regAutoMacs (unsafePerformIO (newIORef [])))
 
-(= addMac (ioToParser (fun m
-                           (do (modifyIORef regMacs (fun ms (: m ms)))
+(= addAutoMac (ioToParser (fun m
+                           (do (modifyIORef regAutoMacs (fun ms (: m ms)))
                                (return m)))))
 
-(= getMacs (ioToParser (const (readIORef regMacs))))
+(= getAutoMacs (ioToParser (const (readIORef regAutoMacs))))
 
-(mac compExpandCompiler expandCompiler 
+(autoMac compExpandCompiler expandCompiler 
      (liftA2 gen 
              (>>> compSymbol 
                   (&&& id (arr symbolToLower)))
@@ -29,18 +29,18 @@
                     Model)
             (,@ defs)
             (hasType (, lowerName) LispMacro)
-            (= (, lowerName) (simpleTraverse (allMacs)))))))                       
+            (= (, lowerName) (simpleTraverse (allAutoMacs)))))))                       
 
-(mac compAllMacs allMacs (>>^ getMacs listMacs)
-     (where (= (listMacs ms) (' (List (,@ ms))))))
+(autoMac compAllAutoMacs allAutoMacs (>>^ getAutoMacs listAutoMacs)
+     (where (= (listAutoMacs ms) (' (List (,@ ms))))))
                                
-(mac compMac mac 
-     (liftA4 gen (>>> compSymbol addMac) compSymbol take (many take))
+(autoMac compAutoMac autoMac 
+     (liftA4 gen (>>> compSymbol addAutoMac) compSymbol take (many take))
      (where (= (gen fun sym cmd cmds)
                (' (hasType (, fun) LispMacro)
                   (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
 
-(mac genQuotes quotes (constArrow qts)
+(autoMac genQuotes quotes (constArrow qts)
        (where (= qts 
                  (concatMap (. genQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
               (= (mkSyms s)
@@ -50,7 +50,7 @@
                             (Str ,)        
                             (Str ,@))))        
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
-                 (' (mac (, name) (, symQuote)
+                 (' (autoMac (, name) (, symQuote)
                          (>>^ inners single)
                       (where 
                        (= inner (<+> unquote procSymbol procNode))           
