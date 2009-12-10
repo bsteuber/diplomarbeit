@@ -40,6 +40,12 @@
                (' (hasType (, fun) LispMacro)
                   (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
 
+(autoMac compMac mac
+     (liftA4 gen compSymbol compSymbol take (many take))
+     (where (= (gen fun sym cmd cmds)
+               (' (hasType (, fun) LispMacro)
+                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))	 
+
 (autoMac genQuotes quotes (constArrow qts)
        (where (= qts 
                  (concatMap (. genQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
@@ -50,7 +56,7 @@
                             (Str ,)        
                             (Str ,@))))        
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
-                 (' (autoMac (, name) (, symQuote)
+                 ('1 (autoMac (,1 name) (,1 symQuote)
                          (>>^ inners single)
                       (where 
                        (= inner (<+> unquote procSymbol procNode))           
@@ -65,12 +71,12 @@
                                           (>>> inner 
                                                (arr (namedNode (Str List))))))
                                (arr (namedNode (Str ++)))))
-                       (= unquote (macro (Str (, symUnquote)) (>>^ take single)))
-                       (= unquoteAll (macro (Str (, symUnquoteAll)) take))
+                       (mac unquote (,1 symUnquote) (>>^ take single))
+                       (mac unquoteAll (,1 symUnquoteAll) take)
                        (= (quoteSymbol str)
-                          ('1 (symbol (Str (,1 (symbol str))))))
+                          (' (symbol (Str (, (symbol str))))))
                        (= (quoteNode nod)
-                          ('1 (node (,1 nod))))))))))
+                          (' (node (, nod))))))))))
 
 (quotes)
 
