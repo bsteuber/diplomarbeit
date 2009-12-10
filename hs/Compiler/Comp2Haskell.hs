@@ -24,25 +24,25 @@ compExpandCompiler :: LispMacro
 
 compExpandCompiler = (macro "expandCompiler" (liftA2 gen (compSymbol >>> (id &&& (arr symbolToLower))) (many take)))
   where
-    gen (name, lowerName) defs = ([node ([symbol "module"] ++ [name] ++ [node ([symbol "Prelude"] ++ [node ([symbol "hiding"] ++ [symbol "id"] ++ [symbol "lines"] ++ [symbol "words"] ++ [symbol "take"])])] ++ [symbol "Data.IORef"] ++ [node ([symbol "Control.Category"] ++ [node ([symbol "only"] ++ [symbol "id"])])] ++ [symbol "Control.Arrow"] ++ [symbol "System.IO.Unsafe"] ++ [symbol "Util"] ++ [symbol "Arrows"] ++ [symbol "Sexp"] ++ [symbol "Parser"] ++ [symbol "Model"])] ++ defs ++ [node ([symbol "hasType"] ++ [lowerName] ++ [symbol "LispMacro"])] ++ [node ([symbol "="] ++ [lowerName] ++ [node ([symbol "simpleTraverse"] ++ [node ([symbol "allAutoMacs"])])])])
+    gen (name, lowerName) defs = ([Node ([Symbol "module"] ++ [name] ++ [Node ([Symbol "Prelude"] ++ [Node ([Symbol "hiding"] ++ [Symbol "id"] ++ [Symbol "lines"] ++ [Symbol "words"] ++ [Symbol "take"])])] ++ [Symbol "Data.IORef"] ++ [Node ([Symbol "Control.Category"] ++ [Node ([Symbol "only"] ++ [Symbol "id"])])] ++ [Symbol "Control.Arrow"] ++ [Symbol "System.IO.Unsafe"] ++ [Symbol "Util"] ++ [Symbol "Arrows"] ++ [Symbol "Sexp"] ++ [Symbol "Parser"] ++ [Symbol "Model"])] ++ defs ++ [Node ([Symbol "hasType"] ++ [lowerName] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [lowerName] ++ [Node ([Symbol "simpleTraverse"] ++ [Node ([Symbol "allAutoMacs"])])])])
 
 compAllAutoMacs :: LispMacro
 
 compAllAutoMacs = (macro "allAutoMacs" (getAutoMacs >>^ listAutoMacs))
   where
-    listAutoMacs ms = ([node ([symbol "List"] ++ ms)])
+    listAutoMacs ms = ([Node ([Symbol "List"] ++ ms)])
 
 compAutoMac :: LispMacro
 
 compAutoMac = (macro "autoMac" (liftA4 gen (compSymbol >>> addAutoMac) compSymbol take (many take)))
   where
-    gen fun sym cmd cmds = ([node ([symbol "hasType"] ++ [fun] ++ [symbol "LispMacro"])] ++ [node ([symbol "="] ++ [fun] ++ [node ([symbol "macro"] ++ [node ([symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
+    gen fun sym cmd cmds = ([Node ([Symbol "hasType"] ++ [fun] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [fun] ++ [Node ([Symbol "macro"] ++ [Node ([Symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
 
 compMac :: LispMacro
 
 compMac = (macro "mac" (liftA4 gen compSymbol compSymbol take (many take)))
   where
-    gen fun sym cmd cmds = ([node ([symbol "hasType"] ++ [fun] ++ [symbol "LispMacro"])] ++ [node ([symbol "="] ++ [fun] ++ [node ([symbol "macro"] ++ [node ([symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
+    gen fun sym cmd cmds = ([Node ([Symbol "hasType"] ++ [fun] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [fun] ++ [Node ([Symbol "macro"] ++ [Node ([Symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
 
 genQuotes :: LispMacro
 
@@ -50,67 +50,91 @@ genQuotes = (macro "quotes" (constArrow qts))
   where
     qts = (concatMap (genQt . mkSyms) ["", "1", "2", "3"])
     mkSyms s = (map (symbol . (\ str -> (str ++ s))) ["compQuote", "'", ",", ",@"])
-    genQt [name, symQuote, symUnquote, symUnquoteAll] = ([node ([symbol "autoMac"] ++ [name] ++ [symQuote] ++ [symbol "inners"] ++ [node ([symbol "where"] ++ [node ([symbol "="] ++ [symbol "inner"] ++ [node ([symbol "<+>"] ++ [symbol "unquote"] ++ [symbol "procSymbol"] ++ [symbol "procNode"])])] ++ [node ([symbol "="] ++ [symbol "procSymbol"] ++ [node ([symbol ">>>"] ++ [symbol "takeSymbol"] ++ [node ([symbol "arr"] ++ [symbol "quoteSymbol"])])])] ++ [node ([symbol "="] ++ [symbol "procNode"] ++ [node ([symbol ">>>"] ++ [node ([symbol "compNode"] ++ [symbol "inners"])] ++ [node ([symbol "arr"] ++ [symbol "quoteNode"])])])] ++ [node ([symbol "="] ++ [symbol "inners"] ++ [node ([symbol ">>>"] ++ [node ([symbol "many"] ++ [node ([symbol "<+>"] ++ [symbol "unquoteAll"] ++ [node ([symbol ">>>"] ++ [symbol "inner"] ++ [node ([symbol "arr"] ++ [symbol "quoteList"])])])])] ++ [node ([symbol "arr"] ++ [symbol "concat"])] ++ [node ([symbol "arr"] ++ [symbol "quoteAppend"])])])] ++ [node ([symbol "mac"] ++ [symbol "unquote"] ++ [symUnquote] ++ [node ([symbol ">>^"] ++ [symbol "take"] ++ [symbol "single"])])] ++ [node ([symbol "mac"] ++ [symbol "unquoteAll"] ++ [symUnquoteAll] ++ [symbol "take"])] ++ [node ([symbol "="] ++ [node ([symbol "quoteSymbol"] ++ [symbol "sym"])] ++ [node ([symbol "'"] ++ [node ([symbol "Symbol"] ++ [node ([symbol "Str"] ++ [node ([symbol ","] ++ [node ([symbol "Symbol"] ++ [symbol "sym"])])])])])])] ++ [node ([symbol "="] ++ [node ([symbol "quoteNode"] ++ [symbol "sexps"])] ++ [node ([symbol "'"] ++ [node ([symbol "Node"] ++ [node ([symbol ",@"] ++ [symbol "sexps"])])])])] ++ [node ([symbol "="] ++ [node ([symbol "quoteList"] ++ [symbol "sexps"])] ++ [node ([symbol "'"] ++ [node ([symbol "List"] ++ [node ([symbol ",@"] ++ [symbol "sexps"])])])])] ++ [node ([symbol "="] ++ [node ([symbol "quoteAppend"] ++ [symbol "sexps"])] ++ [node ([symbol "'"] ++ [node ([symbol "++"] ++ [node ([symbol ",@"] ++ [symbol "sexps"])])])])])])])
+    genQt [name, symQuote, symUnquote, symUnquoteAll] = ([Node ([Symbol "autoMac"] ++ [name] ++ [symQuote] ++ [Symbol "inners"] ++ [Node ([Symbol "where"] ++ [Node ([Symbol "hasType"] ++ [Symbol "inner"] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [Symbol "inner"] ++ [Node ([Symbol "<+>"] ++ [Symbol "unquote"] ++ [Symbol "procSymbol"] ++ [Symbol "procNode"])])] ++ [Node ([Symbol "hasType"] ++ [Symbol "procSymbol"] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [Symbol "procSymbol"] ++ [Node ([Symbol ">>>"] ++ [Symbol "takeSymbol"] ++ [Node ([Symbol "arr"] ++ [Symbol "quoteSymbol"])])])] ++ [Node ([Symbol "hasType"] ++ [Symbol "procNode"] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [Symbol "procNode"] ++ [Node ([Symbol ">>>"] ++ [Node ([Symbol "compNode"] ++ [Symbol "inners"])] ++ [Node ([Symbol "arr"] ++ [Symbol "quoteNode"])])])] ++ [Node ([Symbol "hasType"] ++ [Symbol "inners"] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [Symbol "inners"] ++ [Node ([Symbol ">>>"] ++ [Node ([Symbol "many"] ++ [Node ([Symbol "<+>"] ++ [Symbol "unquoteAll"] ++ [Node ([Symbol ">>>"] ++ [Symbol "inner"] ++ [Node ([Symbol "arr"] ++ [Symbol "quoteList"])])])])] ++ [Node ([Symbol "arr"] ++ [Symbol "concat"])] ++ [Node ([Symbol "arr"] ++ [Symbol "quoteAppend"])])])] ++ [Node ([Symbol "mac"] ++ [Symbol "unquote"] ++ [symUnquote] ++ [Node ([Symbol ">>^"] ++ [Symbol "take"] ++ [Symbol "single"])])] ++ [Node ([Symbol "mac"] ++ [Symbol "unquoteAll"] ++ [symUnquoteAll] ++ [Node ([Symbol ">>^"] ++ [Symbol "take"] ++ [Symbol "single"])])] ++ [Node ([Symbol "="] ++ [Node ([Symbol "quoteSymbol"] ++ [Symbol "sym"])] ++ [Node ([Symbol "'"] ++ [Node ([Symbol "Symbol"] ++ [Node ([Symbol "Str"] ++ [Node ([Symbol ","] ++ [Node ([Symbol "Symbol"] ++ [Symbol "sym"])])])])])])] ++ [Node ([Symbol "="] ++ [Node ([Symbol "quoteNode"] ++ [Symbol "sexps"])] ++ [Node ([Symbol "'"] ++ [Node ([Symbol "Node"] ++ [Node ([Symbol ",@"] ++ [Symbol "sexps"])])])])] ++ [Node ([Symbol "="] ++ [Node ([Symbol "quoteList"] ++ [Symbol "sexps"])] ++ [Node ([Symbol "'"] ++ [Node ([Symbol "List"] ++ [Node ([Symbol ",@"] ++ [Symbol "sexps"])])])])] ++ [Node ([Symbol "="] ++ [Node ([Symbol "quoteAppend"] ++ [Symbol "sexps"])] ++ [Node ([Symbol "'"] ++ [Node ([Symbol "++"] ++ [Node ([Symbol ",@"] ++ [Symbol "sexps"])])])])])])])
 
 compQuote :: LispMacro
 
-compQuote = (macro "'" (inners >>^ single))
+compQuote = (macro "'" inners)
   where
+    inner :: LispMacro
     inner = (unquote <+> procSymbol <+> procNode)
+    procSymbol :: LispMacro
     procSymbol = (takeSymbol >>> (arr quoteSymbol))
+    procNode :: LispMacro
     procNode = ((compNode inners) >>> (arr quoteNode))
-    inners = ((many (unquoteAll <+> (inner >>> (arr (namedNode "List"))))) >>> (arr (namedNode "++")))
+    inners :: LispMacro
+    inners = ((many (unquoteAll <+> (inner >>> (arr quoteList)))) >>> (arr concat) >>> (arr quoteAppend))
     unquote :: LispMacro
     unquote = (macro "," (take >>^ single))
     unquoteAll :: LispMacro
-    unquoteAll = (macro ",@" take)
-    quoteSymbol str = ([node ([symbol "symbol"] ++ [node ([symbol "Str"] ++ [symbol str])])])
-    quoteNode nod = ([node ([symbol "node"] ++ [nod])])
+    unquoteAll = (macro ",@" (take >>^ single))
+    quoteSymbol sym = ([Node ([Symbol "Symbol"] ++ [Node ([Symbol "Str"] ++ [Symbol sym])])])
+    quoteNode sexps = ([Node ([Symbol "Node"] ++ sexps)])
+    quoteList sexps = ([Node ([Symbol "List"] ++ sexps)])
+    quoteAppend sexps = ([Node ([Symbol "++"] ++ sexps)])
 
 compQuote1 :: LispMacro
 
-compQuote1 = (macro "'1" (inners >>^ single))
+compQuote1 = (macro "'1" inners)
   where
+    inner :: LispMacro
     inner = (unquote <+> procSymbol <+> procNode)
+    procSymbol :: LispMacro
     procSymbol = (takeSymbol >>> (arr quoteSymbol))
+    procNode :: LispMacro
     procNode = ((compNode inners) >>> (arr quoteNode))
-    inners = ((many (unquoteAll <+> (inner >>> (arr (namedNode "List"))))) >>> (arr (namedNode "++")))
+    inners :: LispMacro
+    inners = ((many (unquoteAll <+> (inner >>> (arr quoteList)))) >>> (arr concat) >>> (arr quoteAppend))
     unquote :: LispMacro
     unquote = (macro ",1" (take >>^ single))
     unquoteAll :: LispMacro
-    unquoteAll = (macro ",@1" take)
-    quoteSymbol str = ([node ([symbol "symbol"] ++ [node ([symbol "Str"] ++ [symbol str])])])
-    quoteNode nod = ([node ([symbol "node"] ++ [nod])])
+    unquoteAll = (macro ",@1" (take >>^ single))
+    quoteSymbol sym = ([Node ([Symbol "Symbol"] ++ [Node ([Symbol "Str"] ++ [Symbol sym])])])
+    quoteNode sexps = ([Node ([Symbol "Node"] ++ sexps)])
+    quoteList sexps = ([Node ([Symbol "List"] ++ sexps)])
+    quoteAppend sexps = ([Node ([Symbol "++"] ++ sexps)])
 
 compQuote2 :: LispMacro
 
-compQuote2 = (macro "'2" (inners >>^ single))
+compQuote2 = (macro "'2" inners)
   where
+    inner :: LispMacro
     inner = (unquote <+> procSymbol <+> procNode)
+    procSymbol :: LispMacro
     procSymbol = (takeSymbol >>> (arr quoteSymbol))
+    procNode :: LispMacro
     procNode = ((compNode inners) >>> (arr quoteNode))
-    inners = ((many (unquoteAll <+> (inner >>> (arr (namedNode "List"))))) >>> (arr (namedNode "++")))
+    inners :: LispMacro
+    inners = ((many (unquoteAll <+> (inner >>> (arr quoteList)))) >>> (arr concat) >>> (arr quoteAppend))
     unquote :: LispMacro
     unquote = (macro ",2" (take >>^ single))
     unquoteAll :: LispMacro
-    unquoteAll = (macro ",@2" take)
-    quoteSymbol str = ([node ([symbol "symbol"] ++ [node ([symbol "Str"] ++ [symbol str])])])
-    quoteNode nod = ([node ([symbol "node"] ++ [nod])])
+    unquoteAll = (macro ",@2" (take >>^ single))
+    quoteSymbol sym = ([Node ([Symbol "Symbol"] ++ [Node ([Symbol "Str"] ++ [Symbol sym])])])
+    quoteNode sexps = ([Node ([Symbol "Node"] ++ sexps)])
+    quoteList sexps = ([Node ([Symbol "List"] ++ sexps)])
+    quoteAppend sexps = ([Node ([Symbol "++"] ++ sexps)])
 
 compQuote3 :: LispMacro
 
-compQuote3 = (macro "'3" (inners >>^ single))
+compQuote3 = (macro "'3" inners)
   where
+    inner :: LispMacro
     inner = (unquote <+> procSymbol <+> procNode)
+    procSymbol :: LispMacro
     procSymbol = (takeSymbol >>> (arr quoteSymbol))
+    procNode :: LispMacro
     procNode = ((compNode inners) >>> (arr quoteNode))
-    inners = ((many (unquoteAll <+> (inner >>> (arr (namedNode "List"))))) >>> (arr (namedNode "++")))
+    inners :: LispMacro
+    inners = ((many (unquoteAll <+> (inner >>> (arr quoteList)))) >>> (arr concat) >>> (arr quoteAppend))
     unquote :: LispMacro
     unquote = (macro ",3" (take >>^ single))
     unquoteAll :: LispMacro
-    unquoteAll = (macro ",@3" take)
-    quoteSymbol str = ([node ([symbol "symbol"] ++ [node ([symbol "Str"] ++ [symbol str])])])
-    quoteNode nod = ([node ([symbol "node"] ++ [nod])])
+    unquoteAll = (macro ",@3" (take >>^ single))
+    quoteSymbol sym = ([Node ([Symbol "Symbol"] ++ [Node ([Symbol "Str"] ++ [Symbol sym])])])
+    quoteNode sexps = ([Node ([Symbol "Node"] ++ sexps)])
+    quoteList sexps = ([Node ([Symbol "List"] ++ sexps)])
+    quoteAppend sexps = ([Node ([Symbol "++"] ++ sexps)])
 
 comp2haskell :: LispMacro
 

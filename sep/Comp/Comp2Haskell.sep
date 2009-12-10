@@ -57,14 +57,18 @@
                             (Str ,@))))        
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
                  ('1 (autoMac (,1 name) (,1 symQuote) inners                          
-                      (where 
+                      (where
+		       (hasType inner LispMacro)
                        (= inner (<+> unquote procSymbol procNode))           
+		       (hasType procSymbol LispMacro)
                        (= procSymbol                                      
                           (>>> takeSymbol
                                (arr quoteSymbol)))
+		       (hasType procNode LispMacro)
                        (= procNode                  
                           (>>> (compNode inners)
                                (arr quoteNode)))
+		       (hasType inners LispMacro)
                        (= inners                     
                           (>>> (many (<+> unquoteAll 
                                           (>>> inner 
@@ -72,7 +76,7 @@
 			       (arr concat)
                                (arr quoteAppend)))
                        (mac unquote (,1 symUnquote) (>>^ take single))
-                       (mac unquoteAll (,1 symUnquoteAll) take)
+                       (mac unquoteAll (,1 symUnquoteAll) (>>^ take single))
                        (= (quoteSymbol sym)
                           (' (Symbol (Str (, (Symbol sym))))))
                        (= (quoteNode sexps)

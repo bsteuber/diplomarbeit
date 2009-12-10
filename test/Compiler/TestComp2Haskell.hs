@@ -13,17 +13,17 @@ import Haskell2Code
 
 
 quoteCases = [ ( "(' 42)"
-               , "([symbol \"42\"])" )
+               , "([Symbol \"42\"])" )
              , ( "(' 1 2 3)"
-               , "([symbol \"1\"] ++ [symbol \"2\"] ++ [symbol \"3\"])" )
+               , "([Symbol \"1\"] ++ [Symbol \"2\"] ++ [Symbol \"3\"])" )
              , ( "(' (+ 1 2))"
-               , "([node ([symbol \"+\"] ++ [symbol \"1\"] ++ [symbol \"2\"])])" )
+               , "([Node ([Symbol \"+\"] ++ [Symbol \"1\"] ++ [Symbol \"2\"])])" )
              , ( "(' (, 1))"
                , "([1])" )
              , ( "(' (+ a (, (+ b c))))"
-               , "([node ([symbol \"+\"] ++ [symbol \"a\"] ++ [b + c])])" )
+               , "([Node ([Symbol \"+\"] ++ [Symbol \"a\"] ++ [b + c])])" )
              , ( "(' (+ 1 (,@ args) 2))"
-               , "([node ([symbol \"+\"] ++ [symbol \"1\"] ++ args ++ [symbol \"2\"])])" )
+               , "([Node ([Symbol \"+\"] ++ [Symbol \"1\"] ++ args ++ [Symbol \"2\"])])" )
              ]
 
 globalCases = [ ( "foo"
