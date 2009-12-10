@@ -41,10 +41,15 @@
                   (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
 
 (autoMac compMac mac
-     (liftA4 gen compSymbol compSymbol take (many take))
+     (liftA4 gen take take take (many take))
      (where (= (gen fun sym cmd cmds)
-               (' (hasType (, fun) LispMacro)
-                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))	 
+               (' (def LispMacro (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
+
+(autoMac compDef def
+  (liftA3 gen take take (many take))
+     (where (= (gen typ name cmds)
+               (' (hasType (, name) (, typ))
+                  (= (, name) (,@ cmds))))))
 
 (autoMac genQuotes quotes (constArrow qts)
        (where (= qts 
@@ -58,23 +63,15 @@
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
                  ('1 (autoMac (,1 name) (,1 symQuote) inners                          
                       (where
-		       (hasType inner LispMacro)
-                       (= inner (<+> unquote procSymbol procNode))           
-		       (hasType procSymbol LispMacro)
-                       (= procSymbol                                      
-                          (>>> takeSymbol
-                               (arr quoteSymbol)))
-		       (hasType procNode LispMacro)
-                       (= procNode                  
-                          (>>> (compNode inners)
-                               (arr quoteNode)))
-		       (hasType inners LispMacro)
-                       (= inners                     
-                          (>>> (many (<+> unquoteAll 
-                                          (>>> inner 
-                                               (arr quoteList))))
-			       (arr concat)
-                               (arr quoteAppend)))
+		       (def LispMacro inner (<+> unquote procSymbol procNode))
+		       (def LispMacro procSymbol                                      
+                          (>>^ takeSymbol quoteSymbol))
+		       (def LispMacro procNode                  
+                          (>>^ (compNode inners) quoteNode))
+		       (def LispMacro inners
+                          (>>^ (many (<+> unquoteAll 
+                                          (>>^ inner quoteList)))
+			       (>>> concat quoteAppend)))
                        (mac unquote (,1 symUnquote) (>>^ take single))
                        (mac unquoteAll (,1 symUnquoteAll) (>>^ take single))
                        (= (quoteSymbol sym)
