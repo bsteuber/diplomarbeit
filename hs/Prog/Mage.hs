@@ -7,7 +7,8 @@ import System.Environment (getArgs)
 import System.Directory
 import System.FilePath (takeBaseName, (</>))
 
-debug = False --True
+-- debug = False
+debug = True
 
 whenNewer :: FilePath -> FilePath -> IO ExitCode -> IO ExitCode
 whenNewer inFile outFile action =
@@ -96,15 +97,15 @@ genDoc = do
 clean = sysCall "rm -rf gen"
 
 deploy = do 
-  sysCall "mv hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs.sav"
-  sysCall "mv gen/hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs"
+  sysCall "cp hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs.sav"
+  sysCall "cp gen/hs/Compiler/Comp2Haskell.hs hs/Compiler/Comp2Haskell.hs"
 
 reploy = do 
   sysCall "mv hs/Compiler/Comp2Haskell.hs.sav hs/Compiler/Comp2Haskell.hs"
 
 build = do
 --  sysCall "rm -rf gen/sep gen/hs"
-  clean
+--  clean
   mkDirs ["gen" </> "bin", 
           "gen" </> "ghc", 
           "gen" </> "hs" </> "Compiler", 

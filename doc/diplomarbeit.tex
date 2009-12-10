@@ -3064,6 +3064,8 @@ Benutzung typisierter Modelle. Die später in diesem Kapitel vorgestellte
 DSL für Lisp-Makros hingegen dient als Beispiel für rein
 \sexp{}-gestützte Kompilation.
 
+\lsubsection[sexpproc:sexphs:spec]{Spezifikation}
+
 \todo{DSL selbst mehr vorstellen (=, where, Operatoren, Klassen usw.)}
 
 \lsubsection[sexpproc:sexphs:model]{Typisiertes Modell}
@@ -3290,12 +3292,10 @@ Funktion sehr elegant formulieren:
 (defun gen-user (user-name user-email)
   `(user (name ,user-name) (email ,user-email)))
 \end{code}
-Ein derartiger Operator soll nun konstruiert werden. Da dieser aber
+Ein derartiger Operator soll nun konstruiert werden. Dieser sollte
 speziell auf MagicL zugeschnitten sein soll und keine bloße Kopie
-bestehender Lisp-Quasiquotes, müssen zunächst die genauen Anforderungen
-diskutiert werden:
-
-\lsubsection[sexpproc:gen:reqs]{Anforderungen}
+bestehender Lisp-Quasiquotes. Im folgenden werden deshalb die
+Anforderungen diskutiert und das gewünschte Verhalten festgelegt.
 
 Da in MagicL bisher keine syntaktischen Erweiterungen vorgesehen sind,
 sondern eine rein \sexp{}-basierte Repräsentation von Quelltext benutzt
@@ -3309,9 +3309,78 @@ dass einheitlich der Quote-Operator \icode{'} benutzt wird. Die Funktion
 \end{code}
 Dies sollte von einem geeigneten Compiler in obige, umständlichere
 Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
-Haskell-Code erzeugt werden kann.
+Haskell-Code erzeugt werden kann. Splicing einer Liste erfolgt
+entsprechend mit \icode{(,@)}:
+\begin{code}
+(' (1 2 (,@ xs) 5))
 
-\lsubsection[sexpproc:gen:impl]{Implementation}
+ergibt (1 2 3 4 5) bei xs = (List (Symbol (Str 3))
+                                  (Symbol (Str 4)))
+\end{code}
+Lisp-Makros sind gewöhnlich für die Verarbeitung eines einzelnen \sexp{}
+ausgelegt und können aus diesem Grund immer nur einen Ausdruck
+zurückliefern. Sollen beispielsweise in Common Lisp aus einem Makro
+zwei benannte Funktionen generiert werden, müssen die Definitionen in
+ein \icode{(progn)} geschachtelt werden, damit sich nur ein \sexp{}
+ergibt:
+\begin{code}
+(defmacro define-arithmetic-functions ()
+  `(progn (defun add (x y) (+ x y))
+          (defun sub (x y) (- x y))))
+\end{code}
+Hierbei weist \icode{progn} den Lisp-Interpreter\footnote{Es kann sich
+  selbstverständlich auch um einen Compiler handeln.} lediglich an, alle
+enthaltenen Operationen nacheinander auszuführen. MagicL soll aber
+beliebige Zielsprachen unterstützen und damit auch solche, die keine
+Möglichkeit ähnlich \icode{progn} besitzen, mehrere Ausdrücke zu einem
+zusammenzufassen. Deswegen sollten MagicL-Makros beliebig viele \sexps{}
+zurückgeben können. Dies passt auch gut zu einer Definition von Makros
+als Parser auf \sexps{}, da Parser immer Streams und damit Listen als
+Eingaben haben.
+\begin{code}
+type LispMacro = SexpParser [Sexp]  
+\end{code}
+Damit sind Lisp-Makros, nachdem sie mittels \icode{toIO} aus der Typklasse
+\icode{Executable} umgewandelt wurden, IO-Arrows von \icode{[Sexp]} nach
+\icode{[Sexp]}, wodurch auch die Hintereinanderschaltung mehrerer
+Compiler reibungslos funktioniert. Um vernünftig mit diesen Makros
+verwendet werden zu können, muss der Quasiquote-Operator immer eine
+Liste von \sexps{} zurückgeben, wodurch mehrere Rückgaben ermöglicht
+werden:
+\begin{code}
+(' 1 2 3)     =>   [Symbol "1", Symbol "2", Symbol "3"]
+(' (1 2 3))   =>   [Node [Symbol "1", Symbol "2", Symbol "3"]]
+\end{code}
+Ein weiteres Problem aller Lisp-Dialekte ist der Umgang mit
+verschachtelten Quasiquotes, welche typischerweise entstehen, wenn
+Makros Makros generieren. Im Ausdruck
+\begin{code}
+(defmacro x ()
+  `(defmacro y ()
+     `(print ,a)))
+\end{code}
+ist zunächst nicht klar, auf welches der beiden Quotes sich das Unquote
+bezieht und damit, ob \icode{a} im Kontext des äußeren oder des inneren
+Makros evaluiert werden soll. Common Lisp bezieht ein Unquote immer auf
+das innere Backquote - soll es sich auf das äußere beziehen, müssen
+umständliche Konstrukte wie \icode{,',a} benutzt werden - dies ist auch
+der einzige Fall, für den Common Lisp den (Nicht-Quasi-)Quote-Operator
+benötigt. MagicL geht hier einen einfacheren Weg: Es werden neben den
+normalen Quote-Operatoren \icode{'}, \icode{,} und \icode{,@} benannte
+Operatoren \icode{'1}, \icode{,1} und \icode{,@1} etc. angeboten,
+so dass der Bezug immer klar ist, beispielsweise kann zwischen
+\icode{(' ('1 (, x)))} und \icode{(' ('1 (,1 x)))} unterschieden
+werden. 
+
+Quasiquote und Makrosystem sind sehr eng miteinander verbunden. Deshalb wird
+zunächst das erwünschte Makrosystem vorgestellt, bevor beides auf einmal
+implementiert wird.
+
+\lsection[sexpproc:comp]{Lisp-artige Makroexpansion}
+
+
+
+\lsection[sexpproc:metarec]{Metarekursive Implementation}
 
 Dieser Compiler sollte selbst möglichst einfach formuliert werden. Da
 \sexps{} verarbeitet werden, macht eine Implementation als
@@ -3333,45 +3402,35 @@ selbst objektorientiert mit CLOS implementiert ist und über Makros in
 ein Common Lisp ohne Objekte übersetzt werden kann.
 
 Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
-vorhanden und könnte für die Implementation bereits genutzt werden.
+vorhanden und könnte für die Implementation genutzt werden.
 
 
 \begin{code}
 (=
   compQuote
   (macro (Str ') (>>^ inners single))
-  (where
-    (= inner (<+> unquote procSymbol procNode))
-    (= procSymbol (>>> takeSymbol (arr quoteSymbol)))
-    (= procNode (>>> (compNode inners) (arr quoteNode)))
-    (=
-      inners
-      (>>>
-        (many
-          (<+> unquoteAll (>>> inner (arr (namedNode (Str List))))))
-        (arr (namedNode (Str ++)))))
-    (= unquote (macro (Str ,) (>>^ take single)))
-    (= unquoteAll (macro (Str ,@) take))
-    (=
-      (quoteSymbol str)
-      (++
-        (List
-          (node
-            (++
-              (List (symbol (Str symbol)))
-              (List
-                (node
-                  (++
-                    (List (symbol (Str Str)))
-                    (List (symbol str))))))))))
-    (=
-      (quoteNode nod)
-      (++ (List (node (++ (List (symbol (Str node))) (List nod))))))))
+    (where 
+      (= inner (<+> unquote procSymbol procNode))           
+      (= procSymbol                                      
+         (>>> takeSymbol
+              (arr quoteSymbol)))
+      (= procNode                  
+         (>>> (compNode inners)
+              (arr quoteNode)))
+      (= inners                     
+         (>>> (many (<+> unquoteAll 
+                         (>>> inner 
+                              (arr (namedNode (Str List))))))
+              (arr (namedNode (Str ++)))))
+      (= unquote (macro (Str ,) (>>^ take single)))
+      (= unquoteAll (macro (Str ,@) take))
+      (= (quoteSymbol sym)
+         (' (Symbol (Str (, (Symbol sym))))))
+      (= (quoteNode nod)
+         (' (Node (, nod))))))
 \end{code}
 
-
-\lsection[sexpproc:comp]{Lisp-artige Makroexpansion}
-\lsubsection[sexpproc:comp:preproc]{Beispiel: Ein simpler Preprocessor}
+\lsection[sexpproc:preproc]{Beispiel: Ein simpler Präprozessor}
 
 \lsection[sexpproc:sum]{Zusammenfassung}
 
