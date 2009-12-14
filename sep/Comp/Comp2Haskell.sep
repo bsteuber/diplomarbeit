@@ -1,20 +1,19 @@
 (expandCompiler Comp2Haskell 
-
-(hasType regAutoMacs (IORef (List Sexp)))
-(= regAutoMacs (unsafePerformIO (newIORef [])))
-
-(= addAutoMac (ioToParser (fun m
-                           (do (modifyIORef regAutoMacs (fun ms (: m ms)))
-                               (return m)))))
-
-(= getAutoMacs (ioToParser (const (readIORef regAutoMacs))))
-
-(autoMac compExpandCompiler expandCompiler 
+                
+(def LispMacro compComp2Haskell 
      (liftA2 gen 
-             (>>> compSymbol 
-                  (&&& id (arr symbolToLower)))
+             compAutoCompiler             
              (many take))
      (where
+      (mac compAutoCompiler autoCompiler 
+        (>>> compSymbol (&&& id 
+	     		     (arr symbolToLower))))
+      (= (extractAutoMacs defs)
+         (fromJust (execParser compExtractMacs)))
+      (def LispMacro compExtractMacs
+         (many (<+> (looseMacro (Str autoMac)
+                       compSymbol)
+                    (skip take))))
       (= (gen (Tuple name lowerName) defs)
          (' (module (, name)
                     (Prelude (hiding id lines words take))
@@ -28,8 +27,9 @@
                     Parser
                     Model)
             (,@ defs)
-            (hasType (, lowerName) LispMacro)
-            (= (, lowerName) (simpleTraverse (allAutoMacs)))))))                       
+            (def LispMacro compAuto
+               (simpleTraverse (, extractAutoMacs defs)))))))
+
 
 (autoMac compAllAutoMacs allAutoMacs (>>^ getAutoMacs listAutoMacs)
      (where (= (listAutoMacs ms) (' (List (,@ ms))))))
