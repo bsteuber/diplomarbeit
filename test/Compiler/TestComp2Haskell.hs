@@ -43,4 +43,4 @@ testComp name mac cases =
      cases)
 
 main = do testComp "quote" compQuote quoteCases
-          testMacro "comp2haskell" comp2haskell globalCases
+          testMacro "comp2haskell" compAuto globalCases

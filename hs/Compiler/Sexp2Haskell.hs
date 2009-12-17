@@ -78,6 +78,7 @@ instance Compilable (SexpParser Pattern) [Sexp] Pattern where
     comp =
         (liftA1 ListPattern (macro "List" comp)   <+>
          liftA1 TuplePattern (macro "Tuple" comp) <+>
+         liftA1 ConsPattern (macro "Cons" comp)    <+>
          liftA1 StringPattern (macro "Str" (many comp >>> arr unwords))  <+>
          liftA1 CallPattern comp)
 

@@ -43,6 +43,7 @@ data Where = Where [Toplevel]
 
 data Pattern = ListPattern [Pattern]
              | TuplePattern [Pattern]
+             | ConsPattern [Pattern]
              | StringPattern String
              | CallPattern Call                          
 

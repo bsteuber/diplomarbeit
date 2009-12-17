@@ -1,20 +1,22 @@
-(expandCompiler Comp2Haskell 
+(autoCompiler Comp2Haskell (imports Data.Maybe))
                 
-(def LispMacro compComp2Haskell 
-     (liftA2 gen 
-             compAutoCompiler             
-             (many take))
+(def LispMacro comp2haskell 
+     (applyParser
+      (liftA2 gen 
+              compAutoCompiler             
+              (>>^ (many (<+> genQuotes 
+                              (>>^ take single)))
+                   concat))
+      compAuto)
      (where
-      (mac compAutoCompiler autoCompiler 
-        (>>> compSymbol (&&& id 
-	     		     (arr symbolToLower))))
+      (= compAutoCompiler (macro (Str autoCompiler)
+           (&&& compSymbol
+                (optMacro (Str imports) (many take)))))
       (= (extractAutoMacs defs)
-         (fromJust (execParser compExtractMacs)))
-      (def LispMacro compExtractMacs
-         (many (<+> (looseMacro (Str autoMac)
-                       compSymbol)
-                    (skip take))))
-      (= (gen (Tuple name lowerName) defs)
+         (mapMaybe extractAutoMac defs))
+      (= (extractAutoMac (Node (Cons (Symbol (Str autoMac)) name _))) (Just name))
+      (= (extractAutoMac _) Nothing)
+      (= (gen (Tuple name imports) defs)
          (' (module (, name)
                     (Prelude (hiding id lines words take))
                     Data.IORef
@@ -25,22 +27,18 @@
                     Arrows
                     Sexp
                     Parser
-                    Model)
+                    Model
+                    (,@ imports))
             (,@ defs)
             (def LispMacro compAuto
-               (simpleTraverse (, extractAutoMacs defs)))))))
-
-
-(autoMac compAllAutoMacs allAutoMacs (>>^ getAutoMacs listAutoMacs)
-     (where (= (listAutoMacs ms) (' (List (,@ ms))))))
-                               
-(autoMac compAutoMac autoMac 
-     (liftA4 gen (>>> compSymbol addAutoMac) compSymbol take (many take))
-     (where (= (gen fun sym cmd cmds)
-               (' (hasType (, fun) LispMacro)
-                  (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
+               (simpleTraverse (List (,@ (extractAutoMacs defs)))))))))
 
 (autoMac compMac mac
+     (liftA4 gen take take take (many take))
+     (where (= (gen fun sym cmd cmds)
+               (' (def LispMacro (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
+
+(autoMac compAutoMac autoMac
      (liftA4 gen take take take (many take))
      (where (= (gen fun sym cmd cmds)
                (' (def LispMacro (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))
@@ -51,7 +49,7 @@
                (' (hasType (, name) (, typ))
                   (= (, name) (,@ cmds))))))
 
-(autoMac genQuotes quotes (constArrow qts)
+(mac genQuotes quotes (constArrow qts)
        (where (= qts 
                  (concatMap (. genQt mkSyms) (List (Str) (Str 1) (Str 2) (Str 3))))
               (= (mkSyms s)
@@ -84,5 +82,3 @@
 			  (' (++ (,@ sexps))))))))))
 
 (quotes)
-
-)

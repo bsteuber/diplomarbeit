@@ -9,38 +9,27 @@ import Arrows
 import Sexp
 import Parser
 import Model
+import Data.Maybe
 
-regAutoMacs :: (IORef [Sexp])
+comp2haskell :: LispMacro
 
-regAutoMacs = (unsafePerformIO (newIORef []))
-
-addAutoMac = (ioToParser (\ m -> (do
-  (modifyIORef regAutoMacs (\ ms -> (m : ms)))
-  (return m))))
-
-getAutoMacs = (ioToParser (const (readIORef regAutoMacs)))
-
-compExpandCompiler :: LispMacro
-
-compExpandCompiler = (macro "expandCompiler" (liftA2 gen (compSymbol >>> (id &&& (arr symbolToLower))) (many take)))
+comp2haskell = (applyParser (liftA2 gen compAutoCompiler ((many (genQuotes <+> (take >>^ single))) >>^ concat)) compAuto)
   where
-    gen (name, lowerName) defs = ([Node ([Symbol "module"] ++ [name] ++ [Node ([Symbol "Prelude"] ++ [Node ([Symbol "hiding"] ++ [Symbol "id"] ++ [Symbol "lines"] ++ [Symbol "words"] ++ [Symbol "take"])])] ++ [Symbol "Data.IORef"] ++ [Node ([Symbol "Control.Category"] ++ [Node ([Symbol "only"] ++ [Symbol "id"])])] ++ [Symbol "Control.Arrow"] ++ [Symbol "System.IO.Unsafe"] ++ [Symbol "Util"] ++ [Symbol "Arrows"] ++ [Symbol "Sexp"] ++ [Symbol "Parser"] ++ [Symbol "Model"])] ++ defs ++ [Node ([Symbol "hasType"] ++ [lowerName] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [lowerName] ++ [Node ([Symbol "simpleTraverse"] ++ [Node ([Symbol "allAutoMacs"])])])])
-
-compAllAutoMacs :: LispMacro
-
-compAllAutoMacs = (macro "allAutoMacs" (getAutoMacs >>^ listAutoMacs))
-  where
-    listAutoMacs ms = ([Node ([Symbol "List"] ++ ms)])
-
-compAutoMac :: LispMacro
-
-compAutoMac = (macro "autoMac" (liftA4 gen (compSymbol >>> addAutoMac) compSymbol take (many take)))
-  where
-    gen fun sym cmd cmds = ([Node ([Symbol "hasType"] ++ [fun] ++ [Symbol "LispMacro"])] ++ [Node ([Symbol "="] ++ [fun] ++ [Node ([Symbol "macro"] ++ [Node ([Symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
+    compAutoCompiler = (macro "autoCompiler" (compSymbol &&& (optMacro "imports" (many take))))
+    extractAutoMacs defs = (mapMaybe extractAutoMac defs)
+    extractAutoMac (Node (Symbol "autoMac" : name : _)) = (Just name)
+    extractAutoMac _ = Nothing
+    gen (name, imports) defs = ([Node ([Symbol "module"] ++ [name] ++ [Node ([Symbol "Prelude"] ++ [Node ([Symbol "hiding"] ++ [Symbol "id"] ++ [Symbol "lines"] ++ [Symbol "words"] ++ [Symbol "take"])])] ++ [Symbol "Data.IORef"] ++ [Node ([Symbol "Control.Category"] ++ [Node ([Symbol "only"] ++ [Symbol "id"])])] ++ [Symbol "Control.Arrow"] ++ [Symbol "System.IO.Unsafe"] ++ [Symbol "Util"] ++ [Symbol "Arrows"] ++ [Symbol "Sexp"] ++ [Symbol "Parser"] ++ [Symbol "Model"] ++ imports)] ++ defs ++ [Node ([Symbol "def"] ++ [Symbol "LispMacro"] ++ [Symbol "compAuto"] ++ [Node ([Symbol "simpleTraverse"] ++ [Node ([Symbol "List"] ++ (extractAutoMacs defs))])])])
 
 compMac :: LispMacro
 
 compMac = (macro "mac" (liftA4 gen take take take (many take)))
+  where
+    gen fun sym cmd cmds = ([Node ([Symbol "def"] ++ [Symbol "LispMacro"] ++ [fun] ++ [Node ([Symbol "macro"] ++ [Node ([Symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
+
+compAutoMac :: LispMacro
+
+compAutoMac = (macro "autoMac" (liftA4 gen take take take (many take)))
   where
     gen fun sym cmd cmds = ([Node ([Symbol "def"] ++ [Symbol "LispMacro"] ++ [fun] ++ [Node ([Symbol "macro"] ++ [Node ([Symbol "Str"] ++ [sym])] ++ [cmd])] ++ cmds)])
 
@@ -142,6 +131,6 @@ compQuote3 = (macro "'3" inners)
     quoteList sexps = ([Node ([Symbol "List"] ++ sexps)])
     quoteAppend sexps = ([Node ([Symbol "++"] ++ sexps)])
 
-comp2haskell :: LispMacro
+compAuto :: LispMacro
 
-comp2haskell = (simpleTraverse [compQuote3, compQuote2, compQuote1, compQuote, genQuotes, compDef, compMac, compAutoMac, compAllAutoMacs, compExpandCompiler])
+compAuto = (simpleTraverse [compMac, compAutoMac, compDef, compQuote, compQuote1, compQuote2, compQuote3])

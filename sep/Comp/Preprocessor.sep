@@ -1,14 +1,6 @@
-(module Preprocessor
-         (Prelude (hiding lines words take))
-         Control.Arrow
-         Util
-         Arrows
-         Sexp
-         Parser
-         Model)
+(autoCompiler Preprocessor)
 
- (hasType compComment LispMacro)
- (= compComment (looseMacro (Str comment) nilArrow))
+(autoMac compComment comment
+         (>>> (many take) nilArrow))
 
- (hasType preprocess LispMacro)
- (= preprocess (simpleTraverse (List compComment)))
+(= preprocess compAuto)

@@ -75,6 +75,7 @@ instance Compilable (Where -> Code) Where Code where
 instance Compilable (Pattern -> Code) Pattern Code where
     comp (ListPattern pats)  = list $ map comp pats
     comp (TuplePattern pats) = tuple $ map comp pats
+    comp (ConsPattern pats) = parenFoldOp ":" $ map comp pats
     comp (StringPattern str) = string str
     comp (CallPattern call)  = comp call
 

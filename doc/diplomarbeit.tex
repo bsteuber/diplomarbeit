@@ -2968,15 +2968,20 @@ macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 
 \lchapter[magicl]{Komponenten von MagicL}
 
-\todo{überarbeiten, Zustände f. Gensym?}
+Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
+sowie die im folgenden damit implemtierten Sprachen sind das Herzstück
+von MagicL. Darüber hinaus gibt es allerdings noch weitere Komponenten,
+die in den folgenden Abschnitten vorgestellt werden.
 
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
 
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
-Interface für die Beschreibung von Compilern bestehen. Ziel ist die
-selbstständige Suche nach einem passenden Compiler, wenn nur Ein- und
-Ausgabetyp spezifiziert sind. Compiler sollen unter anderem als pure
-Funktionen oder als Parser spezifiziert werden können.
+Interface für die Beschreibung von Compilern entstehen, so dass
+beispielsweise Parser und gewöhnliche Verarbeitungsfunktionen
+komfortabel kombiniert werden können. Ziel ist die selbstständige Suche
+nach einem passenden Compiler, wenn nur Ein- und Ausgabetyp spezifiziert
+sind. Compiler sollen unter anderem als pure Funktionen oder als Parser
+spezifiziert werden können.
 
 Ein Compiler von \icode{a} nach \icode{b} ist in MagicL etwas, was sich
 in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
@@ -3005,6 +3010,14 @@ ist:
 instance (...) => Executable (ParseFunctor t ar () a) [t] a where
   toIO = toIO . execParser
 \end{code}
+Ein Parser von \icode{()} nach \icode{a} mit Tokentyp \icode{t} wird
+demnach beim Ausführen zu einem \icode{IOArrow} von \icode{[t]} nach
+\icode{a}. Der bei der Parser-Komposition noch implizite
+Stream-Parameter wird hier also explizit gemacht - der vom Parser
+implizit zurückgegebene Stream wird verworfen. Sollte es erforderlich
+sein, einen Parser mit weiteren Parametern aufzurufen oder auch den
+Rest-Stream zu erhalten, muss statt \icode{Executable} direkt mit dem
+Parser-Modul gearbeitet werden.
 
 Nun soll es möglich sein, einen ausführbaren Typen zu benutzen, um einen
 eindeutigen Compiler von \icode{a} nach {b} einzurichten. Dies geschieht
@@ -3059,19 +3072,77 @@ instance (Compilable x a b) => Compiler a b where
 \end{code}
 Nun kann ein beliebiger Compiler ungeachtet seines Implementationstyps
 einfach über einen explizit typisierten \icode{compile}-Aufruf, wie etwa
-\icode{compile :: IOArrow String [Sexp]}, gefunden werden.
+\\\icode{compile :: IOArrow String [Sexp]}, gefunden werden. Leider ist
+es aufgrund des Haskell-Typsystems nicht möglich, dass sogar
+Kombinationen aus Compilern selbstständig gefunden werden. Hierfür
+müsste das Typsystem eine Prolog-artige Tiefensuche unterstützen, was
+zumindest derzeit noch nicht der Fall ist. 
 
-\todo{mehr Beispiele, Diskussion (umständlich)}
+Um die Kompilation von Textdateien zu vereinfachen, wird die Funktion
+\icode{compileStr} definiert, welche ein \icode{Executable} von
+\icode{a} nach \icode{b} in eine imperative Haskell-Funktion von
+\icode{String} nach \icode{String} umwandelt. Dies funktioniert
+allerdings nur, wenn bereits Standardcompiler von \icode{String} nach
+\icode{a} und von \icode{b} nach \icode{String} bekannt sind.
+\begin{code}
+compileStr :: (Compiler String a, Executable x a b, Compiler b String) =>
+               x -> String -> IO String
+compileStr f = runKleisli $ compile >>> toIO f >>> compile
+\end{code} % $
+Für die Erzeugung selbstständiger Compiler benutzt \icode{compiler}
+stdin als Eingabe- und stdout als Ausgabe-Stream:
+\begin{code}
+compiler :: (Compiler String a, Executable x a b, Compiler b String) => x -> IO ()
+compiler f = do
+  input <- getContents
+  output <- compileStr f input
+  putStr output  
+\end{code}
+Damit kann ein Compiler als Stand-Alone-Programm erzeugt und mit Hilfe
+von Ein- und Ausgabeumleitungen auf Dateien angewendet werden:
+\begin{code}
+module MyFileCompiler where
+-- einige Import-Anweisungen
+
+main = compiler myCompiler
+
+==== Erzeugung des Programms ====
+
+ghc MyFileCompiler.hs  -- einige Parameter ausgelassen
+=> MyFileCompiler
+
+==== Aufruf ====
+
+./MyFileCompiler <inFile >outFile
+\end{code}
 
 \lsection[magicl:code]{Repräsentation von Quelltext}
 
-\todo{Template vs. Datentyp}
+Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
+String-basierten Templates und daher mit
+Low-Level-Methoden. Syntaktische Konstrukte werden daher oft wiederholt,
+was zu häufigen Syntaxfehlern und einem relativ hohen Wartungsaufwand
+führt. Es würde beispielsweise viel Arbeit bedeuten, alle in einer
+generierten Java-Klasse definierten Arrays in Collections umzuwandeln,
+wenn die \icode{{A, B, C}}-Syntax überall direkt benutzt
+wurde. Hilfreich wäre es, wenn statt dessen überall ein Sub-Template
+\icode{genList} aufgerufen würde - nun müsste nur noch eine Stelle
+verändert werden um die erwünschte Anpassung durchzuführen. Diese
+Abstraktion ist auch mit einigen String-basierten Templates
+realisierbar. Ein weiteres Problem aber ist die Formatierung - denn auch
+generierter Quelltext wird eventuell gelesen werden. Ein Template für
+\icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
+da der Einrückungslevel immer relativ zur - leider im Template
+unbekannten - äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
+Code daher an einen Formatter wie Jaloppy\cite{TODO} übergeben werden -
+für ein sprachunabhängiges Framework ist diese Option aber nicht
+zufriedenstellend.
 
-Um komfortabel korrekt eingerückten Code in einer Zielsprache generieren
-zu können, stellt MagicL einen Datentyp \icode{Code} zur Verfügung sowie
-einen Compiler von \icode{Code} nach \icode{String}, welcher ein Nachbau
-des von Philip Wadler in \cite[S.223ff]{FunOfProgramming} vorgestellten
-Pretty-Printers ist. Die elementaren Konstruktor-Funktionen sind:
+MagicL verfolgt einen anderen Ansatz und definiert ein typisiertes
+Modell für formatierten Code samt Compiler nach String. Hier handelt es
+sich um einen Nachbau des von Philip Wadler in
+\cite[S.223ff]{FunOfProgramming} vorgestellten Pretty-Printers. Die
+elementaren Konstruktor-Funktionen sind:
 \begin{code}
 newline :: Code
 text    :: String -> Code
@@ -3143,10 +3214,42 @@ spezifiziert werden.
 
 \lsection[magicl:test]{Test-Framework}
 
-MagicL enthält ein minimalistisches Testframework, um Compiler
-oder im speziellen MaKros inkrementell zu testen.
+MagicL enthält ein primitives Unit-Test-Framework für die Überprüfung
+einzelner Compiler (und damit auch Parser und Makros). Zunächst werden
+dafür die Eingaben und erwarteten Ausgaben als Strings in Listen
+notiert:
+\begin{code}
+exprCases = [ ( "(Str 42)"                    -- Sexp-Haskell 
+                , "\"42\"" )                  -- Haskell 
 
-\lsection[magicl:debug]{Debugging-Möglichkeiten}
+              , ( "(Str a  b c)"              -- Sexp-Haskell 
+                , "\"a b c\"" )               -- Haskell 
+
+              , ( "(List a b (Str c))"        -- Sexp-Haskell 
+                , "[a, b, \"c\"]" )           -- Haskell 
+
+              , ( "(foo a (bar b c) d)"       -- Sexp-Haskell 
+                , "(foo a (bar b c) d)" )     -- Haskell 
+
+              , ( "(map + myList)"            -- Sexp-Haskell 
+                , "(map (+) myList)" )        -- Haskell 
+              ]  
+\end{code}
+Dieses Beispiel spezifiziert, wie einige Ausdrücke der im nächsten
+Kapitel vorgestellten Sprache \sexp{}-Haskell nach Haskell übersetzt
+werden sollen. Durchgeführt wird ein Testlauf mit der Funktion
+\icode{testCompiler}:
+\begin{code} 
+testCompiler :: 
+  (Compiler String a, Executable x a b, Compiler b String) => 
+  String -> x -> [(String, String)] -> IO ()
+\end{code}
+Als Eingaben werden ein Namensstring, der Compiler selbst (als
+Executable-Instanz, damit nicht nur fest verdrahtete Compiler getestet
+werden können) sowie eine Test-Liste wie \icode{exprCases} oben
+erwartet. Für den Spezialfall von Makros wird darüber hinaus die
+Funktion \icode{testMacro} bereitgestellt, 
+
 
 \lsection[magicl:build]{Build-Tool}
 
@@ -3588,6 +3691,8 @@ vorhanden und könnte für die Implementation genutzt werden.
       (= (quoteNode nod)
          (' (Node (, nod))))))
 \end{code}
+
+\todo{Zustände f. Gensym, Debug?}
 
 \lsection[sexpcomp:preproc]{Beispiel: Ein simpler Präprozessor}
 
