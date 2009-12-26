@@ -3246,12 +3246,32 @@ testCompiler ::
 \end{code}
 Als Eingaben werden ein Namensstring, der Compiler selbst (als
 Executable-Instanz, damit nicht nur fest verdrahtete Compiler getestet
-werden können) sowie eine Test-Liste wie \icode{exprCases} oben
-erwartet. Für den Spezialfall von Makros wird darüber hinaus die
-Funktion \icode{testMacro} bereitgestellt, 
-
+werden können) sowie eine Liste von Testfällen erwartet. Das Testen
+von Makros ist ein Spezialfall, da hier meist kein direkter
+Standard-Compiler vom Rückgabetyp nach \icode{String} bereitsteht -
+stattdessen wird gewöhnlich ein Compiler nach \icode{Code}
+angeboten. Die Funktion \icode{testMacro} schaltet deshalb den
+Standard-Compiler nach \icode{Code} hinter ein
+Makro\footnote{Wünschenswert wäre ein System, dass automatisch den
+  Zwischenschritt über \icode{Code} einfügt - dies ist aber im Rahmen
+  des Haskell-Typsystems nicht möglich.}:
+\begin{code}
+testMacro name mac testCases = 
+  (testCompiler name 
+                ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
+                testCases)
+\end{code}
+Der Aufruf für obige Testfälle sieht beispielsweise wie folgt aus:
+\begin{code}
+testMacro "expr" (comp :: SexpParser Expr) exprCases  
+\end{code}
+Das zu testende Makro wird hier durch einen typisierten Aufruf von
+\icode{comp} referenziert. Alternativ können aber selbstverständlich
+auch benannte Makros verwendet werden.
 
 \lsection[magicl:build]{Build-Tool}
+
+
 
 \lsection[magicl:sum]{Zusammenfassung}
 
