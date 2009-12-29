@@ -126,6 +126,8 @@ lambdaCases = [ ( "(fun x 42)"
                 , "(\\ x [y] -> (plus x y))" )
               , ( "(fun (Node n) (show n))"
                 , "(\\ (Node n) -> (show n))" )
+              , ( "((fun (args x y) (+ x y)) 32 43)"
+                , "((\\ x y -> (x + y)) 32 43)" )
               ]
 
 doCases = [ ( "(do 42)"

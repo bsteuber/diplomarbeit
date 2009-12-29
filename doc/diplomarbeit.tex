@@ -3252,7 +3252,7 @@ Standard-Compiler vom Rückgabetyp nach \icode{String} bereitsteht -
 stattdessen wird gewöhnlich ein Compiler nach \icode{Code}
 angeboten. Die Funktion \icode{testMacro} schaltet deshalb den
 Standard-Compiler nach \icode{Code} hinter ein
-Makro\footnote{Wünschenswert wäre ein System, dass automatisch den
+Makro\footnote{Wünschenswert wäre ein System, das automatisch den
   Zwischenschritt über \icode{Code} einfügt - dies ist aber im Rahmen
   des Haskell-Typsystems nicht möglich.}:
 \begin{code}
@@ -3266,8 +3266,8 @@ Der Aufruf für obige Testfälle sieht beispielsweise wie folgt aus:
 testMacro "expr" (comp :: SexpParser Expr) exprCases  
 \end{code}
 Das zu testende Makro wird hier durch einen typisierten Aufruf von
-\icode{comp} referenziert. Alternativ können aber selbstverständlich
-auch benannte Makros verwendet werden.
+\icode{comp} referenziert. Alternativ können auch benannte Makros
+verwendet werden.
 
 \lsection[magicl:build]{Build-Tool}
 
@@ -3280,27 +3280,214 @@ auch benannte Makros verwendet werden.
 Die Implementation einiger Komponenten von MagicL erfordert selbst
 \cgen{} - beispielsweise muss eine etwaige DSL für Template-basierte
 \sexp{}-Erzeugung nach Haskell kompiliert werden. Da diese Generierung
-ebenfalls auf \sexp{}-Basis erfolgen soll, wird in diesem Abschnitt ein
-Compiler vorgestellt, welcher eine in \sexps{} definierte, einer
-Haskell-Teilmenge entsprechende Sprache in legalen Haskell-Quellcode
-übersetzt.
+ebenfalls auf \sexp{}-Basis erfolgen soll, wird in diesem Abschnitt
+eine minimale, funktionale \sexp{}-Sprache vorgestellt, die in legalen
+Haskell-Quellcode kompiliert wird.
 
-Bei dem Entwurf eines neuen Compilers stellt sich grundsätzlich immer
-die Frage, ob die \sexp{}-basierten Eingabesprache vor der weiteren
-Verarbeitung in ein typisiertes Modell überführt werden soll. Dies
-bedeutet zwar einen erhöhten Entwicklungsaufwand\footnote{Die zukünftige
-  Entwicklung einer geeigneten DSL zur Modellbeschreibung, aus der
-  sowohl das typisierte Modell als auch Compiler generiert werden,
-  könnte den Entwicklungsaufwand wieder reduzieren.}, führt aber zu
-früherer Fehlererkennung in Compilern. Der Haskell-Generator beschreitet
-diesen Weg und dient damit gleichzeitig als Anschauungsbeispiel für die
-Benutzung typisierter Modelle. Die später in diesem Kapitel vorgestellte
-DSL für Lisp-Makros hingegen dient als Beispiel für rein
-\sexp{}-gestützte Kompilation.
+Bei dem Entwurf eines neuen Compilers muss zunächst entschieden
+werden, ob die Verarbeitung mittels typisierter Modell oder direkt
+untypisiert auf den \sexps{} erfolgen soll. Typisierte Modelle erhöhen
+den Entwicklungsaufwand\footnote{Die zukünftige Entwicklung einer
+  geeigneten DSL zur Modellbeschreibung, aus der sowohl das typisierte
+  Modell als auch Compiler generiert werden, könnte den
+  Entwicklungsaufwand wieder reduzieren.}, führen aber zu früherer
+Fehlererkennung in Compilern und ermöglichen eine automatische
+Compiler-Auswahl. Der Haskell-Generator beschreitet diesen Weg und
+dient damit gleichzeitig als Anschauungsbeispiel für die Benutzung
+typisierter Modelle. Rein \sexp{}-gestützte Kompilation hingegen wird
+in \cref{sexpcomp} behandelt.
 
 \lsection[sexphs:spec]{Spezifikation}
 
-\todo{DSL selbst mehr vorstellen (=, where, Operatoren, Klassen usw.)}
+\sexp{}-Haskell soll im Wesentlichen eine in \sexp{} gegossene Version
+von Haskell sein - mit nur wenigen Anpassungen, wo diese sinnvoll
+erscheinen. Eine vollständige Abdeckung aller Haskell-Konzepte muss im
+Prototyp nicht gegeben sein, da diese bei Bedarf nachgepflegt werden
+können. Zudem sind einige Konzepte wie \icode{let} und \icode{where}
+redundant, so dass nur eines von beiden benötigt wird. 
+
+\lsubsection[sexphs:spec:funs]{Funktionen}
+Funktions- oder Konstruktoraufrufe müssen in der \sexp{}-Version immer
+geklammert werden, können aber unverändert nach Haskell übernommen
+werden:
+\begin{code}
+(myFun 1 4 52)              Sexp-Haskell
+=>
+(myFun 1 4 52)              Haskell
+\end{code}
+Haskell-Infixoperatoren werden in Präfixnotation überführt und können
+in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
+\begin{code}
+(+ 1 4 (- 52 10 4))         Sexp-Haskell
+=>
+(1 + 4 + (52 - 10 - 4))     Haskell
+\end{code}
+Als Infixoperatoren werden Symbole interpretiert, die ausschließlich
+aus Zeichen der Liste \icode{!\$\%&/=\?*+-.:<|>^}
+bestehen. Kommt ein solcher Operator jedoch nicht am Anfang eines
+Ausdrucks, sondern im Inneren vor, ist die (binäre) Funktion selbst
+gemeint, was in Haskell der Präfixformulierung durch Klammerung
+entspricht:
+\begin{code}
+(foldr1 * xs)               Sexp-Haskell
+=>
+(foldr1 (*) xs))            Haskell
+
+ergibt 24 mit xs = [1, 2, 3, 4]
+\end{code}
+Die Definition neuer benannter Funktionen erfolgt weiterhin mit
+\icode{=}, wobei mit \icode{where} weiterhin lokale Definitionen
+eingeführt werden können:
+\begin{code}
+(= (sumOfSquares x y)
+   (+ x2 y2)
+ (where                     Sexp-Haskell
+  (= x2 (* x x))
+  (= y2 (* y y))))
+
+=>
+
+sumOfSquares x y = (x2 + y2)
+  where
+    x2 = (x * x)            Haskell
+    y2 = (y * y)
+\end{code}
+Anonyme Funktionen werden mit \icode{fun} definiert:
+\begin{code}
+(map 
+  (fun x (+ x 5))           Sexp-Haskell
+  xs)
+
+=>
+
+(map
+  (\ x -> (x + 5))          Haskell
+  xs)
+\end{code}
+Anonyme Funktionen mit mehreren Parametern können in der Form
+\icode{(fun (args x y z) ...)} definiert werden.
+
+\lsubsection[sexphs:spec:pats]{Patterns}
+
+Wie in Haskell können Konstrukturen mittels Pattern Matching zerlegt
+werden:
+\begin{code}
+(= (countMaybe (Just x)) x)
+(= (countMaybe Nothing)  0)      Sexp-Haskell
+
+=>
+
+countMaybe (Just x) = x
+countMaybe Nothing  = 0          Haskell
+\end{code}
+Für Listen etc. stehen die ``Pseudo-Konstruktoren'' \icode{List},
+\icode{Cons}, \icode{Tuple} und \icode{Str} bereit, die wie die
+entsprechenden Haskell-Konstrukte sowohl zum Erzeugen als auch zum
+Matching verwendet werden können:
+\begin{code}
+(= (listTo3Tuple (List x y z)) 
+   (Tuple x y z))
+
+(= (dropTwo (Cons x y xs))             Sexp-Haskell
+  xs)
+
+(= helloWorld (Str Hello World))
+
+=>
+
+listTo3Tuple [x, y, z] = (x, y, z)
+
+dropTwo (x : y : xs) = xs              Haskell
+
+helloWorld = "Hello World"
+\end{code}
+Im Gegensatz zu richtigen Konstrukuren können diese Operatoren eine
+beliebige Anzahl Parameter verarbeiten.
+
+\lsubsection[sexphs:spec:types]{Typen}
+
+Typen werden eins zu eins nach \sexp{}-Haskell übernommen, wobei
+parametrisierte Typen geklammert werden. Typdeklarationen erfolgen
+mit \icode{hasType} anstelle des \icode{::}-Operators in Haskell:
+\begin{code}
+(hasType x Int)
+                                      Sexp-Haskell
+(hasType m (Maybe a))
+
+=>
+
+x :: Int
+                                      Haskell
+m :: Maybe a
+\end{code}
+Funktionstypen werden mit \icode{Fun}, Listentypen mit \icode{List}
+denotiert. Letzteres erwartet im Gegensatz zum gleichnamigen
+Konstruktor nur einen Parameter und verhält sich somit wie der
+\icode{[]}-Operator in Haskell:
+\begin{code}
+(hasType map (Fun (Fun a b) (List a) (List b)))
+=>
+map :: (a -> b) -> [a] -> [b]                  
+\end{code}
+Typabhängigkeiten können mit \icode{dep} eingebunden werden:
+\begin{code}
+(hasType print (dep (Show a)) (Fun a (IO Unit)))
+=>
+print :: (Show a) => a -> IO ()
+\end{code}
+Der Typ \icode{Unit} entspricht in Haskell \icode{()} und damit \icode{void}
+in anderen Sprachen. Typklassen und -instanzen sind ebenfalls direkt
+übernommen worden:
+\begin{code}
+(class 
+  (MyClass a)
+  (where
+    (hasType printIt (Fun a (IO Unit)))
+    (hasType isEqual (Fun a a Bool))))
+
+(instance (dep (Show a) (Eq a))
+  (MyClass (List a))
+  (where
+    (= (printIt x)   ...)
+    (= (isEqual x y) ...)))
+\end{code}
+
+\lsubsection[sexphs:spec:modules]{Module}
+
+Am Anfang jeder Haskell-Datei wird gewöhnlich das aktuelle Modul
+benannt und eine Liste referenzierter Module importiert. Darüber
+hinaus kann eine Liste zu exportierender Symbole angegeben werden,
+welche dann in anderen Modulen sichtbar sind - ansonsten sind alle
+Symbole sichtbar. Um Namenskonflikte auflösen zu können, gibt es vier
+mögliche Arten, ein Modul zu importieren:
+\begin{itemize}
+\item Es können alle (im anderen Modul exportierten) Symbole verfügbar gemacht
+  werden.
+\item Es können nur bestimmte Symbole importiert werden.
+\item Es können bis auf bestimmte alle Symbole importiert werden.
+\item Das Modul kann qualifiziert importiert werden, so dass alle
+  Symbole daraus über einen vorangestellten Modul-Kurznamen
+  referenziert werden können.
+\end{itemize}
+Die folgende Moduldefinition zeigt alle diese Möglichkeiten in
+\sexp{}-Haskell und Haskell:
+\begin{code}
+(module MyModule
+  (export myFun MyClass MyDataType)
+  Prelude
+  (Control.Category (only id))                       Sexp-Haskell
+  (Control.Monad (hiding liftM forM))
+  (Control.Exception (qualified E)))
+
+=>
+
+module MyModule (myFun, MyClass, MyDataType) where
+import Prelude
+import Control.Category (id)
+import Control.Monad hiding (liftM, forM)            Haskell
+import qualified Control.Exception as E
+\end{code}
+
 
 \lsection[sexphs:model]{Typisiertes Modell}
 
@@ -3315,21 +3502,16 @@ eine Liste von Toplevel-Definitionen:
 data Haskell = Haskell (Maybe Module) [Toplevel]
 \end{code}
 Eine Modulbeschreibung besteht aus einem Namen, einer optionalen Liste
-exportierter Symbole sowie einer Liste von Imports, wobei es vier Arten
-gibt, ein Modul zu importieren: Standardimport, benannter Import mit
-einem Kurznamen, ausschließlicher Import bestimmter Symbole sowie der
-Import aller nicht aufgezählten Symbole:
+exportierter Symbole sowie einer Liste von Imports, wobei hier obige
+vier Arten vorkommen können:
 \begin{code}
-data Module = Module ModuleName (Maybe Export) [Import]
-type ModuleName = String
+data Module = Module String (Maybe Export) [Import]
 data Export = Export [String]
-data Import = Import ModuleName ImportArgs
+data Import = Import String ImportArgs
 data ImportArgs = Simple
-                | Qualified ModuleAbbrev
-                | Only [FunctionName]
-                | Hiding [FunctionName]
-type ModuleAbbrev = String
-type FunctionName = String
+                | Qualified String
+                | Only [String]
+                | Hiding [String]
 \end{code}
 Auf Toplevel-Ebene können Typzuweisungen, Funktionen, Typaliase,
 Datentypen, Klassen und Instanzen definiert werden:
@@ -3357,12 +3539,16 @@ Funktionsaufruf\footnote{Streng genommen dürfen in Patterns nur
 \begin{code}
 data Pattern = ListPattern [Pattern]
              | TuplePattern [Pattern]
+             | ConsPattern [Pattern]
              | StringPattern String
              | CallPattern Call
 \end{code}
 Ein Ausdruck kann eine Lambda-Funktion definieren, ein
-\icode{do}-Ausdruck für Monaden, eine Typdeklaration oder ein Pattern
-sein. Die Parameterliste anonymer Funktionen benutzt ebenfalls Patterns.
+\icode{do}-Ausdruck für Monaden\footnote{Die Umsetzung der
+  \icode{do}-Notation in \sexp{}-Haskell wird in diesem Kapitel nicht
+  näher erläutert - auch diese ist allerdings sehr nah am
+  Original.}, eine Typdeklaration oder ein Pattern sein. Die
+Parameterliste anonymer Funktionen benutzt ebenfalls Patterns.
 \begin{code}
 data Expr = LambdaExpr  [Pattern] Expr
           | DoExpr      [DoCmd]
@@ -3373,9 +3559,9 @@ data Expr = LambdaExpr  [Pattern] Expr
 Als nächstes wird ein Parser benötigt, der die \sexp{}-Sprache in das
 Modell überführt.
 
-\lsection[sexphs:comp]{Compiler-Implementation}
+\lsection[sexphs:parser]{Modell-Parser}
 
-Compiler für größere, aus vielen Datentypen zusammengesetzte Modelle
+Compiler und Parser für größere, aus vielen Datentypen zusammengesetzte Modelle
 sollten möglichst immer in kleine Kompilationseinheiten (in Form von
 Arrows) aufgeteilt werden, die jeweils nur für einen Datantyp zuständig
 sind. Diese können auf zwei Arten definiert werden: Zum einen können
@@ -3456,14 +3642,14 @@ Als Beispiel sei folgende Moduldefinition gegeben:
 \end{code}
 Hier wird ein Modul \icode{MyModule} definiert, welches keine Exports
 angibt und drei Module importiert: \icode{Data.List} wird komplett
-importiert, während aus \icode{Prelude} die Funktion \icode{id} und den
-Datentyp \icode{Functor} ignoriert werden (um einen Namenskonflikt mit
-eigenen Definitionen gleichen Namens zu vermeiden). Das Modul
+importiert, während aus \icode{Prelude} die Funktion \icode{id} und der
+Datentyp \icode{Functor} ignoriert werden, um einen Namenskonflikt mit
+eigenen Definitionen gleichen Namens zu vermeiden. Das Modul
 \icode{Control.Exception} wird benannt als \icode{E} importiert, so dass
 beispielsweise die Funktion \icode{throw} mittels \icode{E.throw}
 angesprochen werden kann.
 
-Der Parser erzeugt daraus nun ein typisiertes Objekt:
+Der Parser erzeugt daraus nun ein typisiertes Haskell-Objekt:
 \begin{code}
 (Module "MyModule"
          Nothing
@@ -3471,9 +3657,85 @@ Der Parser erzeugt daraus nun ein typisiertes Objekt:
           Import "Prelude" (Hiding ["id", "Functor"]),
           Import "Control.Exception" (Qualified "E")])
 \end{code}
-Dieses Objekt kann nun von weiterverarbeitet werden - konkret wird es in
-den Datentyp \icode{Code} überführt, welcher in \sref{magicl:code}
-erläutert wird. Aus diesem wird dann automatisch Quelltext erzeugt:
+Dieses Objekt kann nun von weiterverarbeitet werden und schließlich in
+Haskell-Quelltext überführt werden.
+
+\lsection[sexphs:code]{Quellcode-Erzeugung}
+
+Für die eigentliche Quelltext-Erzeugung wird das Haskell-Modell in den
+Datentyp \icode{Code} aus \sref{magicl:code} umgewandelt. Dieser
+Kompilationsschritt kann ebenfalls auf verschiedene Arten durchgeführt
+werden. Am simpelsten und pragmatischsten wäre wohl eine direkte
+Verwendung in Haskell-Funktionen, die sich gegenseitig
+Referenzieren. Statt dessen wurde der Compiler allerdings wieder
+anhand der Typklasse \icode{Compilable} konstruiert, um zu
+demonstrieren, wie neben Parsern auch Funktionen in diesem Rahmen
+verwendet werden können - generell können alle Typen verwendet werden,
+für die die Klasse \icode{Executable} aus \sref{magicl:compinterface}
+implementiert ist. Dies bedeutet wieder einen erhöhten Aufwand, da für
+jede Funktion, die einen Datentyp verarbeitet, eine umständliche
+Instanziierung von \icode{Compilable} benötigt wird. Dies wird auch
+durch den Vorteil, wieder eine generische \icode{comp}-Funktion
+benutzen zu können, vermutlich nicht ausgeglichen. Im Gegensatz zu
+Parsern gibt es hier auch keine Standard-Compiler für Listen und
+\icode{Maybe}-Datentypen, da diese nicht zwangsläufig für jede Sprache
+auf die gleiche Art verarbeitet werden. Listen von Funktionen
+beispielsweise werden im Haskell-Modell auf Toplevel-Ebene als Absätze
+mit Leerzeilen formatiert, Listen von lokalen Definitionen hingegen
+als Zeilen ausgegeben und Listen von Tupel-Elemente mittels Kommas
+auf einer einzigen Zeile verknüpft. Der eigentliche Vorteil dieses
+Ansatzes ist die Einheitlichkeit, die damit erreicht wird, wenn
+jegliche Verarbeitung typisierter Modelle in einem gemeinsamen
+Interface angesprochen wird.
+
+Konkret wird ein Haskell-Objekt in eine Reihe von Absätzen formatiert
+- das geschieht mittels \icode{paragraphs}, was je zwei Zeilenumbrüche
+zwischen seine Argumente einfügt. Der erste Absatz ist die kompilierte
+Modulbeschreibung, falls vorhanden. Anschließend kommen alle
+kompilierten Toplevel-Konstrukte:
+\begin{code}
+instance Compilable (Haskell -> Code) Haskell Code where
+  comp (Haskell mayMod tops) =
+    paragraphs $ compMod mayMod ++ map comp tops
+      where compMod Nothing  = []
+            compMod (Just m) = [comp m]
+\end{code} %$
+Um den Rahmen dieses Kapitels nicht zu sprengen, wird hier ebenfalls
+nur die Verarbeitung der Modulbeschreibung vertieft. Die
+Modulbeschreibung wird mit \icode{lines} auf mehrere Zeilen verteilt:
+\begin{code}
+instance Compilable (Module -> Code) Module Code where
+  comp (Module name exports imports) = 
+    (lines $
+     [words $ [text "module", text name] ++ compExports exports ++ [text "where"]]
+     ++ map comp imports)
+    where compExports Nothing              = []
+          compExports (Just (Export funs)) = [tuple $ map text funs]
+\end{code}%$
+Das Schlüsselwort \icode{module}, der Modulname, die Exports (falls
+vorhanden) sowie das Schlüsselwort \icode{where} kommen in die erste
+Zeile - jeweils durch Leerzeichen getrennt, was durch \icode{words}
+geschieht. Alle Imports belegen ebenfalls je eine Zeile. Exportierte
+Symbole werden durch die Funktion \icode{tuple} mit Kommas getrennt
+und zusammen in runde Klammern gesetzt. Um streng einheitlich zu
+bleiben, müsste die Umwandlung von \icode{Export} in ein Tupel in
+einer seperaten \icode{comp}-Funktion erfolgen - da es sich aber um
+eine derart kurze Funktion handelt, wurde dies einfach in den Compiler
+von \icode{Module} eingebettet.
+
+HERE
+\begin{code}
+instance Compilable (Import -> Code) Import Code where
+  comp (Import modName impArgs) = 
+    words $ [text "import"] ++ bef ++ [text modName] ++ aft
+      where (bef, aft) = case impArgs of
+                           Simple        -> ([], [])
+                           Qualified abb -> ([text "qualified"], [text "as", text abb])
+                           Only onlys    -> ([], [tuple (map text onlys)])
+                           Hiding hides  -> ([], [text "hiding", tuple (map text hides)])  
+\end{code}%$
+
+
 \begin{code}
 module MyModule where
 import Data.List
@@ -3481,11 +3743,19 @@ import Prelude hiding (id, Functor)
 import qualified Control.Exception as E
 \end{code}
 
+\lsection[sexphs:sum]{Zusammenfassung}
+
 Die in diesem Abschnitt vorgestellte Modellverarbeitung schließt
 Typfehler aus und erlaubt die effiziente Durchführung beliebiger
 Berechnungen auf den Daten. Allerdings ist sie auch mit einem erhöhten
 Aufwand verbunden, der nicht für jede kleine Sprache oder
-Spracherweiterung sinnvoll erscheint. Deswegen stellt MagicL alternativ
+Spracherweiterung sinnvoll erscheint.
+
+Diese Lösung ist also etwas umständlich, zeigt aber auch die hohe
+Flexibilität des Frameworks. 
+
+
+ Deswegen stellt MagicL alternativ
 die Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
 bereit, welche in den folgenden Abschnitten präsentiert wird.
 
