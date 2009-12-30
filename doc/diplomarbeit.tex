@@ -3720,44 +3720,76 @@ Symbole werden durch die Funktion \icode{tuple} mit Kommas getrennt
 und zusammen in runde Klammern gesetzt. Um streng einheitlich zu
 bleiben, müsste die Umwandlung von \icode{Export} in ein Tupel in
 einer seperaten \icode{comp}-Funktion erfolgen - da es sich aber um
-eine derart kurze Funktion handelt, wurde dies einfach in den Compiler
+eine sehr kurze Funktion handelt, wurde diese einfach in den Compiler
 von \icode{Module} eingebettet.
 
-HERE
+Jede Import-Zeile besteht aus dem Schlüsselwort \icode{import} sowie
+dem Modulnamen. Je nach Import-Art gibt es dazwischen
+(\icode{betweenElts}) sowie am Ende (\icode{endElts}) noch
+weitere Elemente:
 \begin{code}
 instance Compilable (Import -> Code) Import Code where
   comp (Import modName impArgs) = 
-    words $ [text "import"] ++ bef ++ [text modName] ++ aft
-      where (bef, aft) = case impArgs of
-                           Simple        -> ([], [])
-                           Qualified abb -> ([text "qualified"], [text "as", text abb])
-                           Only onlys    -> ([], [tuple (map text onlys)])
-                           Hiding hides  -> ([], [text "hiding", tuple (map text hides)])  
+    words $ [text "import"] ++ betweenElts ++ [text modName] ++ endElts
+      where (betweenElts, endElts) = case impArgs of
+        Simple        -> ([], [])
+        Qualified abb -> ([text "qualified"], [text "as", text abb])
+        Only onlys    -> ([], [tuple (map text onlys)])
+        Hiding hides  -> ([], [text "hiding", tuple (map text hides)])  
 \end{code}%$
+Beim einfachen Import sind beide Listen leer. Qualifizierte Imports
+beinhalten das Schlüsselwort \icode{qualified} sowie am Ende
+\icode{as} und die Modul-Abkürzung. Sollen nur bestimmte Symbole
+importiert oder nicht importiert werden, werden diese in
+Tupel-Notation angefügt, wobei in letzterem Fall noch das
+Schlüsselwort \icode{hiding} nätig ist.
 
-
+Da MagicL bereits einen Standard-Compiler von \icode{Code} nach
+\icode{String} bereitstellt, kann ein vollständiger Datei-Compiler von
+\sexp{}-Haskell nach Haskell durch Verkettung von Parser
+und Generator sowie Einbettung in einen Aufruf von \icode{compiler}
+bereitgestellt werden:
 \begin{code}
-module MyModule where
-import Data.List
-import Prelude hiding (id, Functor)
-import qualified Control.Exception as E
+compiler ((compile :: IOArrow [Sexp] Haskell) >>> 
+          (compile :: IOArrow Haskell Code))  
 \end{code}
 
 \lsection[sexphs:sum]{Zusammenfassung}
 
-Die in diesem Abschnitt vorgestellte Modellverarbeitung schließt
-Typfehler aus und erlaubt die effiziente Durchführung beliebiger
-Berechnungen auf den Daten. Allerdings ist sie auch mit einem erhöhten
-Aufwand verbunden, der nicht für jede kleine Sprache oder
-Spracherweiterung sinnvoll erscheint.
+Für die \sexp{}-basierte Erzeugung von Haskell-Code stellt MagicL die
+Sprache \sexp{}-Haskell bereit, welche im Wesentlichen nur eine
+geklammerte Teilmenge von Haskell darstellt und nur wenige
+Umbenennungen und andere Anpassungen beinhaltet, wie beispielsweise
+die Erweiterung vorher binärer Operatoren auf beliebig viele
+Argumente.
 
-Diese Lösung ist also etwas umständlich, zeigt aber auch die hohe
-Flexibilität des Frameworks. 
+Implementiert wurde die Sprache durch ein typisiertes
+\icode{Haskell}-Modell sowie zwei Compiler zur Verarbeitung: Der erste
+ist ein Parser von \sexps{}, der zweite ein rein funktionaler Compiler
+nach \icode{Code}, woraus das MagicL-Framework letztlich den Quellcode
+generiert. Beide Compiler sind mittels
+\icode{Compilable}-Implementationen für jeden Datentyp des
+Haskell-Modells konstruiert. Dies hat neben einer hohen
+Einheitlichkeit den Vorteil, dass beliebige Sub-Compiler mit
+\icode{comp} angesprochen und durch Haskell anhand der
+Modelldefinition gefunden werden können. Bei Parsern können auch
+Listen und \icode{Maybe}-Datentypen ohne Mehraufwand verarbeitet
+werden - bei anderen Compilern allerdings nicht, da hier das
+gewünschte Verhalten nicht für alle Modelle gleich ist. Die Kehrseite
+dieses Ansatzes sind die umständlichen
+\icode{Compilable}-Instanzdefinitionen, die vor allem für kleine
+Compiler nicht sinnvoll erscheinen - eine DSL für
+Modellverarbeitung könnte dies in Zukunft allerdings vereinfachen.
 
-
- Deswegen stellt MagicL alternativ
-die Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
-bereit, welche in den folgenden Abschnitten präsentiert wird.
+Allgemein haben statisch typisierte Compiler den Vorteil einer
+frühzeitigen Typfehlererkennung und erlauben komplexe Algorithmen im
+Rahmen der Verarbeitung - auf der anderen Seite steht immer mit
+Modelldefinitionen und der Aufteilung in mehrere Compiler verbundene
+Aufwand, der insbesondere für kleine Sprachen oder Spracherweiterungen
+nicht sinnvoll erscheint. Deswegen stellt MagicL alternativ die
+Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
+bereit, welche im folgenden Kapitel präsentiert wird. Auch
+\sexp{}-Haskell hätte auf diese Weise verarbeitet werden können.
 
 \lchapter[sexpcomp]{\sexp{}-Compiler}
 
