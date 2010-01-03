@@ -61,12 +61,10 @@
               (= (genQt (List name symQuote symUnquote symUnquoteAll))
                  ('1 (autoMac (,1 name) (,1 symQuote) inners                          
                       (where
-		       (def LispMacro inner (<+> unquote procSymbol procNode))
-		       (def LispMacro procSymbol                                      
-                          (>>^ takeSymbol quoteSymbol))
-		       (def LispMacro procNode                  
-                          (>>^ (compNode inners) quoteNode))
-		       (def LispMacro inners
+		       (= inner (<+> unquote
+                                     (>>^ takeSymbol quoteSymbol)                                     
+                                     (>>^ (compNode inners) quoteNode)))
+		       (= inners
                           (>>^ (many (<+> unquoteAll 
                                           (>>^ inner quoteList)))
 			       (>>> concat quoteAppend)))

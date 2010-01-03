@@ -2966,12 +2966,13 @@ macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 
 \lsection[arrowparser:sum]{Zusammenfassung}
 
-\lchapter[magicl]{Komponenten von MagicL}
+\lchapter[magicl]{Weitere Komponenten von MagicL}
 
 Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
-sowie die im folgenden damit implemtierten Sprachen sind das Herzstück
-von MagicL. Darüber hinaus gibt es allerdings noch weitere Komponenten,
-die in den folgenden Abschnitten vorgestellt werden.
+sowie die damit in \cref{sexphs} und \cref{sexpcomp} implementierten
+Sprachen sind das Herzstück von MagicL. Darüber hinaus gibt es
+allerdings noch weitere Komponenten, die in den folgenden Abschnitten
+vorgestellt werden.
 
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
 
@@ -3793,16 +3794,31 @@ bereit, welche im folgenden Kapitel präsentiert wird. Auch
 
 \lchapter[sexpcomp]{\sexp{}-Compiler}
 
+Wie in \sref{template:lisp} beschrieben wurde, unterstützen
+Lisp-Dialekte die \sexp{}-basierte Kompilation vor allem durch zwei
+Konzepte: 
+\begin{itemize}
+\item Einen Backquote-Operator für \sexp{}-Templates
+\item Lisp-Makros, die automatisch in beliebiger Verschachtelung
+  expandiert werden können
+\end{itemize}
+Diese beiden Konzepte sollen nun in ähnlicher Form für MagicL
+bereitgestellt werden. Dafür wird zunächst eine geeignete DSL - genannt
+\sexp{}-Compiler - spezifiziert. Anschließend wird ein Compiler von
+\sexp{}-Compiler nach \sexp{}-Haskell entwickelt. Dieser Compiler lässt
+sich selbst am besten in \sexp{}-Compiler formulieren, so dass die
+Implementation metarekursiv erfolgt.
+
 \lsection[sexpcomp:spec]{Spezifikation}
 
 \lsubsection[sexpcomp:spec:gen]{Templates für \sexps}
 
-Während das Einlesen von \sexps{} dank der in \sref{arrowparser:sexpparser}
-vorgestellten Funktionen bereits recht komfortabel geht, ist die
-Erzeugung von Instanzen des \icode{Sexp}-Datentyp zunächst
-aufwändig. Soll beispielsweise eine Funktion \icode{genUser userName
-  userEmail} mit den Parametern \icode{\"Harald\"} und
-\icode{\"Harry@baz.com\"} aufgerufen den Ausdruck
+Während das Einlesen von \sexps{} dank der in
+\sref{arrowparser:sexpparser} vorgestellten Funktionen bereits recht
+komfortabel geht, ist die Erzeugung von Instanzen des
+\icode{Sexp}-Datentyp zunächst umständlich. Soll beispielsweise eine
+Funktion \icode{genUser userName userEmail} mit den Parametern
+\icode{\"Harald\"} und \icode{\"Harry@baz.com\"} aufgerufen den Ausdruck
 \begin{code}
 (user (name Harald) (email Harry@baz.com))
 \end{code}
@@ -3812,7 +3828,7 @@ nötig:
 \begin{code}
 (= (genUser userName userEmail)
    (Node (List (Symbol (Str user))
-               (Node (List (Symbol (Str  name)) (Symbol  userName)))
+               (Node (List (Symbol (Str  name)) (Symbol userName)))
                (Node (List (Symbol (Str email)) (Symbol userEmail))))))
 \end{code}
 Der entsprechende Haskell-Code liest sich aufgrund der syntaktischen
@@ -3833,9 +3849,9 @@ Funktion sehr elegant formulieren:
   `(user (name ,user-name) (email ,user-email)))
 \end{code}
 Ein derartiger Operator soll nun konstruiert werden. Dieser sollte
-speziell auf MagicL zugeschnitten sein soll und keine bloße Kopie
-bestehender Lisp-Quasiquotes. Im folgenden werden deshalb die
-Anforderungen diskutiert und das gewünschte Verhalten festgelegt.
+allerdings keine bloße Kopie bestehender Lisp-Quasiquotes, sondern
+vielmehr eine genau auf MagicL zugeschnittene Lösung sein. Im Folgenden
+werden daher zunächst die speziellen Anforderungen diskutiert.
 
 Da in MagicL bisher keine syntaktischen Erweiterungen vorgesehen sind,
 sondern eine rein \sexp{}-basierte Repräsentation von Quelltext benutzt
@@ -3847,7 +3863,7 @@ dass einheitlich der Quote-Operator \icode{'} benutzt wird. Die Funktion
 (= (genUser userName userEmail)
    (' (user (name (, userName)) (email (, userEmail)))))
 \end{code}
-Dies sollte von einem geeigneten Compiler in obige, umständlichere
+Dies muss von einem geeigneten Compiler in obige, umständlichere
 Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
 Haskell-Code erzeugt werden kann. Splicing einer Liste erfolgt
 entsprechend mit \icode{(,@)}:
@@ -3871,19 +3887,31 @@ ergibt:
 Hierbei weist \icode{progn} den Lisp-Interpreter\footnote{Es kann sich
   selbstverständlich auch um einen Compiler handeln.} lediglich an, alle
 enthaltenen Operationen nacheinander auszuführen. MagicL soll aber
-beliebige Zielsprachen unterstützen und damit auch solche, die keine
-Möglichkeit ähnlich \icode{progn} besitzen, mehrere Ausdrücke zu einem
-zusammenzufassen. Deswegen sollten MagicL-Makros beliebig viele \sexps{}
-zurückgeben können. Dies passt auch gut zu einer Definition von Makros
-als Parser auf \sexps{}, da Parser immer Streams und damit Listen als
-Eingaben haben.
+beliebige Zielsprachen unterstützen und damit auch solche, die keinen
+Operator zur Zusammenfassung mehrerer Ausdrücke aufweisen, mehrere
+Ausdrücke zu einem zusammenzufassen. Deswegen sollten MagicL-Makros
+beliebig viele \sexps{} zurückgeben können, so dass die Definition von
+\icode{define-arithmetic-functions} (zunächst als Funktion) wie folgt
+aussehen kann:
 \begin{code}
-type LispMacro = SexpParser [Sexp]  
+(= defineArithmeticFunctions
+  '((= (add x y) (+ x y))
+    (= (sub x y) (- x y))))
+\end{code}
+Dies passt auch gut zu einer Definition von Makros als Parser auf
+\sexps{}, da Parser immer Streams und damit Listen als Eingaben haben,
+so dass Ein- und Ausgabetyp übereinstimmen:
+\begin{code}
+type LispMacro = SexpParser [Sexp]
+
+-- Typ eines kompilierten Makros
+myMac        :: LispMacro
+(toIO myMac) :: IOArrow [Sexp] [Sexp]
 \end{code}
 Damit sind Lisp-Makros, nachdem sie mittels \icode{toIO} aus der Typklasse
 \icode{Executable} umgewandelt wurden, IO-Arrows von \icode{[Sexp]} nach
 \icode{[Sexp]}, wodurch auch die Hintereinanderschaltung mehrerer
-Compiler reibungslos funktioniert. Um vernünftig mit diesen Makros
+Makros reibungslos funktioniert. Um vernünftig mit diesen Makros
 verwendet werden zu können, muss der Quasiquote-Operator immer eine
 Liste von \sexps{} zurückgeben, wodurch mehrere Rückgaben ermöglicht
 werden:
@@ -3906,20 +3934,37 @@ das innere Backquote - soll es sich auf das äußere beziehen, müssen
 umständliche Konstrukte wie \icode{,',a} benutzt werden - dies ist auch
 der einzige Fall, für den Common Lisp den (Nicht-Quasi-)Quote-Operator
 benötigt. MagicL geht hier einen einfacheren Weg: Es werden neben den
-normalen Quote-Operatoren \icode{'}, \icode{,} und \icode{,@} benannte
-Operatoren \icode{'1}, \icode{,1} und \icode{,@1} etc. angeboten,
-so dass der Bezug immer klar ist, beispielsweise kann zwischen
-\icode{(' ('1 (, x)))} und \icode{(' ('1 (,1 x)))} unterschieden
-werden. 
+normalen Quote-Operatoren \icode{' , ,@} benannte
+Operatoren \icode{'1 ,1 ,@1} etc. angeboten,
+so dass der Bezug immer klar ist. Beide Interpretationen des obigen
+Ausdrucks sind also darstellbar:
+\begin{code}
+Auswertung aussen:
 
-Quasiquote und Makrosystem sind sehr eng miteinander verbunden. Deshalb wird
-zunächst das erwünschte Makrosystem vorgestellt, bevor beides auf einmal
-implementiert wird.
+(defmacro x ()
+  (' (defmacro y ()
+       ('1 (print (, a))))))
+
+
+Auswertung innen:
+
+(defmacro x ()
+  (' (defmacro y ()
+       ('1 (print (,1 a))))))
+\end{code}
+Für den Vergleich mit Common Lisp wurde in diesem Beispiel ebenfalls
+\icode{defmacro} geschrieben - in MagicL gibt es diesen Operator
+allerdings derzeit nicht\footnote{Es ist allerdings vorstellbar,
+  zukünftig zur Vereinfachung wieder ein \icode{defmacro}
+  bereitzustellen, was in den entsprechenden MagicL-Code übersetzt
+  werden kann.}. Stattdessen wird der Befehl \icode{mac} angeboten. Der
+folgende Abschnitt stellt das zu erstellende Makrosystem vor, bevor es
+gemeinsam mit dem Quote-Operator implementiert wird.
 
 \lsubsection[sexpcomp:spec:comp]{Lisp-artige Makroexpansion}
 
-Die Definition von Lisp-Makros vom Typ \icode{SexpParser [Sexp]} ist mit
-den vorhandenen Mitteln bereits möglich:
+Die Definition von Lisp-Makros (vom Typ \icode{LispMacro = SexpParser [Sexp]}) ist mit
+den bisherigen Mitteln bereits möglich:
 \begin{code}
 (hasType compPredefine LispMacro)
 (= compPredefine (macro (Str predefine)
@@ -3937,31 +3982,80 @@ beinhaltet bereits die Typdefinition:
      (liftA1 ...)
    (where ...))
 \end{code}
-Dies soll in obigen Code übersetzt werden. Hier wird zwischen dem
+Dies soll in obigen Code übersetzt werden. Hier muss zwischen dem
 Compilernamen \icode{compPredefine} und dem Symbolnamen
-\icode{predefine} für den Makroaufruf unterschieden, da ersterer eine
-Haskell-Variable erzeugt und damit damit Sonderzeichen wie \icode{-}
+\icode{predefine} für den Makroaufruf unterschieden werden, da ersterer
+eine Haskell-Variable erzeugt und damit Sonderzeichen wie \icode{-}
 ausschließt.
 
-Diese Makros unterscheiden sich allerdings in einer Hinsicht von anderen
-Lisp-Makros, da der Kontrollfluss hier explizit gesteuert
-wird. Lisp-Makrosysteme hingegen besitzen eine globale Liste
-von Makros, die auf jeden zu expandierenden Ausdruck angewendet
-wird. Trifft kein Makro zu, wird der Knotenname beibehalten und die
-Kinder rekursiv expandiert. Derartige Makros, die automatisch in einen
-rekursiv absteigenden Compiler integriert werden, sollen mittels
-\icode{autoMac} definiert werden können:
+Diese Makros unterscheiden sich allerdings von anderen Lisp-Makros, da
+der Kontrollfluss hier explizit gesteuert wird. Lisp-Makrosysteme
+hingegen besitzen eine globale Liste von Makros, die auf jeden zu
+expandierenden Ausdruck angewendet wird. Trifft kein Makro zu, wird der
+Knotenname beibehalten und die Kinder rekursiv expandiert. Derartige
+Makros, die automatisch in einen rekursiv absteigenden Compiler
+integriert werden, sollen mittels \icode{autoMac} definiert werden
+können:
 \begin{code}
 (autoMac compSomething something
     (compileSomething)
   (where ...))
 \end{code}
-
-
-Für die Definition eines Compiler-Moduls sollte zudem eine Notation
-bereitgestellt werden:
+Hier wird weiterhin ein Haskell-Name erwartet, obwohl dieser im
+Normalfall aufgrund der automatischen Anwendung nicht benötigt wird. Es
+gibt allerdings besondere Situationen, in denen ein direkter Aufruf
+dennoch erforderlich ist. Allgemein ist die Definition
+mittels \icode{mac} sowie \icode{autoMac}, verglichen mit
+\icode{defmacro} in Common Lisp, etwas umständlicher, da neben dem
+Haskell-Namen der Parser explizit aufgeschrieben werden muss, selbst
+wenn nur eine feste Anzahl von Ausdrücken mittels \icode{take}
+unverändert eingelesen werden muss. Auf der anderen Seite sind die
+MagicL-Operatoren allgemeiner, da nicht nur benannte Knoten, sondern
+beliebige Listen von Ausdrücken verarbeitet werden können. Darüber
+hinaus ist MagicL durch Makros einfach erweiterbar, so dass - wenn
+gewünscht - noch immer ein \icode{defmacro} definiert werden kann,
+welches den einfachsten Fall mit wenig Aufwand abdeckt. Dafür könnte
+beispielsweise der Ausdruck
 \begin{code}
-  
+(defmacro (addThree x y z)
+  (' (+ (,x) (,y) (,z))))
+\end{code}
+übersetzt werden in
+\begin{code}
+(autoMac generatedSymbol156 addThree
+   (liftA3 gen take take take)
+  (where (= (gen x y z)
+            (' (+ (,x) (,y) (,z))))))
+\end{code}
+Bisher wird \icode{defmacro} nicht bereitgestellt, da noch nicht klar
+ist, welches die beste Art für MagicL ist, kurz und prägnant Makros zu
+definieren. Es ist beispielsweise vorstellbar, dass sich ein Konstrukt
+finden lässt, der die Eleganz und Knappheit von \icode{defmacro} mit der
+Ausdrucksmächtigkeit von \icode{autoMac} kombiniert. Diese Idee wird in
+\sref{TODO} weiter diskutiert.
+
+Zuletzt sollte die Moduldefinition für Compiler vereinfacht werden:
+\begin{code}
+(compiler Comp2Haskell (imports Data.Maybe Data.List)  
+\end{code}
+Diese muss in eine Haskell-Moduldefinition übersetzt werden, welche alle
+benötigten MagicL-Module sowie zusätzlich die angegebenen Imports
+einbindet:
+\begin{code}
+(module
+  Comp2Haskell
+  (Prelude (hiding id lines words take))
+  Data.IORef
+  (Control.Category (only id))
+  Control.Arrow
+  System.IO.Unsafe
+  Util
+  Arrows
+  Sexp
+  Parser
+  Model
+  Data.Maybe
+  Data.List)
 \end{code}
 
 \lsection[sexpcomp:impl]{Compiler-Implementation}
@@ -3969,49 +4063,87 @@ bereitgestellt werden:
 Dieser Compiler sollte selbst möglichst einfach formuliert werden. Da
 \sexps{} verarbeitet werden, macht eine Implementation als
 \icode{SexpParser} Sinn. Darüber hinaus werden aber auch \sexps{}
-erzeugt, so dass hier auch die Quasiquote-Notation selbst bereits
-benutzt werden sollte. Es wird sich daher um einen metarekursiven
-Compiler handeln, d.h. einen Compiler, der sich selbst übersetzt. Um
-hier das Henne-Ei-Problem zu lösen, wird wie im Compilerbau üblich
-später ein Bootstrapping\footnote{Der Begriff Bootstrapping ist eine
-  Anspielung auf Baron Münchhausen, der sich an seinen Schnürsenkeln aus
-  dem Sumpf gezogen haben will.} erforderlich sein. Metarekursive
-Programme sind in der Lisp-Welt nicht unüblich - bereits der erste
-LISP\footnote{LISP ist der erste Dialekt der Sprachfamilie
-  Lisp.}-Interpreter wurde als \icode{eval}-Funktion in LISP selbst
-implementiert und dann manuell in Maschinensprache
+erzeugt, so dass hier auch Quasiquote-Notation und Lisp-Makros selbst
+bereits benutzt werden sollten. Es wird sich daher um einen
+metarekursiven Compiler handeln, d.h. einen Compiler, der sich selbst
+übersetzt. Um hier das Henne-Ei-Problem zu lösen, wird wie im
+Compilerbau üblich später ein Bootstrapping\footnote{Der Begriff
+  Bootstrapping ist eine Anspielung auf Baron Münchhausen, der sich an
+  seinen Schnürsenkeln aus dem Sumpf gezogen haben will.} erforderlich
+sein. Metarekursive Programme sind in der Lisp-Welt nicht unüblich -
+bereits der erste LISP\footnote{LISP ist der erste Dialekt der
+  Sprachfamilie Lisp.}-Interpreter wurde als \icode{eval}-Funktion in
+LISP selbst implementiert und dann manuell in Maschinensprache
 übersetzt\cite{LispHistory}. Ein anderes prominentes Beispiel ist das
 Common Lisp Object System (CLOS)\cite{MetaobjectProtocol}, welches
 selbst objektorientiert mit CLOS implementiert ist und über Makros in
-ein Common Lisp ohne Objekte übersetzt werden kann.
+ein ``objektfreies Common Lisp'' übersetzt werden kann.
 
 Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
-vorhanden und könnte für die Implementation genutzt werden.
-
+vorhanden und könnte für die Implementation genutzt werden. Die
+Verarbeitung des Quote-Operators lässt sich dann durch ein komplexes
+Auto-Makro realisieren:
+\begin{code}
+(autoMac compQuote ' inners
+  (where
+    ...
+\end{code}
+\icode{inners} muss beliebig viele \sexps{} verarbeiten und daraus einen
+Haskell-Ausdruck erzeugen, der eine Liste von \sexps{}
+repräsentiert:
+\begin{code}
+    (hasType inners LispMacro)
+    (= inners
+       (>>^ (many (<+> unquoteAll 
+                       (>>^ inner quoteList)))
+            (>>> concat quoteAppend)))
+\end{code}
+\icode{inners} erwartet jeweils entweder ein Unquote-All oder einen
+einzelnen Ausdruck, welcher mit \icode{inner} verarbeitet wird. Alle
+normalen Ausdrücke werden mit \icode{quoteList} in eine Liste
+eingebettet und anschließend durch \icode{quoteAppend} mit \icode{++}
+verknüpft, um die Semantik vom Unquote-All zu erreichen. Beispielsweise
+wird \icode{inners} die Ausdrücke 
+\begin{code}
+1 2 (,@ xs) 6  
+\end{code}
+wie folgt nach \sexp{}-Haskell übersetzen:
+\begin{code}
+(++ (List 1)
+    (List 2)
+    xs
+    (List 6))
+\end{code}
+\icode{inner} verarbeitet einen einzelnen Ausdruck und gibt als Ergebnis
+\sexp{}-Haskell-Code für einen \sexp{} zurück:
+\begin{code}
+    (hasType inner LispMacro)
+    (= inner (<+> unquote    
+                  (>>^ takeSymbol quoteSymbol)     
+                  (>>^ (compNode inners) quoteNode)))
+\end{code}
+\icode{inner} erwartet entweder ein Unquote, ein Symbol oder einen
+Knoten. Symbole werden durch die Funktion \icode{quoteSymbol} quotiert,
+Knoten rekursiv mit \icode{inners} verarbeitet und anschließend als
+Knoten quotiert. \icode{unquote} und \icode{unquoteAll} sind bis auf die
+verschiedenen Matcher-Symbole identisch und verarbeiten einen einzigen
+\sexp{}, den sie mit der Funktion \icode{single x = [x]} in eine Liste
+einbetten um dem Rückgabetyp \icode{[Sexp]} für Lisp-Macros zu
+entsprechen:
+\begin{code}
+    (mac unquote    ,  (>>^ take single))
+    (mac unquoteAll ,@ (>>^ take single))
+\end{code}
 
 \begin{code}
-(=
-  compQuote
-  (macro (Str ') (>>^ inners single))
-    (where 
-      (= inner (<+> unquote procSymbol procNode))           
-      (= procSymbol                                      
-         (>>> takeSymbol
-              (arr quoteSymbol)))
-      (= procNode                  
-         (>>> (compNode inners)
-              (arr quoteNode)))
-      (= inners                     
-         (>>> (many (<+> unquoteAll 
-                         (>>> inner 
-                              (arr (namedNode (Str List))))))
-              (arr (namedNode (Str ++)))))
-      (= unquote (macro (Str ,) (>>^ take single)))
-      (= unquoteAll (macro (Str ,@) take))
-      (= (quoteSymbol sym)
-         (' (Symbol (Str (, (Symbol sym))))))
-      (= (quoteNode nod)
-         (' (Node (, nod))))))
+    (= (quoteSymbol sym)
+       (' (Symbol (Str (, (Symbol sym))))))
+    (= (quoteNode sexps)
+       (' (Node (,@ sexps))))
+    (= (quoteList sexps)
+       (' (List (,@ sexps))))
+    (= (quoteAppend sexps)
+       (' (++ (,@ sexps))))))
 \end{code}
 
 \todo{Zustände f. Gensym, Debug?}
