@@ -1,4 +1,4 @@
-(autoCompiler Comp2Haskell (imports Data.Maybe))
+(compiler Comp2Haskell (imports Data.Maybe))
                 
 (def LispMacro comp2haskell 
      (applyParser
@@ -9,7 +9,7 @@
                    concat))
       compAuto)
      (where
-      (= compAutoCompiler (macro (Str autoCompiler)
+      (= compAutoCompiler (macro (Str compiler)
            (&&& compSymbol
                 (optMacro (Str imports) (many take)))))
       (= (extractAutoMacs defs)
@@ -31,7 +31,7 @@
                     (,@ imports))
             (,@ defs)
             (def LispMacro compAuto
-               (simpleTraverse (List (,@ (extractAutoMacs defs)))))))))
+               (lispTraverse (List (,@ (extractAutoMacs defs)))))))))
 
 (autoMac compMac mac
      (liftA4 gen take take take (many take))

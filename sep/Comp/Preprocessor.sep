@@ -1,4 +1,4 @@
-(autoCompiler Preprocessor)
+(compiler Preprocessor)
 
 (autoMac compComment comment
          (>>> (many take) nilArrow))

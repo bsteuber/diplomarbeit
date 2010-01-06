@@ -15,11 +15,11 @@ comp2haskell :: LispMacro
 
 comp2haskell = (applyParser (liftA2 gen compAutoCompiler ((many (genQuotes <+> (take >>^ single))) >>^ concat)) compAuto)
   where
-    compAutoCompiler = (macro "autoCompiler" (compSymbol &&& (optMacro "imports" (many take))))
+    compAutoCompiler = (macro "compiler" (compSymbol &&& (optMacro "imports" (many take))))
     extractAutoMacs defs = (mapMaybe extractAutoMac defs)
     extractAutoMac (Node (Symbol "autoMac" : name : _)) = (Just name)
     extractAutoMac _ = Nothing
-    gen (name, imports) defs = ([Node ([Symbol "module"] ++ [name] ++ [Node ([Symbol "Prelude"] ++ [Node ([Symbol "hiding"] ++ [Symbol "id"] ++ [Symbol "lines"] ++ [Symbol "words"] ++ [Symbol "take"])])] ++ [Symbol "Data.IORef"] ++ [Node ([Symbol "Control.Category"] ++ [Node ([Symbol "only"] ++ [Symbol "id"])])] ++ [Symbol "Control.Arrow"] ++ [Symbol "System.IO.Unsafe"] ++ [Symbol "Util"] ++ [Symbol "Arrows"] ++ [Symbol "Sexp"] ++ [Symbol "Parser"] ++ [Symbol "Model"] ++ imports)] ++ defs ++ [Node ([Symbol "def"] ++ [Symbol "LispMacro"] ++ [Symbol "compAuto"] ++ [Node ([Symbol "simpleTraverse"] ++ [Node ([Symbol "List"] ++ (extractAutoMacs defs))])])])
+    gen (name, imports) defs = ([Node ([Symbol "module"] ++ [name] ++ [Node ([Symbol "Prelude"] ++ [Node ([Symbol "hiding"] ++ [Symbol "id"] ++ [Symbol "lines"] ++ [Symbol "words"] ++ [Symbol "take"])])] ++ [Symbol "Data.IORef"] ++ [Node ([Symbol "Control.Category"] ++ [Node ([Symbol "only"] ++ [Symbol "id"])])] ++ [Symbol "Control.Arrow"] ++ [Symbol "System.IO.Unsafe"] ++ [Symbol "Util"] ++ [Symbol "Arrows"] ++ [Symbol "Sexp"] ++ [Symbol "Parser"] ++ [Symbol "Model"] ++ imports)] ++ defs ++ [Node ([Symbol "def"] ++ [Symbol "LispMacro"] ++ [Symbol "compAuto"] ++ [Node ([Symbol "lispTraverse"] ++ [Node ([Symbol "List"] ++ (extractAutoMacs defs))])])])
 
 compMac :: LispMacro
 
@@ -109,4 +109,4 @@ compQuote3 = (macro "'3" inners)
 
 compAuto :: LispMacro
 
-compAuto = (simpleTraverse [compMac, compAutoMac, compDef, compQuote, compQuote1, compQuote2, compQuote3])
+compAuto = (lispTraverse [compMac, compAutoMac, compDef, compQuote, compQuote1, compQuote2, compQuote3])

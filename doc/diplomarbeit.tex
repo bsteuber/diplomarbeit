@@ -4109,10 +4109,10 @@ wird \icode{inners} die Ausdrücke
 \end{code}
 wie folgt nach \sexp{}-Haskell übersetzen:
 \begin{code}
-(++ (List 1)
-    (List 2)
-    xs
-    (List 6))
+(++ (List (Symbol (Str 1)))
+    (List (Symbol (Str 2)))
+    xs    
+    (List (Symbol (Str 6))))
 \end{code}
 \icode{inner} verarbeitet einen einzelnen Ausdruck und gibt als Ergebnis
 \sexp{}-Haskell-Code für einen \sexp{} zurück:
@@ -4134,7 +4134,8 @@ entsprechen:
     (mac unquote    ,  (>>^ take single))
     (mac unquoteAll ,@ (>>^ take single))
 \end{code}
-
+Alle vier Funktionen zur Quotierung von \sexp{}-Haskell-Ausdrücken
+können selbst mit einem Quote implementiert werden:
 \begin{code}
     (= (quoteSymbol sym)
        (' (Symbol (Str (, (Symbol sym))))))
@@ -4145,6 +4146,61 @@ entsprechen:
     (= (quoteAppend sexps)
        (' (++ (,@ sexps))))))
 \end{code}
+\icode{quoteSymbol} erzeugt die Repräsentation eines Symbols, indem es
+Aufrufe von \icode{Symbol} und \icode{Str} auf \sexp{}-Haskell-Ebene
+ineinander verschachtelt. Auf der Ebene der Metasprache wird ein
+weiterer Aufruf von \icode{Symbol} benötigt, um den String \icode{sym}
+in einen \sexp{} umzuwandeln. Generell muss jedes Argument eines Unquote
+vom Typ \icode{Sexp} und jedes Argument eines Unquote-All vom Typ
+\icode{[Sexp]} sein. Die anderen drei Quote-Funktionen erzeugen jeweils
+einen benannten Knoten, in den sie alle als Liste übergebenen Ausdrücke
+einfügen, und unterscheiden sich nur im erzeugten Knotennamen.
+
+Damit ist die Implementation vom Quote-Operarator abgeschlossen. Die
+Definitionen der benannten Quote-Varianten wie \icode{'1} sind bis auf
+die benutzten Makro-Matcher \icode{'1 ,1 ,@1} etc. statt \icode{' , ,@}
+identisch. Um Code-Duplikation zu vermeiden, benutzt MagicL hier
+ebenfalls ein Makro, welches alle Operatoren \icode{'}
+bis \icode{'3} aus einem einzigen Template definiert.
+
+Der Operator \icode{mac} lässt sich einfach implementieren:
+\begin{code}
+(autoMac compMac mac
+  (liftA4 gen take take take (many take))
+  (where (= (gen fun sym cmd cmds)
+            (' (hasType (, fun) LispMacro)
+               (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))  
+\end{code}
+Damit wird beispielsweise 
+\begin{code}
+(mac compSomething macroName 
+    (doSomething ...) 
+  (where ..))
+\end{code}
+nach
+\begin{code}
+(hasType compSomething LispMacro)
+(= compSomething (macro (Str macroName)
+                   (do-something ...))
+  (where ...))
+\end{code}
+übersetzt. Die Implementation von \icode{autoMac} ist
+schwieriger. Zunächst muss dafür die Makroexpansion-Funktionsweise von
+Common Lisp nachgebildet werden. Dabei wird versucht, eine (in Lisp
+globale) Liste von Makros verodert auf den Eingabestream anzuwenden. Ist
+die Anwendung eines der Makros erfolgreich, wird dessen Rückgabe erneut
+als Eingabe der Liste verarbeitet. 
+
+\begin{code}
+lispTraverse :: [LispMacro] -> LispMacro
+lispTraverse macs = combinedMacs
+    where combinedMacs = many (foldr (<+>) defaultMac recMacs) >>> arr concat
+          recMacs      = map (\m -> applyParser m combinedMacs) macs
+          defaultMac   = ((compSymbol >>> arr single) <+> 
+                          (compNode combinedMacs >>> arr (single . node)))  
+\end{code}
+
+
 
 \todo{Zustände f. Gensym, Debug?}
 
