@@ -3,13 +3,13 @@
 (def LispMacro comp2haskell 
      (applyParser
       (liftA2 gen 
-              compAutoCompiler             
+              compCompiler             
               (>>^ (many (<+> genQuotes 
                               (>>^ take single)))
                    concat))
       compAuto)
      (where
-      (= compAutoCompiler (macro (Str compiler)
+      (= compCompiler (macro (Str compiler)
            (&&& compSymbol
                 (optMacro (Str imports) (many take)))))
       (= (extractAutoMacs defs)

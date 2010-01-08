@@ -221,16 +221,16 @@
 
 \pagenumbering{arabic}
 
-Modellgetriebene Softwareentwicklung ist in aller Munde: UML
+Modellgetriebene Softwareentwicklung ist in aller Munde: UML\cite{UML}
 feiert bald sein 15-jähriges Bestehen \footnote{Der
   Standarisierungsprozess von UML begann 1994, als Gary Booch und Jim
   Rumbaugh mit der Vereinheitlichung ihrer Modellierungstechniken
-  begannen. \cite{TODO}}, IBM vermarktet seit Jahren das Produkt
-\textit{Rational Application Developer} (\cite{TODO}), das, wie auch das freie
+  begannen. \cite[S. 17]{UML}}, IBM vermarktet seit Jahren das Produkt
+\textit{Rational Application Developer} (\cite{RAD}), das, wie auch das freie
 \textit{Eclipse Modelling Framework} sowie \textit{Enterprise
   Architect}, Eclipse um modellbasierte \cgen{}
 bereichert. Seit neuestem zeigt auch Microsoft Interesse und
-verspricht mit \textit{Oslo} \cite{TODO} einen ``Mainstream"=Ansatz
+verspricht mit \textit{Oslo} \cite{Oslo} einen ``Mainstream"=Ansatz
 für Modellierung''. \cgen{} fällt auch im World Wide Web eine
 immer größer werdende Rolle zu: Ob \textit{Ruby on Rails} oder
 \textit{Google Web Toolkit}, praktisch alle Web Frameworks generieren
@@ -266,7 +266,7 @@ Modell erzeugt wurde. Darüber hinaus erfordern neue
 Modellierungssprachen immer eine Einarbeitung und müssen dokumentiert
 werden. Auch sollte es nicht zu viele konkurrierende DSLs für eine
 Domäne geben, so dass einheitliche Standards verloren
-gehen. Beispielsweise kommt es bei Lisp\cite{TODO}-Dialekten aufgrund
+gehen. Beispielsweise kommt es bei Lisp\cite{Lisp}-Dialekten aufgrund
 der Leichtigkeit, mit der die Sprache erweitert werden kann, durchaus
 vor, dass jeder Programmierer in seiner eigenen Sprache programmiert, so
 dass die Wartung von fremden Code sehr aufwändig wird. Um dies zu
@@ -298,28 +298,29 @@ Debugging benötigen. Auch die Template-Sprache ist einzeln zu erlernen
 und eventuell ebenfalls in ihren Möglichkeiten eingeschränkt, so dass in
 einigen Fällen nochmals eine Vorverarbeitung der Daten erfolgen muss.
 
-Andererseits verfolgen Lisp-Programmierer bereits seit ca. 40 Jahren
-einen strukturellen Ansatz der \cgen{}, der den mit Spracherweiterungen
-verbundenen Aufwand minimiert und Lisp Bezeichnungen wie "`The
-programmable programming language"'\cite{federano} beschert hat. Hier
-werden Ein- und Ausgabecode ausschließlich durch \sexps{}
-\sees{model:sexp} in einer untypisierten Baumstruktur repräsentiert, so
-dass Zeichenketten weder eingelesen noch erzeugt werden müssen, wodurch
-ein großer Teil des Generators bereits wegfällt - denn das Verarbeiten
-und Erzeugen von Bäumen ist simpler und weniger fehlerbehaftet. \sexps{}
-fungieren auch direkt als Modelle, so dass weitere Datenstrukturen für
-die Verarbeitung nur noch selten benötigt werden. Lisp-Makros
-\sees{template:lisp} stellen kleine Compiler-Plugins dar, die jeweils
-die Übersetzung eines einzelnen Sprachkonstruktes beschreiben und so
-einen inkrementellen, baukastenartigen Ansatz der Compiler-Entwicklung
-unterstützen. Da Makros selbst Lisp-Funktionen sind, ist die einzige
-verwendete Metasprache mit der generierten Sprache identisch, was die
-Einarbeitung erleichtert und darüber hinaus die Möglichkeit eröffnet,
-Meta-Code selbst durch Generierung zu erzeugen.
+Andererseits verfolgen Lisp-Programmierer bereits seit ca. 40
+Jahren\cite{EvolutionOfLisp} einen strukturellen Ansatz der \cgen{}, der den
+mit Spracherweiterungen verbundenen Aufwand minimiert und Lisp
+Bezeichnungen wie "`The programmable programming
+language"'\cite{Federano} beschert hat. Hier werden Ein- und Ausgabecode
+ausschließlich durch \sexps{} \sees{model:sexp} in einer untypisierten
+Baumstruktur repräsentiert, so dass Zeichenketten weder eingelesen noch
+erzeugt werden müssen, wodurch ein großer Teil des Generators bereits
+wegfällt - denn das Verarbeiten und Erzeugen von Bäumen ist simpler und
+weniger fehlerbehaftet. \sexps{} fungieren auch direkt als Modelle, so
+dass weitere Datenstrukturen für die Verarbeitung nur noch selten
+benötigt werden. Lisp-Makros \sees{template:lisp} stellen kleine
+Compiler-Plugins dar, die jeweils die Übersetzung eines einzelnen
+Sprachkonstruktes beschreiben und so einen inkrementellen,
+baukastenartigen Ansatz der Compiler-Entwicklung unterstützen. Da Makros
+selbst Lisp-Funktionen sind, ist die einzige verwendete Metasprache mit
+der generierten Sprache identisch, was die Einarbeitung erleichtert und
+darüber hinaus die Möglichkeit eröffnet, Meta-Code selbst durch
+Generierung zu erzeugen.
 
 Leider ist das System ausschließlich auf die Erzeugung von Lisp-Code
 ausgerichtet und wird normalerweise nicht für andere Zielsprachen
-benutzt - eine der wenigen Ausnahmen ist Parenscript\cite{parenscript},
+benutzt - eine der wenigen Ausnahmen ist Parenscript\cite{Parenscript},
 ein Tool zur Erzeugung von Javascript-Code aus Common Lisp. Generell
 wird die Generierung anderer Sprachen von Lisp-System selbst aber
 schlecht unterstützt, so dass die Bereitstellung derartiger Bibliotheken
@@ -484,7 +485,7 @@ nicht genau verstehen müssen.
 
 Modelle lassen sich oft als Bäume beschreiben, in denen die Kinder eines
 Knotens als Untermodelle oder Komponenten aufgefasst werden. Dies
-enspricht dem Entwurfsmuster Komposition\cite{TODO}. Eine
+enspricht dem Entwurfsmuster Komposition\cite[S.182f]{CompositePattern}. Eine
 Modellrepräsentation sollte deshalb das Konzept Unterknoten abbilden
 können.
 
@@ -653,7 +654,7 @@ Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
 oder vielmehr ein optionales Feature, was nur aufgrund der umständlichen
 Syntax für Knotendefinitionen genutzt wird. In diesem Fall
 sollten Attribute wohl zukünftig aus XML verschwinden, schließlich
-schreibt das W3C\cite{rec_xml}: "`The number of optional features in XML
+schreibt das W3C\cite{XmlSpec}: "`The number of optional features in XML
 is to be kept to the absolute minimum, ideally zero"'.
 
 Ist also ein zweiter, limitierter Kantentyp für bestimmte Zwecke
@@ -948,7 +949,8 @@ unterstützt und ist deswegen schwer umzusetzen.
 StringTemplate\cite{StringTemplate} ist eine stringbasierte
 Template-Engine für Java. Auch hier ist eine Template-Datei implizit
 quotiert, ein Unquote erlolgt mittels \icode{$foo$} oder
-\icode{<foo>}. Im Gegensatz zu PHP und den meisten anderen Systemen ist
+\icode{<foo>}. Im Gegensatz zu PHP und den meisten anderen Systemen -
+beispielsweise Velocity\cite{Velocity} für Java - ist
 die Mächtigkeit der Unquote-Bereiche in StringTemplate stark reduziert,
 um eine Model-View-Trennung zu erzwingen - alle Berechnungen sollen also
 im Modell, und nicht im Template selbst erfolgen.
@@ -985,7 +987,7 @@ Methoden aus den Templates aufgerufen werden können, unterstützen würde.
 bieten die Möglichkeit, Klassen oder Funktionen unter anderen durch
 Typnamen zu parametrisieren, um so generische Konstrukte wie
 Collection-Klassen definieren zu können. Die bekannten Java-Generics
-\cite{todo} wurden Templates nachempfunden und haben eine ähnliche
+\cite{JavaGenerics} wurden Templates nachempfunden und haben eine ähnliche
 Syntax - diese sind allerdings simpler und weniger mächtig. Templates
 werden direkt vom \cpp{}-Compiler ausgewertet, so dass es kein
 sichtbares oder verfügbares Ausgabemodell gibt. Neben Typen können auch
@@ -1110,14 +1112,15 @@ wird in \cref{sexphask} weiter verfolgt.
 
 \lsection[template:cprep]{C-Präprozessor}
 
-Der C-Präprozessor wird unter anderem verwendet, um Abhängigkeiten
-zwischen Quellcode-Dateien über bedingte Includes zu verwalten. Er läuft
-als eigenes Programm vor dem C-Compiler und kann deshalb auch in
-Kombination mit anderen Sprachen benutzt werden. Mit dem Befehl
-\icode{#define} können Makros auf Textersetzungsbasis sowie
-Compiler-Konstanten definiert werden. \abb{c-loop2d} zeigt
-beispielsweise ein Makro, mit dessen Hilfe sich zwei verschachtelte
-Iterationen über Zahlen komfortabler Notieren lassen.
+Der C-Präprozessor, welcher um das Jahr 1973 entwickelt wurde\cite{CPrep}, wird
+unter anderem verwendet, um Abhängigkeiten zwischen Quellcode-Dateien
+über bedingte Includes zu verwalten. Er läuft als eigenes Programm vor
+dem C-Compiler und kann deshalb auch in Kombination mit anderen Sprachen
+benutzt werden. Mit dem Befehl \icode{#define} können Makros auf
+Textersetzungsbasis sowie Compiler-Konstanten definiert
+werden. \abb{c-loop2d} zeigt beispielsweise ein Makro, mit dessen Hilfe
+sich zwei verschachtelte Iterationen über Zahlen komfortabler Notieren
+lassen.
 \begin{figure}[h]
   \centering
   \begin{code}
@@ -2782,7 +2785,7 @@ Fehlermeldungen zurück.
 
 Weiterhin gibt es viele Arrow-Kombinatoren, mit denen Parser,
 vergleichbar mit den Operationen der Erweiterten Backus-Naur-Form (EBNF)
-\cite{TODO}, verschaltet werden können. Mit den bisher eingeführten
+\cite{EBNF}, verschaltet werden können. Mit den bisher eingeführten
 Operatoren sind bereits Konkatenation (\icode{>>>}) %<<
 und Alternative (\icode{<+>}) abgedeckt, darüber hinaus gibt es für
 Instanzen von \icode{ArrowPlus} unter anderem folgende Funktionen:
@@ -3135,7 +3138,7 @@ generierter Quelltext wird eventuell gelesen werden. Ein Template für
 \icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
 da der Einrückungslevel immer relativ zur - leider im Template
 unbekannten - äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
-Code daher an einen Formatter wie Jaloppy\cite{TODO} übergeben werden -
+Code daher an einen Formatter wie Jaloppy\cite{Jaloppy} übergeben werden -
 für ein sprachunabhängiges Framework ist diese Option aber nicht
 zufriedenstellend.
 
@@ -3927,10 +3930,10 @@ Makros Makros generieren. Im Ausdruck
   `(defmacro y ()
      `(print ,a)))
 \end{code}
-ist zunächst nicht klar, auf welches der beiden Quotes sich das Unquote
+ist zunächst nicht klar, auf welches der beiden Quasiquotes sich das Unquote
 bezieht und damit, ob \icode{a} im Kontext des äußeren oder des inneren
 Makros evaluiert werden soll. Common Lisp bezieht ein Unquote immer auf
-das innere Backquote - soll es sich auf das äußere beziehen, müssen
+das innere Quasiquote - soll es sich auf das äußere beziehen, müssen
 umständliche Konstrukte wie \icode{,',a} benutzt werden - dies ist auch
 der einzige Fall, für den Common Lisp den (Nicht-Quasi-)Quote-Operator
 benötigt. MagicL geht hier einen einfacheren Weg: Es werden neben den
@@ -3959,7 +3962,7 @@ allerdings derzeit nicht\footnote{Es ist allerdings vorstellbar,
   bereitzustellen, was in den entsprechenden MagicL-Code übersetzt
   werden kann.}. Stattdessen wird der Befehl \icode{mac} angeboten. Der
 folgende Abschnitt stellt das zu erstellende Makrosystem vor, bevor es
-gemeinsam mit dem Quote-Operator implementiert wird.
+gemeinsam mit dem Quasiquote-Operator implementiert wird.
 
 \lsubsection[sexpcomp:spec:comp]{Lisp-artige Makroexpansion}
 
@@ -4186,27 +4189,103 @@ nach
 \end{code}
 übersetzt. Die Implementation von \icode{autoMac} ist
 schwieriger. Zunächst muss dafür die Makroexpansion-Funktionsweise von
-Common Lisp nachgebildet werden. Dabei wird versucht, eine (in Lisp
+Common Lisp nachgebildet werden, welche versucht, eine (in Lisp
 globale) Liste von Makros verodert auf den Eingabestream anzuwenden. Ist
 die Anwendung eines der Makros erfolgreich, wird dessen Rückgabe erneut
-als Eingabe der Liste verarbeitet. 
-
+als Eingabe der Makro-Liste verarbeitet. Kann keines der Makros auf einen
+Knoten angewendet werden, wird versucht, dessen Kinder zu
+expandieren. Symbole werden in diesem Fall unverändert
+zurückgegeben. Dieses Verhalten wurde in MagicL in der Haskell-Funktion
+\icode{lispTraverse} implementiert:
 \begin{code}
 lispTraverse :: [LispMacro] -> LispMacro
 lispTraverse macs = combinedMacs
-    where combinedMacs = many (foldr (<+>) defaultMac recMacs) >>> arr concat
-          recMacs      = map (\m -> applyParser m combinedMacs) macs
-          defaultMac   = ((compSymbol >>> arr single) <+> 
-                          (compNode combinedMacs >>> arr (single . node)))  
+  where combinedMacs = many (foldr (<+>) defaultMac recMacs) >>^ concat
+        recMacs      = map (\ m -> applyParser m combinedMacs) macs
+        defaultMac   = ((compSymbol >>^ single) <+> 
+                        (compNode combinedMacs >>^ (Node >>> single)))  
 \end{code}
+Die Eingabeliste \icode{macs :: [LispMacro]} wird in das Ausgabemakro
+\icode{combinedMacs} umgewandelt, indem alle Makros aus \icode{recMacs}
+und zuletzt \icode{defaultMac} verodert werden. \icode{recMacs} entsteht
+aus \icode{macs}, indem jedes darin enthaltene Makro \icode{m} mittels
+\icode{applyParser} derart modifiziert wird, dass seine Ausgabe im
+Erfolgsfall wieder als Eingabe für \icode{combinedMacs} benutzt
+wird. \icode{defaultMac} lasst Symbole unverändert und steigt rekursiv
+in Knoten hinab. Alle Aufrufe von \icode{concat} und \icode{single} in
+\icode{lispTraverse} werden benötigt, um den Ausgabetyp \icode{[Sexp]}
+zu bekommen.
 
+Auto-Makros können nun mit Hilfe von \icode{lispTraverse} realisiert
+werden. Dafür müssen zunächst alle in einem Compiler verwendeten
+\icode{autoMac}-Deklarationen gefunden und deren Haskell-Name gemerkt
+werden. Anschließend wird ein Makro namens \icode{compAuto} erzeugt,
+welches alle gefundenen Namen an \icode{lispTraverse}
+übergibt. Da das Scannen von Auto-Makros bereits vor der
+normalen Makroexpansion von \icode{autoMac} geschieht, kann
+\icode{autoMac} selbst sich genau wie \icode{mac} verhalten.
 
+Auf die konkrete Implementation des Toplevel-Compiler-Compilers wird an
+dieser Stelle nicht weiter eingegangen - sie kann dem MagicL-Code
+für das Modul \icode{Comp2Haskell} entnommen werden.
 
 \todo{Zustände f. Gensym, Debug?}
 
-\lsection[sexpcomp:preproc]{Beispiel: Ein simpler Präprozessor}
+\lsubsection[sexpcomp:impl:example]{Beispiel: Ignorieren von Kommentaren}
+
+Praktisch alle Programmiersprachen benötigen die Möglichkeit von
+Kommentaren, welche bei der Verarbeitung ignoriert werden. Meistens gibt
+es eine besondere Kommentar-Syntax - Lisp-Dialekte verwenden
+beispielsweise Semikolons. Da MagicL allerdings auf jede weitere Syntax
+verzichtet, sollen Kommentare hier ebenfalls in \sexps{} codiert
+werden. Dafür sollen Ausdrücke der Form \icode{(comment ...)} einfach
+ignoriert werden. Diese Funktionalität ist in MagicL durch einen
+\icode{Preprocessor}-Compiler gegeben, welcher vor beliebige andere
+Compiler geschaltet werden kann.
+
+Das Modul \icode{Preprocessor} besteht aus vier Zeilen Code:
+\begin{code}
+(compiler Preprocessor)
+
+(autoMac compComment comment
+         (>>> (many take) nilArrow))
+
+(= preprocess compAuto)  
+\end{code}
+Da \icode{compComment} als Auto-Makro definiert ist, können Kommentare
+an jeder beliebigen Stelle im Quellcode auftreten. \icode{nilArrow} ist
+ein Arrow, der unabhängig von seiner Eingabe immer die leere Liste
+zurückgibt. Die Möglichkeit, einfach ``nichts'' zurückzugeben, ist ein
+weiterer Vorteil des Rückgabetyps \icode{[Sexp]} - in Common Lisp wäre
+dies nicht möglich, da jedes Makro genau einen Ausdruck zurückliefern
+muss. Es ist dem Programmierer dort daher nicht möglich, ein eigenes
+\icode{comment}-Makro zu definieren, das tatsächlich an beliebiger
+Stelle funktioniert.
+
+Die Definition von \icode{preprocess} als \icode{compAuto} dient
+lediglich der Klarheit beim Aufruf aus externen Modulen.
 
 \lsection[sexpcomp:sum]{Zusammenfassung}
+
+Für die praktische Definition von \sexp{}-nach-\sexp{}-Compilern
+beinhaltet MagicL die DSL \sexp{}-Compiler, welche nach \sexp{}-Haskell
+übersetzt wird. Diese DSL besteht aus zwei Hauptkomponenten: Einem
+Quote-Operator \icode{'} für \sexp{}-Templates sowie einem
+Lisp-ähnlichen Makrosystem. Der Quote-Operator unterscheidet sich in
+einer Reihe von Punkten von bestehenden Lisps: Zunächst wird nicht
+zwischen Quote und Quasiquote unterschieden, da der einzige Fall, in dem
+beispielsweise Common Lisp ein nicht-Quasi-Quote benötigt, die
+komplizierte Auflösung von Unquotes in verschachtelten Quasiquotes
+ist. Dieses Problem löst MagicL jedoch einfach durch die Existenz
+verschiedener Quote/Unquote/Unquote-All Tripel wie \icode{'1 ,1
+  ,@1}. Ein weiterer Unterschied ist, dass Makros und Quotes nicht einen
+einzelnen Ausdruck sondern immer eine Liste von \sexps{} zurückliefern,
+die vom Makrosystem in die Ausgabe ``gesplicet'' wird. Auf diese Weise
+können Makros auch mehrere oder gar keine Ausdrücke zurückliefern, was
+die Ausdrucksmächtigkeit erhöht. Während normale Makros in MagicL
+gezielt über ihren Haskell-Namen aufgerufen werden, erlauben Auto-Makros
+die für Lisp typische automatische Auswertung an beliebiger Tiefe sowie
+die wiederholte Makroexpansion von Rückgabeausdrücken anderer Makros.
 
 \lchapter[end]{Schluss}
 
