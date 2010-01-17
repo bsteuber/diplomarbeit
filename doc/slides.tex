@@ -17,22 +17,24 @@
 \newcommand{\defaultscale}{0.5}
 \newcommand{\pfeil}{\item[$\Rightarrow$]}
 
-\title[MagicL]{MagicL: Ein S-Expression-basiertes Framework für
-  Compiler-Konstruktion nach dem Baukastenprinzip}
+\newcommand{\sexp}{S"=Expression}
+\newcommand{\sexps}{S"=Expressions}
+\newcommand{\cgen}{Code"=Generierung}
+
+\title[MagicL]{MagicL: Prototyp eines universellen Frameworks für
+  \sexp{}-basierte \cgen{}}
 \subtitle{Diplomarbeit}
 \author{Benjamin Teuber}
 \date{\today}
 \institute{Universität Hamburg\\ 
   Fakultät für Mathematik, Informatik und Naturwissenschaften\\
-  Department Informatik\\
-  AOSE'08}
+  Department Informatik}
 
 \begin{document}
 \maketitle
 
-\section{Einführung}
-\subsection{}
-
+\section{Einführung}  
+ 
 \begin{frame}{Themengebiet}
   \begin{itemize}
   \item Buzzwords:
@@ -48,12 +50,22 @@
     \item Templates für Zielsprache
     \end{itemize}
   \item Wie können wir das vereinfachen?
-  \pfeil Lightweight-Compiler
   \end{itemize}
 \end{frame}
 
-\section{Lisp}
-\subsection{}
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+\subsection[Werkzeuge]{Bestehende Werkzeuge}
+
+\begin{frame}{Verwendete Modelle}
+  \begin{itemize}
+  \item String
+  \item typisierte Objekte
+  \item untypisierte Baumstruktur (XML, Sexp)
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Exkursion: Lisp}
   \begin{itemize}
@@ -88,6 +100,40 @@
 \end{verbatim}
 \end{frame}
 
+\begin{frame}{Verwendete Modelle (2)}
+  Tabelle
+\end{frame}
+
+\begin{frame}{Templates}
+  \begin{itemize}
+  \item 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiele für Templates}
+  \begin{itemize}
+  \item PHP
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiele für Templates (2)}
+  \begin{itemize}
+  \item C++
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiele für Templates (3)}
+  \begin{itemize}
+  \item XSLT
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Beispiele für Templates (4)}
+  \begin{itemize}
+  \item Lisp
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Lisp-Makros}
   \begin{itemize}
   \item Makros sind Funktionen von Code nach Code
@@ -118,7 +164,7 @@
 \begin{verbatim}
 (if (== input "Hallo")
   (print "Hallo auch")
- elseif (== input ""Tschüss") 
+ elseif (== input "Tschüss") 
   (print "Bye Bye")
  elseif (== input "Wie gehts?")
   (print "Gut soweit"))
@@ -126,7 +172,7 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{Warum Makros toll sind}
+\begin{frame}{Warum Makros praktisch sind}
   \begin{itemize}
   \item Compiler nicht als monolithischer Block
   \item Statt dessen Bauskastenprinzip
@@ -137,7 +183,6 @@
   \end{itemize}
 \end{frame}
 
-\section{Diplomarbeit}
 \subsection{Diplomarbeit}
 
 \begin{frame}{Motivation der Diplomarbeit}
@@ -154,7 +199,7 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Ziel der Diplomarbeit}
+\begin{frame}{Ziele der Diplomarbeit}
   \begin{itemize}
   \item Entwurf eines S-Expression-basierten Compilerbau-Frameworks
   \item Integrierte DSLs für:
@@ -167,26 +212,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Erster Prototyp}
-  \begin{itemize}
-  \item Ca. ein Jahr alt - proof of concept
-  \item Nachbildung des Lisp-Makroprozessors
-  \item In Ruby geschrieben
-  \item Zwei Sexp-Sprachen:
-    \begin{itemize}
-    \item Ruby - kompiliert nach Ruby-Quellcode
-    \item Compiler - DSL für Sprachdefinitionen, kompiliert nach Ruby-Sexp
-    \end{itemize}
-  \item Seit dem erfolfreichen \textit{bootstrapping} nur noch
-    generierter Ruby-Code
-  \end{itemize}
-\end{frame}
+%Anforderungen genauer
 
-\begin{frame}{Neue Version}
+\begin{frame}{MagicL}
   \begin{itemize}
-  \item Derzeit im entstehen
-  \item In (generiertem) Haskell programmiert - der Sprache für ``theorienahe Anwendungen''
-  \item Eigener Ansatz zum Compilerbau statt Makro-Nachbau
+  \item In Haskell implementiert - einer Sprache für ``theorienahe Anwendungen''
+  \item Eigener Ansatz für Makros
     \begin{itemize}
     \item Mathematisch fundiert: Kategorientheorie
     \item Operatoren wie in EBNF möglich
@@ -194,8 +225,14 @@
   \end{itemize}
 \end{frame}
 
-\section{Kategorientheorie}
+\section[Grundlagen]{Theoretische Grundlagen der Arbeit}
 \subsection{Kategorientheorie}
+
+    %% vgl. Petri-Netze
+    %% abstrakt
+    %% ``überladbarer Kompositionsoperator''
+    %% Produkt/Coprodukt
+    %% kurz erwähnen: Funktoren, natürliche Transformationen, Monaden
 
 \begin{frame}{Kategorientheorie}
   \begin{itemize}
@@ -217,7 +254,7 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}{Nun formal}
+\begin{frame}{Definition: Kategorie}
   \begin{itemize}
   \item Eine Kategorie $C = (Ob, Mor, \circ, id)$ besteht aus  
     \begin{itemize}
@@ -309,15 +346,82 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Ziel: Eine Parser-Kategorie}
+\subsection{Haskell}
+
+\begin{frame}{Die Sprache Haskell}
+  \begin{itemize}
+  \item Funktional (pur)
+  \item statische Typinferenz
+  \item Seiteneffekte mittels Monaden
+  \item Beispielprogramm (Monadic Hello World?)
+  \item Arrows (IOArrow)
+  \end{itemize}
+\end{frame}
+
+\section{MagicL}
+
+\subsection{Architektur}
+
+\begin{frame}{Überblick Architektur}
+  \begin{itemize}
+  \item Komplett Arrow-basiert
+  \pfeil Generische Schnittstelle für alle Arten von Compilern
+  \item Taxonomie \\
+    \begin{itemize}
+    \item[] Compiler 
+    \item[] $\supset$ Parser 
+    \item[] $\supset$ Makros 
+    \item[] $\supset$ Lisp-Makros
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Generische Compiler-Schnittstelle}
+  \begin{itemize}
+  \item Compiler von A nach B
+  \item Etwas, was sich in einen IOArrow von A nach B überführen lässt
+  \item Festes ``verdrahten'' von Compilern
+    \pfeil Automatisches Finden von Compilern
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Typklasse Executable}
+
+\end{frame}
+
+\begin{frame}{Typklasse Compilable}
+  
+\end{frame}
+
+\begin{frame}[fragile]{Typklasse Compiler}
+  \begin{verbatim}
+  compile :: IOArrow MyModel Sexp
+  \end{verbatim}  
+\end{frame}
+
+\begin{frame}[fragile]{Generische Compiler-Schnittstelle (2)}
+\begin{verbatim}
+class Compiler a b where
+  compile :: IOArrow a b
+\end{verbatim}
+\begin{itemize}
+\item ``vergisst'' Implementationstyp
+\item Automatisches Finden eines Compilers
+\begin{verbatim}
+compile :: IOArrow SourceModel TargetModel
+\end{verbatim}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Parser als Arrows}
   \begin{itemize}
   \item Eigenschaften von Parsern:
     \begin{itemize}
     \item Können fehlschlagen und Alternativen ausdrücken
     \item Besitzen einen Zustand (Position im Eingabestream)
     \end{itemize}
-  \item Plan: Bestehende Kategorien um Fehlschlagen / Zustände erweitern \\
-  $\Rightarrow$ Funktoren
+  \item Plan: Bestehende Kategorien um Fehlschlagen / Zustände erweitern
+  \pfeil Funktoren
   \end{itemize}
 \end{frame}
 
@@ -408,11 +512,26 @@
     \end{itemize}
   \item Parser-Bibliothek enthält dazu:
     \begin{itemize}
-    \item Praktische Funktionen zum Parser-Erzeugen (Blick in \texttt{Parser.hs})
+    \item Praktische Funktionen zum Parser-Erzeugen
     \item Möglichkeiten zum Aufruf von inneren Parsern
     \item Konzepte zum Verschalten von Parsern und Compilern
     \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Beispiel: Text nach Sexp parsen}
+\begin{verbatim}
+data Sexp = Symbol String
+          | Node   [Sexp]
+
+whitespace = skip (many (member " \t\n"))
+
+parseSymbol = many1 (notMember " \t\n()") >>^ Symbol
+
+parseNode = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq')')
+
+parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
+\end{verbatim}
 \end{frame}
 
 \begin{frame}{Parsen von S-Expressions}
@@ -432,16 +551,96 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Komponenten}
+
+\begin{frame}{Überblick: Komponenten von MagicL}
+  \begin{itemize}
+  \item Modell für Quellcode-Erzeugung
+  \item Eigene DSLs
+    \begin{itemize}
+    \item \sexp{}-Haskell
+    \item \sexp{}-Compiler
+    \end{itemize}
+  \item Außerdem
+    \begin{itemize}
+    \item \item minimales Test-Framework
+    \item Build-Tool
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Quellcode-Modell}
+  \begin{itemize}
+  \item 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Sexp-Haskell}
+  \begin{itemize}
+  \item Ziel: \sexp{}-basierte Erzeugung von Haskell-Code
+  \item Ansatz: Haskell-Variante in \sexp{}-Syntax
+  \end{itemize}
+\begin{verbatim}
+(= (sumOfSquares x y)
+   (+ x2 y2)
+ (where                   
+  (= x2 (* x x))
+  (= y2 (* y y))))
+
+=>
+
+sumOfSquares x y = (x2 + y2)
+  where
+    x2 = (x * x)         
+    y2 = (y * y)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Compiler}
+  \begin{itemize}
+  \item Benutzung eines typisierten \verb+Haskell+-Modells
+  \item Mehrstufige Kompilation
+    \begin{itemize}
+    \item \verb+Sexp+ nach \verb+Haskell+
+    \item \verb+Haskell+ nach \verb+Code+
+    \end{itemize}
+  \item Nutzung des Interface \verb+Compilable+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Haskell-Modell}
+\begin{verbatim}
+data Haskell = Haskell (Maybe Module) [Toplevel]
+data Module = Module String (Maybe Export) [Import]
+data Export = Export [String]
+data Import = Import String ImportArgs
+data ImportArgs = Simple
+                | Qualified String
+                | Only [String]
+                | Hiding [String]  
+...
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Sexp-Compiler}
+  \begin{itemize}
+  \item DSL für untypisierte \sexp{}-Verarbeitung ähnlich Lisp
+    \begin{itemize}
+    \item Quasiquote-Operator für \sexp{}-Templates
+    \item Makrosystem
+    \end{itemize}
+  \item Wird nach Sexp-Haskell kompiliert
+  \item Selbst in Sexp-Compiler geschrieben
+  \end{itemize}
+\end{frame}
+
 \section{Schluss}
 \subsection{Schluss}
 
-\begin{frame}{Beispiel-Code}
+\begin{frame}{Zusammenfassung}
   \begin{itemize}
-  \item Sexp-Parser
-  \item Sexp2Haskell
-  \item Haskell2Code
-  \item Arrow-Helper
-  \item Fail-Funktor
+  \item Interessante Architektur
+  \item Makros als Parser auf Sexps -> EBNF
   \end{itemize}
 \end{frame}
 

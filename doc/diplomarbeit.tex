@@ -1,4 +1,4 @@
-\documentclass[11pt, a4paper, bibgerm]{book}
+\documentclass[11pt, a4paper, bibgerm]{scrbook}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -166,7 +166,6 @@
 \newcommand{\seec}[1]{(siehe \cref{#1})}
 \newcommand{\sees}[1]{(siehe \sref{#1})}
 
-\newcommand{\sexy}{S-Exy}
 \newcommand{\sexp}{S"=Expression}
 \newcommand{\sexps}{S"=Expressions}
 \newcommand{\cgen}{Code"=Generierung}
@@ -184,9 +183,37 @@
 \maketitle
 \end{titlepage}
 \thispagestyle{empty}
-\cleardoublepage
 
 \pagenumbering{roman}
+
+\section*{\centering Zusammenfassung}
+Template-gestützte \cgen{} ist in der Informatik allgegenwärtig und
+tritt in den verschiedensten Formen auf. Entsprechend groß ist die
+Vielfalt verwendeter Werkzeuge - seien es der C-Präprozessor, PHP oder
+auch XSL-Transformationen. Die meisten bestehenden Technologien sind
+allerdings aufgrund der verwendeten Syntax und Datenstrukturen recht
+Fehleranfällig und umständlich in der Benutzung. Eine weitgehend
+vergessene, aber äußerst elegante und praktische Form der \cgen{} bietet
+dagegen die Lisp-Sprachfamilie, welche mit \sexps{} als universeller,
+einfacher Datenstruktur arbeitet sowie mit Makros, welche als
+``Lightweight-Compiler'' fungieren.
+
+Diese Diplomarbeit beschäftigt sich mit der Frage, wie der Lisp-Ansatz
+weiter verallgemeinert werden kann, um beliebige Zielsprachen,
+verschiedene Modelltypisierungsgrade sowie eine EBNF-artige Komposition
+von Makros zu ermöglichen. Dafür wird mit MagicL ein prototypisches
+Framework in Haskell erstellt. Mit Hilfe einer kategorientheoretisch
+motivierten Architektur auf der Basis von Arrows sowie einem Modell für
+die strukturierte Quelltext-Erzeugung können dann unter anderem
+\sexp{}-Sprachen eingelesen und typisiert oder oder weiterhin als
+\sexps{} weiterverarbeitet werden. Für reine \sexp{}-Compiler wird
+darüber hinaus eine DSL definiert, die einen gegenüber Lisp
+verallgemeinerten Quasiquote-Operator sowie ein flexibles Makrosystem
+bereitstellt und von einem metarekursiven Compiler nach Haskell
+übersetzt wird.
+
+\cleardoublepage
+
 
 \addcontentsline{toc}{section}{Inhaltsverzeichnis}
 \tableofcontents
@@ -403,43 +430,41 @@ Funktoren eine Parser-Kategorie konstruieren lässt. Die
 Haskell-Umsetzung dieser Kategorie ergibt eine praktische und elegante
 Bibliothek für die Erzeugung und Komposition von Parsern. Als
 Anwendungsbeispiel dient das Einlesen von \sexps{} aus einer
-Stringrepräsentation. Anschließend wird eine allgemeine, ebenfalls
-Arrow-basierte Compiler-Schnittstelle entwickelt, mit der verschiedene
-Parser sowie funktionale und imperative Compiler angesprochen werden
-können. Damit wird es sogar möglich, Haskell mittels Typinferenz
-selbstständig den passenden Compiler für eine Aufgabe auswählen zu
-lassen.
+Stringrepräsentation. Die hier entwickelten Parser können nicht nur auf
+Zeichenketten, sondern auf beliebigen Listen arbeiten. Damit können
+Makros als Parser auf \sexps{} aufgefasst werden und so die
+gewünschte Universalität erreichen.
 
-Die hier entwickelten Parser können nicht nur auf Zeichenketten, sondern
-auf beliebigen Listen arbeiten. \cref{sexpcomp} zeigt, wie damit die
-Verarbeitung von \sexps{} beschrieben werden kann, so dass Makros als
-Parser auf \sexps{} aufgefasst werden und damit die gewünschte
-Universalität erreichen. Mit Hilfe des Makrosystems wird unter anderem
-HaskSexp, eine in \sexps{} repräsentierte Haskell-Teilmenge, in ein
-typisiertes Modell überführt, welches anschließend nach Haskell
-kompiliert wird. Für die Generierung von \sexps{} wird mit CompSexp eine
-DSL ähnlich Lisp konstruiert, die Quasiquote-Operatoren enthält, welche
-besser als bestehende Lisp-Varianten für die Erzeugung von Meta-Code
-selbst geeignet ist. CompSexp wird metazirkulär nach HaskSexp und
-anschließend nach Haskell übersetzt, so dass nun sämtlicher Meta-Code in
-CompSexp, HaskSexp oder selbst bereitgestellten DSL geschrieben werden
-kann.
+Weitere Komponenten von MagicL, die in den anderen Kapiteln keinen Platz
+finden, werden in \cref{magicl} vorgestellt. Zunächst wird eine
+allgemeine, ebenfalls Arrow-basierte Compiler-Schnittstelle vorgestellt,
+mit der verschiedene Parser sowie funktionale und imperative Compiler
+angesprochen werden können. Damit ist es möglich, Haskell mittels
+Typinferenz selbstständig den passenden Compiler für eine Aufgabe
+auswählen zu lassen.  Die eigentliche Code-Erzeugung erfolgt aus einem
+typisierten Modell für die Beschreibung von eingerücktem Text, was zu
+weniger Syntaxfehlern und teils kürzerem Meta-Code führt als die
+Benutzung String-basierter Templates. MagicL besitzt auch ein
+minimalistisches Test-Framework für Compiler. Außerdem wird das
+ebenfalls in Haskell geschriebene Build-Tool präsentiert, mit dem MagicL
+kompiliert und getestet wird.
 
-Weitere Komponenten von MagicL, die in den vorigen Kapiteln keinen Platz
-gefunden haben, werden in \cref{magicl} vorgestellt: Die eigentliche
-Code-Erzeugung erfolgt aus einem typisierten Modell für die Beschreibung
-von eingerücktem Text, was zu weniger Syntaxfehlern und teils kürzerem
-Meta-Code führt als die Benutzung String-basierter Templates. MagicL
-besitzt auch ein minimalistisches Test-Framework für Compiler. Auch die
-Benutzung von Debugging-Ausgaben für die Lokalisierung komplizierterer
-Compiler-Fehler wird kurz erläutert. Zuletzt wird auf das ebenfalls in
-Haskell geschriebene Build-Tool präsentiert, mit dem MagicL kompiliert
-und getestet wird.
+Mit Hilfe der vorangehenden Werkzeuge wird in \cref{sexphs} die
+funktionale Sprache \sexp{}-Haskell implementiert, die zunächst in ein
+typisiertes Modell und anschließend nach Haskell übersetzt wird. Dies
+ermöglicht eine rein \sexp{}-basierte Erzeugung von Haskell-Code.
+
+\cref{sexpcomp} bildet den Höhepunkt der Arbeit und stellt mit
+\sexp{}-Compiler eine DSL zur untypisierten Verarbeitung von \sexps{}
+vor. Diese DSL beinhaltet ein Lisp-ähnliches Makrosystems für MagicL
+sowie einen verbesserten Quasiquote-Operator für \sexp{}-Templates. Der
+Compiler von \sexp{}-Compiler nach \sexp{}-Haskell wird selbst in
+\sexp{}-Compiler definiert und damit metazirkulär.
 
 In \cref{end} wird die gesamte Arbeit zusammengefasst und
 diskutiert. Zudem werden weitere Verbesserungs- und
-Erweiterungsmöglichkeiten vorgestellt, die zukünftig weiter untersucht
-werden könnten.
+Erweiterungsmöglichkeiten vorgestellt, die zukünftig aufgegriffen werden
+könnten.
 
 \lchapter[model]{Repräsentation von Modellen}
 
@@ -1403,7 +1428,7 @@ Wird kompiliert nach:
 Makros können als kleine "`Compiler-Plugins"' aufgefasst werden, mit
 denen die Sprache direkt erweitert bzw. DSLs integriert werden
 können. Beispielsweise könnte damit ein nach Lisp kompilierendes
-Prolog\cite{NorvigProlog} - selbstverständlich in \sexp{}-Syntax -
+Prolog\cite[S.388ff]{NorvigCL} - selbstverständlich in \sexp{}-Syntax -
 konstruiert werden, welches beliebig mit Lisp-Code gemischt werden
 kann. Auch Makro-schreibende Makros sind in Lisp möglich - hier ergibt
 sich allerdings wieder das Problem, ob sich ein Unquote auf das innere
@@ -1603,7 +1628,8 @@ sollte von Lisp übernommen werden, so dass diese Einheiten ebenfalls als
 Makros bezeichnet werden. Allerdings wäre es interessant, wenn nicht nur
 der Name, sondern der gesamte Knoten in einer Art Pattern-Matching
 ähnlich XPath berücksichtigt werden könnte. Alternativ wäre auch eine
-mit EBNF vergleichbare Grammatik auf \sexps{} vorstellbar.
+mit EBNF\cite[S.43f]{EBNF} vergleichbare Grammatik auf \sexps{}
+vorstellbar.
 
 Zudem ist der Kontrollfluss im Makrosystem von Lisp relativ unflexibel,
 da es lediglich eine globale Zuordnung von Namen zu Makros
@@ -2785,7 +2811,7 @@ Fehlermeldungen zurück.
 
 Weiterhin gibt es viele Arrow-Kombinatoren, mit denen Parser,
 vergleichbar mit den Operationen der Erweiterten Backus-Naur-Form (EBNF)
-\cite{EBNF}, verschaltet werden können. Mit den bisher eingeführten
+\cite[S.43ff]{EBNF}, verschaltet werden können. Mit den bisher eingeführten
 Operatoren sind bereits Konkatenation (\icode{>>>}) %<<
 und Alternative (\icode{<+>}) abgedeckt, darüber hinaus gibt es für
 Instanzen von \icode{ArrowPlus} unter anderem folgende Funktionen:
@@ -3138,7 +3164,7 @@ generierter Quelltext wird eventuell gelesen werden. Ein Template für
 \icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
 da der Einrückungslevel immer relativ zur - leider im Template
 unbekannten - äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
-Code daher an einen Formatter wie Jaloppy\cite{Jaloppy} übergeben werden -
+Code daher an einen Formatter wie Jalopy\cite{Jalopy} übergeben werden -
 für ein sprachunabhängiges Framework ist diese Option aber nicht
 zufriedenstellend.
 
@@ -4296,8 +4322,8 @@ die wiederholte Makroexpansion von Rückgabeausdrücken anderer Makros.
 Makros für beliebige Zielsprachen
 
 MagicL ist ein Framework für \sexp-Compiler, welches
-als \sexy{} intern mit getypten Modellen arbeitet. Zudem basiert diese
-Neuimplementation auf einer Haskell-Umsetzung kategorientheoretischer
+{} intern mit getypten Modellen arbeitet. Zudem basiert diese
+Mplementation auf einer Haskell-Umsetzung kategorientheoretischer
 Konzepte (in \sref{haskell:cats} beschrieben), mit deren Hilfe
 beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
 \sexp{}-Parser konstruiert werden. In \sref{todo} geht es um
