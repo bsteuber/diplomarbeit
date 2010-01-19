@@ -16,71 +16,127 @@
 
 \newcommand{\defaultscale}{0.5}
 \newcommand{\pfeil}{\item[$\Rightarrow$]}
+\newcommand\ato{\rightarrow} %Morphismen
 
 \newcommand{\sexp}{S"=Expression}
 \newcommand{\sexps}{S"=Expressions}
 \newcommand{\cgen}{Code"=Generierung}
+\newcommand{\cpp}{C\texttt{++}}
 
-\title[MagicL]{MagicL: Prototyp eines universellen Frameworks für
+\title[\cgen{}]{Prototyp eines universellen Frameworks für
   \sexp{}-basierte \cgen{}}
 \subtitle{Diplomarbeit}
-\author{Benjamin Teuber}
+\author[Benjamin Teuber]{Benjamin Teuber\\ Erstbetreuer: Daniel Moldt}
 \date{\today}
 \institute{Universität Hamburg\\ 
   Fakultät für Mathematik, Informatik und Naturwissenschaften\\
   Department Informatik}
 
 \begin{document}
+
+\section{Einführung}
+\subsection{Einführung}
+
 \maketitle
 
-\section{Einführung}  
- 
-\begin{frame}{Themengebiet}
+\AtBeginSubsection{
+\begin{frame}
+\begin{center}
+\structure{\Huge \insertsubsection}
+\end{center}
+\end{frame}
+}
+
+%% TODO:
+%% CarXML gerade
+%% R Zeichen      
+
+\begin{frame}{Themengebiet: \cgen}
   \begin{itemize}
-  \item Buzzwords:
+  \item \cgen{} immer stärker genutzt
     \begin{itemize}
-    \item Model-driven architecture
-    \item Domain-specific languages
-    \item Metaprogramming
+    \item Model-Driven Architecture
+    \item Domain-Specific Languages
     \end{itemize}
-  \item Problem: Compiler bauen ist aufwändig
+  \item Problem: Generator bauen ist aufwändig
+  \item Viele Komponenten nötig 
     \begin{itemize}
     \item Parser für Quellsprache
     \item Compiler in normaler Programmiersprache
     \item Templates für Zielsprache
     \end{itemize}
-  \item Wie können wir das vereinfachen?
+  \item Ziel: Framework aus einem Guss
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \tableofcontents
-\end{frame}
-
-\subsection[Werkzeuge]{Bestehende Werkzeuge}
-
-\begin{frame}{Verwendete Modelle}
+\begin{frame}{Inhalt}
   \begin{itemize}
-  \item String
-  \item typisierte Objekte
-  \item untypisierte Baumstruktur (XML, Sexp)
+  \item Vergleich bestehender Technologien
+  \item Ableiten von Anforderungen
+  \item Entwurf eines prototypischen Frameworks
+    \begin{itemize}
+    \item Architektur
+    \item Komponenten
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\section{Vorhandene Technologien}
+\subsection{Vorhandene Technologien}
+
+\begin{frame}{Übersicht: Vergleich bestehender Technologien}
+  \begin{itemize}
+  \item Verschiedene Typisierungsgrade von Modellen
+    \begin{itemize}
+    \item Zeichenketten - low level
+    \item Objekte - typisiert, aber unflexibel
+    \item Bäumrepräsentationen wie XML oder \sexps{}
+    \end{itemize}
+  \item Code-Erzeugung
+    \begin{itemize}
+    \item Templates - verschiedene Mächtigkeiten
+    \item Programmatisch - z.B. Stringmanipulationen
+    \end{itemize}
+  \item Kontrollfluss
+    \begin{itemize}
+    \item Direkter Aufruf von Templates
+    \item Impliziter Aufruf über Struktur
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Untypisierte Baumrepräsentationen}
+  \begin{columns}
+    \begin{column}{5cm}
+      \begin{itemize}
+      \item Grundmodell: Bäume mit benannten Knoten und Zeichenketten als Blättern
+      \item Kompromiss zwischen Flexibilität und Strukturierung
+      \end{itemize}
+    \end{column}
+    \begin{column}{5cm}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.3]{images/car_sexp}
+        \caption{Auto-Modell als Baum}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Exkursion: Lisp}
   \begin{itemize}
   \item Eine der ältesten Programmiersprachfamilien (LISP: 1958)
   \item Minimale, uniforme Syntax (S-Expressions $\simeq$ XML-Subset)
-  \item Sprache selbst kann durch Makros erweitert werden (``The
-    programmable programming language'')
+  \item Sprache selbst kann durch Makros erweitert werden \\
+    ``The programmable programming language''
   \end{itemize}
 
-  \begin{block}{}
+  \begin{block}{Zitat}
     ``Any sufficiently complicated C or Fortran program contains an ad hoc
     informally-specified bug-ridden slow implementation of half of
     Common Lisp.''
 
-    - Philip Greenspun
+    - Philip Greenspun 
   \end{block}
 \end{frame}
 
@@ -91,471 +147,393 @@
     \item Ein Atom, z.B. eine Zahl, ein String, eine Variable
     \item Eine Liste von S-Expressions in Notation \\ \texttt{($sexp_1$ $sexp_2$ .. $sexp_n$)}
     \end{itemize}
-  \item S-Expressions werden nach dem Parsen \textit{strukturell} gespeichert.
-  \item Beipiel: Funktionsdefinition in Common Lisp
+  \item Konvention: Knotenname an erster Stelle
+  \item \textit{Strukturelle} Verarbeitung
+  \item Beispiel: Funktionsdefinition in Common Lisp
   \end{itemize}
 \begin{verbatim}
-(defun my-add (a b)
-  (+ a b))
+    (defun my-add (a b)
+      (+ a b))
 \end{verbatim}
 \end{frame}
 
-\begin{frame}{Verwendete Modelle (2)}
-  Tabelle
+\begin{frame}{Kritik an XML}
+  \begin{columns}
+    \begin{column}{6cm}
+      \begin{itemize}
+      \item Verbreitetste Sprache mit Baummodell
+      \item Viele zusätzliche Merkmale
+        \begin{itemize}
+        \item Attribute
+        \item Namespaces
+        \end{itemize}
+      \item These: Attribute sind unnötig
+        \begin{itemize}
+        \item Spezielle Form von Kindern
+        \item keine sinnvolle Zuordnung möglich
+        \end{itemize}
+      \item Problem: Keine Listen von Blättern
+      \end{itemize}
+    \end{column}
+    \begin{column}{4cm}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.3]{images/car_xml}
+        \caption{Auto-Modell in XML}
+      \end{figure}    
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Templates}
+\begin{frame}{Vorteile von \sexps{}}
   \begin{itemize}
-  \item 
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Beispiele für Templates}
-  \begin{itemize}
-  \item PHP
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Beispiele für Templates (2)}
-  \begin{itemize}
-  \item C++
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Beispiele für Templates (3)}
-  \begin{itemize}
-  \item XSLT
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Beispiele für Templates (4)}
-  \begin{itemize}
-  \item Lisp
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Lisp-Makros}
-  \begin{itemize}
-  \item Makros sind Funktionen von Code nach Code
-  \item werden bereits beim Compilieren ausgewertet
-  \item Ermöglichen inkrementelle Erweiterung des Lisp-Compilers
-  \item Vergleich: Präprozessor in C
+  \item Simple Struktur - vereinfachen:
     \begin{itemize}
-    \item Arbeiten auf S-Expressions einfacher \& mächtiger
-    \item Volle Lisp-Funktionalität steht zur Verfügung
-    \pfeil Probleme wie Namenskonflikte können elegant gelöst werden
+     \item Parsing (vgl. XML)
+    \item Verarbeitung
+    \item Erzeugung
+    \end{itemize}
+  \item Dennoch ausdrucksstark
+    \pfeil Basis für Lisp-Makros
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Templates}
+  \begin{itemize}
+  \item Für Dokumenterzeugung genutzt
+  \item ``Schablone mit Platzhaltern''
+  \item Funktion: $\mathrm{input} \ato \mathrm{doc}$
+  \item Unterschiede:
+    \begin{itemize}
+    \item Typen $\mathrm{input}$ und $\mathrm{doc}$
+    \item Syntax der Metasprache
+    \item Mächtigkeit
     \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}[t, fragile]{Lisp-Makros (2)}
+\begin{frame}[fragile]{PHP}
   \begin{itemize}
-  \item Beispiel: Eigenes \texttt{switch} durch \texttt{if} ausdrücken
+  \item $\mathrm{Object}\ato\mathrm{String}$
+  \item Zeichenketten problematisch
+    \begin{itemize}
+    \item Syntaxfehler
+    \item Einrückung für lesbaren Code?
+    \end{itemize}
+  \item Komplette Programmiersprache
   \end{itemize}
-  \begin{block}{Macro-Eingabe}
 \begin{verbatim}
-(switch input
-  ("Hallo"      (print "Hallo auch"))
-  ("Tschüss"    (print "Bye Bye"))
-  ("Wie gehts?" (print "Gut soweit")))
+<html>
+  <head><title>Current Date</title></head>
+  <body>
+    <? print($current_date); ?>
+  </body>
+</html>
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{XSL Transformation}
+  \begin{itemize}
+  \item $\mathrm{XML} \ato \mathrm{XML}$
+  \item Mächtig, aber umständliche Syntax
+    \begin{itemize}
+    \pfeil Praxis: Komplexe Verarbeitung in externer
+      Programmiersprache
+    \end{itemize}
+  \item Ermöglicht direkten Aufruf sowie Matching über XPath
+  \item XPath: \verb+/book[@price>35]/title+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{XSLT (2)}
+
+  \begin{block}{Eingabe}
+\begin{verbatim}
+<addresses>
+  <person firstname="Heinz" name="Schulz" />
+  <person firstname="Walter" name="Meier" />
+</addresses>
 \end{verbatim}
   \end{block}
-  \begin{block}{Erzeugter Code}
+  \begin{block}{Erwünschte Ausgabe}
 \begin{verbatim}
-(if (== input "Hallo")
-  (print "Hallo auch")
- elseif (== input "Tschüss") 
-  (print "Bye Bye")
- elseif (== input "Wie gehts?")
-  (print "Gut soweit"))
+<table>
+  <tr> <td>Walter</td> <td>Meier</td> </tr>
+  <tr> <td>Heinz</td> <td>Schulz</td> </tr>
+</table>    
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{XSLT (3)}
+\begin{verbatim}
+<xsl:template match="/addresses">
+  <table>
+    <xsl:for-each select="person">
+      <xsl:sort select="@name" 
+                order="ascending" 
+                data-type="text" />
+        <tr>
+          <td><xsl:value-of select="@firstname" /></td>
+          <td><xsl:value-of select="@name" /></td>
+        <tr>
+      </xsl:sort>
+    </xsl:for-each>
+  </table>
+</xsl:template>
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Lisp-Makros}
+  \begin{itemize}
+  \item $\mathrm{Sexp} \ato \mathrm{Sexp}$
+  \item Metasprache $=$ Zielsprache $=$ Quellsprache $=$ Lisp
+  \item ``Compiler-Plugins'' in kurzer, eleganter Notation
+    \begin{itemize}
+    \item Ermöglichen inkrementelle Erweiterung des Lisp-Compilers
+    \item ``Embedded DSLs'' - in die ursprüngliche Sprache integriert
+    \end{itemize}
+  \item Einschränkungen:
+    \begin{itemize}
+    \item Typen
+    \item Kontrollfluss
+    \item Kein ``SPath''
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Lisp-Makros (2)}
+  \begin{block}{Makro-Aufruf}
+\begin{verbatim}
+(addresses
+  (person "Heinz" "Schulz")
+  (person "Walter" "Meier"))
+\end{verbatim}
+  \end{block}
+  \begin{block}{Zu erzeugender Code}
+\begin{verbatim}
+(table
+  (tr (td "Walter") (td "Meier"))
+  (tr (td "Heinz")  (td "Schulz")))
 \end{verbatim}
   \end{block}
 \end{frame}
 
-\begin{frame}{Warum Makros praktisch sind}
-  \begin{itemize}
-  \item Compiler nicht als monolithischer Block
-  \item Statt dessen Bauskastenprinzip
-  \item Interface für nachträgliche Erweiterungen durch den User
-  \item ``Embedded DSLs'' - in die ursprüngliche Sprache integriert
-  \item Alles S-Exp-basiert: Parser \& Generator fallen weg
-  \item Lisp bietet praktische DSL für Makro-Definitionen 
-  \end{itemize}
+\begin{frame}[fragile]{Lisp-Makros (3)}
+  \begin{block}{Makro-Umsetzung in Common Lisp}
+\begin{verbatim}
+(defun sort-by-name (persons) ...)
+
+(defmacro addresses (&rest persons)
+  `(table ,@(sort-by-name persons)))
+
+(defmacro person (first-name name)
+  `(tr (td ,first-name) (td ,name)))
+\end{verbatim}
+  \end{block}
 \end{frame}
 
-\subsection{Diplomarbeit}
-
-\begin{frame}{Motivation der Diplomarbeit}
-  \begin{itemize}
-  \item Idee: Übernehmen des Lisp-Ansatzes für beliebige Computersprachen, z.B.
-    \begin{itemize}
-    \item Java
-    \item VHDL
-    \item HTML
-    \item Latex
-    \item POV-Ray
-    \end{itemize}
-  \pfeil Einheitliche Syntax, einheitliche IDE, einheitliche Erweiterungsmöglichkeiten
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Ziele der Diplomarbeit}
-  \begin{itemize}
-  \item Entwurf eines S-Expression-basierten Compilerbau-Frameworks
-  \item Integrierte DSLs für:
-    \begin{itemize}
-    \item Generatoren: Compilieren S-Exp-Sprachen in Quellcode einer Backend-Sprache
-    \item Compiler: Übersetzen eine S-Exp-Sprache in eine andere
-    \item Parser: Lesen externen Quelltext ein und erzeugen S-Expressions
-    \end{itemize}
-  \item Default-Parser für S-Expressions
-  \end{itemize}
-\end{frame}
-
-%Anforderungen genauer
+\section{Anforderungen}
+\subsection{Anforderungen}
 
 \begin{frame}{MagicL}
   \begin{itemize}
-  \item In Haskell implementiert - einer Sprache für ``theorienahe Anwendungen''
-  \item Eigener Ansatz für Makros
-    \begin{itemize}
-    \item Mathematisch fundiert: Kategorientheorie
-    \item Operatoren wie in EBNF möglich
-    \end{itemize}  
+  \item M: Models
+  \item A: Architecture
+  \item G: Generation
+  \item I: Interface
+  \item C: Control Flow
+  \item L: Lisp
   \end{itemize}
 \end{frame}
 
-\section[Grundlagen]{Theoretische Grundlagen der Arbeit}
-\subsection{Kategorientheorie}
-
-    %% vgl. Petri-Netze
-    %% abstrakt
-    %% ``überladbarer Kompositionsoperator''
-    %% Produkt/Coprodukt
-    %% kurz erwähnen: Funktoren, natürliche Transformationen, Monaden
-
-\begin{frame}{Kategorientheorie}
+\begin{frame}{Anforderungen}
   \begin{itemize}
-  \item Kategorientheorie
+  \item Lisp
     \begin{itemize}
-    \item Sehr abstrakter Bereich der Mathematik
-    \item Praktisch alle mathematischen Strukturen sind Kategorien
+    \item Makro-Ansatz
     \end{itemize}
-  \item Grundidee
+  \item Modelle
     \begin{itemize}
-    \item Abstraktion von Funktionstypen
-    \item Komposition von Funktionen
+    \item \sexps{}
+    \item Objekte
+    \item Strings
     \end{itemize}
-  \end{itemize}
-  \begin{figure}
-    \centering
-    \includegraphics[scale=0.3]{images/cat_funs}
-    \caption{Ein simples Funktionensystem}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Definition: Kategorie}
-  \begin{itemize}
-  \item Eine Kategorie $C = (Ob, Mor, \circ, id)$ besteht aus  
+  \item Generierung von Quelltext
     \begin{itemize}
-    \item einer Klasse $Ob$ von Objekten
-    \item einer Menge Morphismen $Mor_{A,B}$ zu je zwei Objekten $A, B$
-      ($A$ wird Quelle genannt, $B$ Ziel)
-    \item einem Kompositionsoperator $\circ_{A,B,C}$ zu je drei Objekten
-      $A, B, C$ mit 
-      $\circ_{A,B,C} : Mor_{B,C} \times Mor_{A,B} \rightarrow Mor_{A,C}$
-    \item einer Identität $id_A \in Mor_{A,A}$ für jedes Objekt $A$
-    \end{itemize}
-
-  \item Axiome:
-    \begin{itemize}
-    \item Assoziativität von $\circ$:
-      $f \circ (g \circ h) = (f \circ g) \circ h$
-    \item Verträglichkeit mit Identität:
-      $f \circ id_A = id_B \circ f = f$ für $f \in Mor_{A,B}$
+    \item Nicht auf Zeichenketten-Ebene
+    \item Modell für Code
+    \item automatische Formatierung
     \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Eine einfache Kategorie}
-  \begin{figure}
-    \centering
-    \includegraphics[scale=0.4]{images/cat_simple}
-    \caption{Eine einfache Kategorie}
-  \end{figure}
+\begin{frame}{Anforderungen (2)}
   \begin{itemize}
-  \item Diese simple Kategorie besteht aus
+  \item Architektur
     \begin{itemize}
-    \item zwei Objekten $A, B$
-    \item vier Morphismen $f, g, id_A, id_B$
+    \item theoretische Fundierung
+    \item visualisierbar (vgl. Petri-Netze)
+    \item flexible Verarbeitungsprozesse
+    \end{itemize} 
+  \item Compiler-Schnittstelle
+    \begin{itemize}
+    \item universell - Parser, Makros
+    \item automatische Auswahl über Typ
     \end{itemize}
-  \item Alle Kompositionen ergeben wieder einen der vier Morphismen
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Abbildungen zwischen Kategorien: Funktoren}
-  \begin{itemize}
-  \item Ein Funktor $F$ von Kategorie $C$ nach Kategorie $D$
+  \item Kontrollfluss für Makros
     \begin{itemize}
-    \item bildet Objekte auf Objekte ab
-    \item bildet Morphismen aus $Mor_{A,B}$ auf Morphismen aus
-      $Mor_{F(A),F(B)}$ ab 
-    \end{itemize}   
-  \item Muss mit Komposition und Identität verträglich sein:
-    \begin{itemize}
-    \item $F(f \circ g) = F(f) \circ F(g)$
-    \item $F(id_A) = id_{F(A)}$
-    \end{itemize}
-  \end{itemize}   
-\end{frame}
-
-\begin{frame}{Produkte}
-  \begin{itemize}
-  \item Entspricht kartesischen Produkt
-  \item Benötigt keine Mengen zur Definition!
-  \item Idee: Projektionen und sog. "`Mittler-Morphismus"'
-  \end{itemize}
-  \begin{figure}
-    \centering
-    \includegraphics[scale=0.3]{images/cat_product}
-    \caption{Produkt-Diagramm}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Coprodukte / disjunkte Vereinigung}
-  \begin{itemize}
-  \item "`Umkehrung"' vom Produkt
-  \item $A + B$ entspricht einer disjunkten Vereinigung von $A$ und $B$
-  \end{itemize}
-  \begin{figure}
-    \centering
-    \includegraphics[scale=0.3]{images/cat_coproduct}
-    \caption{Coprodukt-Diagramm}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Kategorien in dieser Arbeit}
-  \begin{itemize}
-  \item Hier immer: Haskell-Datentypen als Objekte
-  \item Arrows variieren:
-    \begin{itemize}
-    \item pure Funktionen (Kategorie $Hask$)
-    \item Funktionen mit Side-Effects
-    \item Bestehende Arrows mit versteckten Ein- und Ausgaben
-    \end{itemize}
+    \item direkter Aufruf
+    \item impliziter Aufruf durch Matching
+      \begin{itemize}
+      \item XPath?
+      \item EBNF?
+      \end{itemize}
+    \end{itemize}    
   \end{itemize}
 \end{frame}
 
-\subsection{Haskell}
+\section{Architektur}
+\subsection{Architektur}
 
-\begin{frame}{Die Sprache Haskell}
+\begin{frame}[fragile]{Die Sprache Haskell}
   \begin{itemize}
   \item Funktional (pur)
   \item statische Typinferenz
-  \item Seiteneffekte mittels Monaden
-  \item Beispielprogramm (Monadic Hello World?)
-  \item Arrows (IOArrow)
+  \item Typklassen entsprechen Java-Interfaces
+  \item Seiteneffekte dank Monaden/Arrows integrierbar
+  \end{itemize}
+\begin{verbatim}
+getName :: IO String
+getName = return "Harald"
+
+main :: IO ()
+main = do name <- getName
+          putStrLn name
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Kategorientheorie}
+  \begin{itemize}
+  \item Sehr abstrakter Bereich der Mathematik
+    \begin{itemize}    
+    \item Praktisch alle mathematischen Strukturen sind Kategorien
+    \item Motivation: ``Rechnen mit Funktionstypen''
+    \end{itemize}
+  \item Morphismen zwischen Objekten: $f: \mathrm{A} \ato \mathrm{B}$
+    \begin{itemize}
+    \item Interpretation frei
+    \item Komposition: $g \circ f$ analog Funktionen
+    \item Identität: $\mathrm{id}_{A}$
+    \item Produkte ($f \times g$) und Coprodukte ($f + g$)
+    \end{itemize}
+  \item Funktoren: Abbildungen zwischen Kategorien
+  \item Weiteres: Natürliche Transformationen, Monaden etc.
   \end{itemize}
 \end{frame}
 
-\section{MagicL}
+\begin{frame}{Kategorien in Haskell}
+  \begin{itemize}
+  \item Objekte: Haskell-Datentypen 
+  \item Arrows: Verarbeitungsprozesse
+    \begin{itemize}
+    \item pure Funktionen (Kategorie $\mathbf{Hask}$)
+    \item Funktionen mit Side-Effects ($\mathbf{IOArrow}$)
+    \end{itemize}
+  \item eigene Arrow-Formalismen möglich
+    \begin{itemize}
+    \item müssen Komposition etc. implementieren
+    \item Funktor von $\mathbf{Hask}$ erforderlich
+    \end{itemize}
+  \end{itemize}
+\end{frame}
 
-\subsection{Architektur}
+\begin{frame}{Funktoren in dieser Arbeit}
+  \begin{itemize}
+  \item Gleicher Arrow in verschiedenen Kategorien
+    \begin{itemize}
+    \item Unterschiedliche Typsignatur möglich
+      \pfeil ``Verstecken'' von Teilen der Signatur
+    \end{itemize}
+  \item ``Domain Specific Categories''
+  \item Beispiel 1: Möglichkeit zum Scheitern ($\mathbf{C}_F$)
+    \begin{itemize}
+    \item in $\mathbf{C}_F: \mathrm{A} \ato \mathrm{B}$
+    \item in $\mathbf{C}: \mathrm{A} \ato \mathrm{B} + \mathrm{String}$
+    \end{itemize}
+  \item Beispiel 2: Zustände ($\mathbf{C}_S$)
+    \begin{itemize}
+    \item in $\mathbf{C}_S: \mathrm{A} \ato \mathrm{B}$
+    \item in $\mathbf{C}: \mathrm{A} \times \mathrm{state} \ato \mathrm{B} \times \mathrm{state}$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \begin{frame}{Überblick Architektur}
   \begin{itemize}
   \item Komplett Arrow-basiert
-  \pfeil Generische Schnittstelle für alle Arten von Compilern
-  \item Taxonomie \\
     \begin{itemize}
-    \item[] Compiler 
-    \item[] $\supset$ Parser 
-    \item[] $\supset$ Makros 
-    \item[] $\supset$ Lisp-Makros
+      \pfeil Generische Schnittstelle für alle Arten von Compilern
     \end{itemize}
+  \item Compiler: $\mathrm{a} \ato \mathrm{b}$
+  \item Parser: $\mathrm{[token]} \ato \mathrm{b}$ 
+  \item Makros: $\mathrm{[Sexp]} \ato \mathrm{b}$ 
+  \item Lisp-Makros: $\mathrm{[Sexp]} \ato \mathrm{[Sexp]}$
   \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Generische Compiler-Schnittstelle}
-  \begin{itemize}
-  \item Compiler von A nach B
-  \item Etwas, was sich in einen IOArrow von A nach B überführen lässt
-  \item Festes ``verdrahten'' von Compilern
-    \pfeil Automatisches Finden von Compilern
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Typklasse Executable}
-
-\end{frame}
-
-\begin{frame}{Typklasse Compilable}
-  
-\end{frame}
-
-\begin{frame}[fragile]{Typklasse Compiler}
-  \begin{verbatim}
-  compile :: IOArrow MyModel Sexp
-  \end{verbatim}  
-\end{frame}
-
-\begin{frame}[fragile]{Generische Compiler-Schnittstelle (2)}
-\begin{verbatim}
-class Compiler a b where
-  compile :: IOArrow a b
-\end{verbatim}
-\begin{itemize}
-\item ``vergisst'' Implementationstyp
-\item Automatisches Finden eines Compilers
-\begin{verbatim}
-compile :: IOArrow SourceModel TargetModel
-\end{verbatim}
-\end{itemize}
 \end{frame}
 
 \begin{frame}{Parser als Arrows}
   \begin{itemize}
   \item Eigenschaften von Parsern:
     \begin{itemize}
-    \item Können fehlschlagen und Alternativen ausdrücken
-    \item Besitzen einen Zustand (Position im Eingabestream)
+    \item Fehlschlagen / Alternativen ($\Rightarrow \mathbf{C}_F$)
+    \item Zustand: Position im Eingabestream ($\Rightarrow \mathbf{C}_S$)
     \end{itemize}
-  \item Plan: Bestehende Kategorien um Fehlschlagen / Zustände erweitern
-  \pfeil Funktoren
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Der Funktor Fail}
-  \begin{itemize}
-  \item Nun zwei Möglichkeiten für Rückgabe:
+  \item Kombination: $\mathbf{C}_P = \mathbf{C}_{FFS}$
     \begin{itemize}
-    \item Scheitern (Rückgabe einer Fehler-Nachricht)
-    \item Erfolg (normaler Rückgabewert)
+    \item ``innerer Fail'' möglich
+      \pfeil bessere Fehlermeldungen
     \end{itemize}
-  \item Verstecken der Veränderung: Neue Kategorie $C_{f}$
-  \item $f_{f} : A \rightarrow B$ wird abgebildet auf
-    $f : A \rightarrow String + B$
-  \item Der Arrow $fail_{f} : String \rightarrow a$ in $C_{f}$ schlägt immer
-    fehl und entspricht $fail : String \rightarrow String + a$ in $C$
-  \item Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B} \rightarrow
-    Mor_{A,B} $ bietet Alternativen
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Der Funktor Fail (2)}
+\begin{frame}{Parser als Arrows (2)}
   \begin{itemize}
-  \item Komposition in $C_{f}$:  $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$ 
-  \end{itemize}
-  \begin{figure}
-    \centering
-    \includegraphics[scale=0.3]{images/cat_fail}
-    \caption{Komposition beim Fail-Funktor}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Der Funktor State}
-  \begin{itemize}
-  \item Nun sollen Zustände vom Typ S weitergereicht werden
-  \item Wieder verstecken, neue Kategorie $C_{s}$ mit Funktor
-    $State : C_{s} \rightarrow C$
-  \item $f_{s} : A \rightarrow B$ wird abgebildet auf
-    $f = A \times S \rightarrow B \times S$
-  \item Komposition in $C_{s}$ einfach
-    \begin{figure}
-      \centering
-      \includegraphics[scale=0.2]{images/cat_state}
-      \caption{Komposition beim State-Funktor}
-    \end{figure}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Der Funktor State (2)}
-  \begin{itemize}
-  \item Etwas Tricky: Produkte in $C_{s}$
-  \item Arbeiten mit Zuständen: Lesen \& Schreiben:
-  \item Lesen: $get_s : \forall a : a \rightarrow S$
-  \item Schreiben: $put_s : S \rightarrow *$
-  \item Zum Parsen: $S = List$ $of$ $T$ mit Token-Typ $T$
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Der Parse-Funktor}
-  \begin{itemize}
-  \item Kombination von Fail und State zu einem Funktor Parse
-  \item $C_p = C_{ffs}$
-  \item Zwei Fail-Funktoren für bessere Fehlermeldungen
-  \item Beispiel:
+  \item Signaturen eines Parsers
     \begin{itemize}
-    \item Grammatik: \texttt{\{.*\} $\bigvee$ [.*]}
-    \item Eingabewort: \texttt{\{ABC}
-    \item Schlecht: \texttt{"'Expected [, got \{"'}
-    \item Gut: \texttt{"'Expected \}, got end of stream"'}
-    \item Scheitern nach \texttt{\{} soll Backtracking aushebeln \\
-      $\Rightarrow$ \textit{innerer Fail}
-    \end{itemize}
+    \item Parser-Kategorie: $\emptyset \ato \mathrm{A}$
+    \item ``Wirklichkeit'': $[\mathrm{token}] \ato (\mathrm{A} \times
+      [\mathrm{token}] + \mathrm{String}) + \mathrm{String}$
+    \item nach Umwandlung in Compiler: $[\mathrm{token}] \ato \mathrm{A}$
+    \end{itemize}  
+  \item Token-Typ Variabel: $\mathrm{Char}$ und $\mathrm{Sexp}$
+    verwendet
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Der Parse-Funktor (2)}
+\begin{frame}[fragile]{Parser-Bibliothek}
   \begin{itemize}
-  \item Flexible Parser-Anwendungen dank Funktor
-    \begin{itemize}
-    \item Funktionale Parser: $Hask_p$
-    \item Parser mit Side-Effects: $IO_p$
-    \item Parser mit anderen Extras: Weitere Funktoren möglich
-    \end{itemize}
-  \item Token-Typ Variabel:
-    \begin{itemize}
-    \item \texttt{Char} für Textdateien
-    \item \texttt{Bool} für Bytestreams
-    \item \texttt{Sexp} für S-Expressions
-    \end{itemize}
-  \item Parser-Bibliothek enthält dazu:
-    \begin{itemize}
-    \item Praktische Funktionen zum Parser-Erzeugen
-    \item Möglichkeiten zum Aufruf von inneren Parsern
-    \item Konzepte zum Verschalten von Parsern und Compilern
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Beispiel: Text nach Sexp parsen}
+  \item Kombinatoren: \verb+empty, eq, member, many, optional etc.+
+  \item Aufruf innerer Parser: \verb+applyParser+
+    \pfeil Makros:
 \begin{verbatim}
-data Sexp = Symbol String
-          | Node   [Sexp]
-
-whitespace = skip (many (member " \t\n"))
-
-parseSymbol = many1 (notMember " \t\n()") >>^ Symbol
-
-parseNode = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq')')
-
-parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
+  macro "addresses" (many (macro "person" 
+                                 compSymbol 
+                                 compSymbol))
 \end{verbatim}
-\end{frame}
-
-\begin{frame}{Parsen von S-Expressions}
-  \begin{itemize}
-  \item Besonderheit: Token können selbst Listen sein
-  \item Lösung: Als Stream behandeln, \texttt{compNode} wendet Parser
-    auf inneren Stream an
-    \begin{itemize}
-    \item Beispiel: Lesen von \texttt{(hallo welt)}
-    \item \texttt{compNode (symeq "'hallo"' >>> symeq "'welt"') } % <<
-    \end{itemize}
-  \item Makros: \texttt{compNode mit Prüfung des ersten Symbols}
-    \begin{itemize}
-    \item obiges Beispiel: \texttt{macro "'hallo"' (symeq "'welt"')}
-    \item Stimmt das erste Symbol überein, wird das Backtracking aufgehoben
-    \end{itemize}
   \end{itemize}
 \end{frame}
 
+\section{Komponenten}
 \subsection{Komponenten}
 
-\begin{frame}{Überblick: Komponenten von MagicL}
+\begin{frame}{Komponenten von MagicL}
   \begin{itemize}
-  \item Modell für Quellcode-Erzeugung
+  \item Modelle
+    \begin{itemize}
+    \item Sexp
+    \item Code
+    \end{itemize}
   \item Eigene DSLs
     \begin{itemize}
     \item \sexp{}-Haskell
@@ -563,16 +541,49 @@ parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
     \end{itemize}
   \item Außerdem
     \begin{itemize}
-    \item \item minimales Test-Framework
+    \item minimales Test-Framework
     \item Build-Tool
     \end{itemize}
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]{Parser: $\mathrm{String} \ato \mathrm{Sexp}$}
+\begin{verbatim}
+data Sexp = Symbol String
+          | Node   [Sexp]
+
+whitespace = skip (many (member " \t\n"))
+
+parseSymbol = many1 (notMember " \t\n()") >>>
+              symbol
+
+parseNode = skip (eq '(') >>> 
+            (many parseSexp >>> node) >>> 
+            skip (eq')')
+
+parseSexp = whitespace >>> 
+            (parseSymbol <+> parseNode) >>> 
+            whitespace
+\end{verbatim}
+\end{frame}
+
 \begin{frame}[fragile]{Quellcode-Modell}
   \begin{itemize}
-  \item 
+  \item Ansatz von Philip Wadler
+  \item Beschreibung durch Haskell-Funktionen
+    \begin{itemize}
+    \item Elementar: \verb+text, newline, indent, append, group+
+    \item Abgeleitet: \verb+lines, paragraphs, parens etc.+
+    \end{itemize}
+  \item Beispiel: Pretty-Printer für \sexps{}
   \end{itemize}
+\begin{verbatim}
+layoutSexp :: Sexp -> Code
+layoutSexp (Symbol sym) = text sym
+layoutSexp (Node children) = 
+    format (map layoutSexp children)
+  where format = parens . group . indent2 . lines
+\end{verbatim}
 \end{frame}
 
 \begin{frame}[fragile]{Sexp-Haskell}
@@ -580,45 +591,90 @@ parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
   \item Ziel: \sexp{}-basierte Erzeugung von Haskell-Code
   \item Ansatz: Haskell-Variante in \sexp{}-Syntax
   \end{itemize}
+  \begin{columns}
+    \begin{column}{5cm}
+      \begin{block}{Sexp-Haskell}
 \begin{verbatim}
 (= (sumOfSquares x y)
    (+ x2 y2)
  (where                   
   (= x2 (* x x))
   (= y2 (* y y))))
-
-=>
-
+\end{verbatim}
+      \end{block}
+    \end{column}
+    \begin{column}{6cm}
+      \begin{block}{Haskell}
+\begin{verbatim}
 sumOfSquares x y = (x2 + y2)
   where
     x2 = (x * x)         
     y2 = (y * y)
 \end{verbatim}
+      \end{block}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Compiler}
+\begin{frame}[fragile]{Implementation von Sexp-Haskell}
   \begin{itemize}
-  \item Benutzung eines typisierten \verb+Haskell+-Modells
-  \item Mehrstufige Kompilation
+  \item Zeigt Einbindung typisierter Modelle
+  \item Drei Komponenten
     \begin{itemize}
-    \item \verb+Sexp+ nach \verb+Haskell+
-    \item \verb+Haskell+ nach \verb+Code+
+    \item Haskell-Modell
+    \item Parser $\mathrm{Sexp} \ato \mathrm{Haskell}$
+    \item Funktionaler Compiler $\mathrm{Haskell} \ato \mathrm{Code}$
     \end{itemize}
-  \item Nutzung des Interface \verb+Compilable+
+  \item Nutzt automatisches Finden von Compilern
+  \pfeil Formulierung etwas umständlich
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Haskell-Modell}
 \begin{verbatim}
-data Haskell = Haskell (Maybe Module) [Toplevel]
-data Module = Module String (Maybe Export) [Import]
-data Export = Export [String]
-data Import = Import String ImportArgs
-data ImportArgs = Simple
-                | Qualified String
-                | Only [String]
-                | Hiding [String]  
 ...
+
+data Pattern = ListPattern [Pattern]
+             | TuplePattern [Pattern]
+             | ConsPattern [Pattern]
+             | StringPattern String
+             | CallPattern Call                          
+
+...
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{$\mathrm{Sexp} \ato \mathrm{Haskell}$}
+\begin{verbatim}
+...
+
+instance Compilable (SexpParser Pattern) [Sexp] Pattern 
+ where
+  comp =
+    (liftA1 ListPattern (macro "List" comp)   <+>
+     liftA1 TuplePattern (macro "Tuple" comp) <+>
+     liftA1 ConsPattern (macro "Cons" comp)    <+>
+     liftA1 StringPattern (macro "Str" (many comp >>^ 
+                                        unwords)) <+>
+     liftA1 CallPattern comp)
+
+...
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{$\mathrm{Haskell} \ato \mathrm{Code}$}
+\begin{verbatim}
+...
+
+instance Compilable (Pattern -> Code) Pattern Code where
+  comp (ListPattern pats)  = list $ map comp pats
+  comp (TuplePattern pats) = tuple $ map comp pats
+  comp (ConsPattern pats)  = parenFoldOp ":" (map comp
+                                                  pats)
+  comp (StringPattern str) = string str
+  comp (CallPattern call)  = comp call
+...
+
 \end{verbatim}
 \end{frame}
 
@@ -627,11 +683,18 @@ data ImportArgs = Simple
   \item DSL für untypisierte \sexp{}-Verarbeitung ähnlich Lisp
     \begin{itemize}
     \item Quasiquote-Operator für \sexp{}-Templates
-    \item Makrosystem
+    \item Makro-Typ: $\mathrm{[Sexp]} \ato \mathrm{[Sexp]}$
+    \item Lisp-Kontrollfluss: Auto-Makros
     \end{itemize}
-  \item Wird nach Sexp-Haskell kompiliert
-  \item Selbst in Sexp-Compiler geschrieben
+  \item Metarekursiv implementiert
   \end{itemize}
+  \begin{block}{Beispiel: Mehrere Rückgaben}
+\begin{verbatim}
+(autoMac compDefArith defArithFuns
+  (' (= (add x y) (+ x y))
+     (= (sub x y) (- x y))))
+\end{verbatim}
+  \end{block}
 \end{frame}
 
 \section{Schluss}
@@ -639,17 +702,38 @@ data ImportArgs = Simple
 
 \begin{frame}{Zusammenfassung}
   \begin{itemize}
-  \item Interessante Architektur
-  \item Makros als Parser auf Sexps -> EBNF
+  \item Prototyp eines universellen Compiler-Frameworks
+  \item Sauber fundiert: Haskell, Kategorientheorie
+  \item Lisp-inspiriert: \sexps{}, Makros
+  \item Allgemeiner
+    \begin{itemize}
+    \item Modelltypen
+    \item Verarbeitungsprozesse
+    \item Kontrollfluss
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Was noch fehlt}
+\begin{frame}{Ausblick}
   \begin{itemize}
   \item Compiler-Definitionen sind etwas redundant
-  \item Plan: DSL für Modelldefinitionen incl. Parser und Compiler
-  \item Blick in \texttt{Latex.sep}
+    \pfeil Plan: DSL für Modelldefinitionen
+  \item Code-Modell in \sexps{}
+  \item Unterstützung verschiedener Zielsprachen
+  \item \sexp{}-basierte Softwareentwicklung
+    \begin{itemize}
+    \item Datenbank
+    \item Strukturelle IDE
+    \item Anpassbare Visualisierung
+    \pfeil Model-View-Trennung von Code
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \Huge Vielen Dank für die Aufmerksamkeit!
+  \end{center}
 \end{frame}
 
 \end{document}
