@@ -23,12 +23,13 @@
 \newcommand{\cgen}{Code"=Generierung}
 \newcommand{\cpp}{C\texttt{++}}
 
-\title[\cgen{}]{Prototyp eines universellen Frameworks für
+\title[\cgen{}]{Prototyp eines universellen Frameworks für \\
   \sexp{}-basierte \cgen{}}
 \subtitle{Diplomarbeit}
 \author[Benjamin Teuber]{Benjamin Teuber\\ Erstbetreuer: Daniel Moldt}
 \date{\today}
-\institute{Universität Hamburg\\ 
+\institute{TGI-Oberseminar\\
+  Universität Hamburg\\ 
   Fakultät für Mathematik, Informatik und Naturwissenschaften\\
   Department Informatik}
 
@@ -105,30 +106,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Untypisierte Baumrepräsentationen}
-  \begin{columns}
-    \begin{column}{5cm}
-      \begin{itemize}
-      \item Grundmodell: Bäume mit benannten Knoten und Zeichenketten als Blättern
-      \item Kompromiss zwischen Flexibilität und Strukturierung
-      \end{itemize}
-    \end{column}
-    \begin{column}{5cm}
-      \begin{figure}
-        \centering
-        \includegraphics[scale=0.3]{images/car_sexp}
-        \caption{Auto-Modell als Baum}
-      \end{figure}
-    \end{column}
-  \end{columns}
-\end{frame}
-
 \begin{frame}{Exkursion: Lisp}
   \begin{itemize}
   \item Eine der ältesten Programmiersprachfamilien (LISP: 1958)
   \item Minimale, uniforme Syntax (S-Expressions $\simeq$ XML-Subset)
-  \item Sprache selbst kann durch Makros erweitert werden \\
-    ``The programmable programming language''
+  \item Sprache selbst kann durch Makros erweitert werden 
+  \item[]  ``The programmable programming language''
   \end{itemize}
 
   \begin{block}{Zitat}
@@ -145,41 +128,70 @@
   \item Ein S-Expression ist entweder:
     \begin{itemize}
     \item Ein Atom, z.B. eine Zahl, ein String, eine Variable
-    \item Eine Liste von S-Expressions in Notation \\ \texttt{($sexp_1$ $sexp_2$ .. $sexp_n$)}
+    \item Eine Liste von S-Expressions in Notation 
+    \item[] \texttt{($sexp_1$ $sexp_2$ .. $sexp_n$)}
     \end{itemize}
   \item Konvention: Knotenname an erster Stelle
   \item \textit{Strukturelle} Verarbeitung
-  \item Beispiel: Funktionsdefinition in Common Lisp
   \end{itemize}
+  \begin{block}{Beispiel: Funktionsdefinition in Common Lisp}
 \begin{verbatim}
     (defun my-add (a b)
       (+ a b))
 \end{verbatim}
+  \end{block}
 \end{frame}
 
-\begin{frame}{Kritik an XML}
+
+\begin{frame}[fragile]{S-Expressions (2)}
   \begin{columns}
-    \begin{column}{6cm}
+    \begin{column}{5.5cm}
       \begin{itemize}
-      \item Verbreitetste Sprache mit Baummodell
-      \item Viele zusätzliche Merkmale
-        \begin{itemize}
-        \item Attribute
-        \item Namespaces
-        \end{itemize}
+      \item Modell: Bäume mit benannten Knoten und Zeichenketten als Blättern
+      \item Kompromiss zwischen Flexibilität und Strukturierung
+      \end{itemize}
+      \begin{block}{Auto-Modell in \sexps{}}
+\begin{verbatim}
+(car
+  (color red)
+  (specials AC Navigation)) 
+\end{verbatim}
+      \end{block}
+    \end{column}
+    \begin{column}{5cm}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.3]{images/car_sexp}
+        \caption{Sexp-Auto-Modell als Baum}
+      \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Kritik an XML}
+  \begin{columns}
+    \begin{column}{6.5cm}
+      \begin{itemize}
       \item These: Attribute sind unnötig
-        \begin{itemize}
-        \item Spezielle Form von Kindern
-        \item keine sinnvolle Zuordnung möglich
-        \end{itemize}
       \item Problem: Keine Listen von Blättern
       \end{itemize}
+      \begin{block}{Auto-Modell in XML}
+\begin{verbatim}
+<car color="red">
+  <specials>
+    <special>AC</special>
+    <special>Navigation</special>
+  </specials>
+</car>        
+\end{verbatim}
+      \end{block}
     \end{column}
     \begin{column}{4cm}
       \begin{figure}
         \centering
         \includegraphics[scale=0.3]{images/car_xml}
-        \caption{Auto-Modell in XML}
+        \caption{XML-Auto-Modell als Baum}
       \end{figure}    
     \end{column}
   \end{columns}
@@ -258,8 +270,8 @@
   \begin{block}{Erwünschte Ausgabe}
 \begin{verbatim}
 <table>
-  <tr> <td>Walter</td> <td>Meier</td> </tr>
-  <tr> <td>Heinz</td> <td>Schulz</td> </tr>
+  <tr><td>Walter</td><td>Meier</td></tr>
+  <tr><td>Heinz</td><td>Schulz</td></tr>
 </table>    
 \end{verbatim}
 \end{block}
@@ -381,7 +393,7 @@
     \item universell - Parser, Makros
     \item automatische Auswahl über Typ
     \end{itemize}
-  \item Kontrollfluss für Makros
+  \item Kontrollfluss
     \begin{itemize}
     \item direkter Aufruf
     \item impliziter Aufruf durch Matching
@@ -403,14 +415,17 @@
   \item Typklassen entsprechen Java-Interfaces
   \item Seiteneffekte dank Monaden/Arrows integrierbar
   \end{itemize}
+  \begin{block}{imperatives Beispielprogramm}
 \begin{verbatim}
 getName :: IO String
-getName = return "Harald"
+getName = do putStrLn  "Getting Name"
+             return "Harald"
 
 main :: IO ()
 main = do name <- getName
           putStrLn name
 \end{verbatim}
+  \end{block}
 \end{frame}
 
 \begin{frame}{Kategorientheorie}
@@ -420,6 +435,14 @@ main = do name <- getName
     \item Praktisch alle mathematischen Strukturen sind Kategorien
     \item Motivation: ``Rechnen mit Funktionstypen''
     \end{itemize}
+  \end{itemize}
+  \begin{center}
+    \includegraphics[scale=0.3]{images/cat_funs}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Kategorientheorie (2)}
+  \begin{itemize}
   \item Morphismen zwischen Objekten: $f: \mathrm{A} \ato \mathrm{B}$
     \begin{itemize}
     \item Interpretation frei
@@ -575,8 +598,8 @@ parseSexp = whitespace >>>
     \item Elementar: \verb+text, newline, indent, append, group+
     \item Abgeleitet: \verb+lines, paragraphs, parens etc.+
     \end{itemize}
-  \item Beispiel: Pretty-Printer für \sexps{}
   \end{itemize}
+  \begin{block}{Beispiel: Pretty-Printer für \sexps{}}
 \begin{verbatim}
 layoutSexp :: Sexp -> Code
 layoutSexp (Symbol sym) = text sym
@@ -584,6 +607,7 @@ layoutSexp (Node children) =
     format (map layoutSexp children)
   where format = parens . group . indent2 . lines
 \end{verbatim}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Sexp-Haskell}
@@ -732,7 +756,7 @@ instance Compilable (Pattern -> Code) Pattern Code where
 
 \begin{frame}
   \begin{center}
-    \Huge Vielen Dank für die Aufmerksamkeit!
+    \Huge Vielen Dank für ihre Aufmerksamkeit!
   \end{center}
 \end{frame}
 
