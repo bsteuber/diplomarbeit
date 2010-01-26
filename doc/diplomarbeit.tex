@@ -165,6 +165,7 @@
 
 \newcommand{\seec}[1]{(siehe \cref{#1})}
 \newcommand{\sees}[1]{(siehe \sref{#1})}
+\newcommand{\seea}[1]{(siehe \abb{#1})}
 
 \newcommand{\sexp}{S"=Expression}
 \newcommand{\sexps}{S"=Expressions}
@@ -1543,7 +1544,26 @@ inkrementelle Compiler-Entwicklung durch kurzen und prägnanten Meta-Code
 unterstützt. Zudem sollten allgemein eine möglichst hohe Flexibilität
 und Einfachheit angestrebt werden. Die folgenden Abschnitte diskutieren
 die konkrete Umsetzung dieser Prinzipien in Hinblick auf
-Modellrepräsentationen und den Kompilationsprozess.
+Modellrepräsentationen und den Kompilationsprozess. Zunächst wird jedoch
+der allgemeine Arbeitsablauf anhand eines konkreten Beispiels
+diskutiert.
+
+\lsection[reqs:example]{Anwendungsbeispiel}
+
+Für die einfachere Erstellung von Präsentationen soll eine DSL namens
+Slide erstellt werden, die Konzepte wie Folientitel, Aufzählungen,
+Bilder etc. in einer kurzen und eleganten Notation
+bereitstellt. Slide-Code wird vom Modellierer geschrieben und von einem
+geeigneten Compiler beispielsweise in Latex\cite{Latex}-Code mit der
+Beamer\cite{LatexBeamer}-Klasse übersetzt \seea{flow_simple}.
+
+\fig[0.4]{flow_simple}{Arbeitsablauf für das Slide-Beispiel} 
+
+Der Slide-Compiler selbst wurde von MagicL aus Meta-Code erzeugt,
+welchen ein Meta-Programmierer in einer geeigneten, von MagicL
+bereitgestellten DSL zur Compiler-Definition geschrieben
+hat. Selbstverständlich kann es sich hierbei auch um die gleiche Person
+handeln.
 
 \lsection[reqs:model]{Modellrepräsentation}
 
@@ -4301,22 +4321,51 @@ einer Reihe von Punkten von bestehenden Lisps: Zunächst wird nicht
 zwischen Quote und Quasiquote unterschieden, da der einzige Fall, in dem
 beispielsweise Common Lisp ein nicht-Quasi-Quote benötigt, die
 komplizierte Auflösung von Unquotes in verschachtelten Quasiquotes
-ist. Dieses Problem löst MagicL jedoch einfach durch die Existenz
-verschiedener Quote/Unquote/Unquote-All Tripel wie \icode{'1 ,1
-  ,@1}. Ein weiterer Unterschied ist, dass Makros und Quotes nicht einen
-einzelnen Ausdruck sondern immer eine Liste von \sexps{} zurückliefern,
-die vom Makrosystem in die Ausgabe ``gesplicet'' wird. Auf diese Weise
-können Makros auch mehrere oder gar keine Ausdrücke zurückliefern, was
-die Ausdrucksmächtigkeit erhöht. Während normale Makros in MagicL
-gezielt über ihren Haskell-Namen aufgerufen werden, erlauben Auto-Makros
-die für Lisp typische automatische Auswertung an beliebiger Tiefe sowie
-die wiederholte Makroexpansion von Rückgabeausdrücken anderer Makros.
+ist. Dieses Problem wird in MagicL jedoch einfach durch die Existenz
+verschiedener Quote/Unquote/Unquote-All Tripel wie \icode{'1 ,1 ,@1}
+gelöst. Ein weiterer Unterschied ist, dass Makros und Quotes nicht einen
+einzelnen Ausdruck, sondern immer eine Liste von \sexps{} zurückliefern,
+die vom Makrosystem mittels Splicing in die Ausgabe eingefügt wird. Auf
+diese Weise können Makros auch mehrere oder gar keine Ausdrücke
+zurückliefern, was die Ausdrucksmächtigkeit erhöht. Während normale
+Makros in MagicL gezielt über ihren Haskell-Namen aufgerufen werden,
+erlauben Auto-Makros die für Lisp typische automatische Auswertung an
+beliebiger Tiefe sowie die wiederholte Makroexpansion von
+Rückgabeausdrücken anderer Makros.
 
 \lchapter[end]{Schluss}
 
 \lsection[end:summary]{Zusammenfassung}
 
-\todo{überarbeiten}
+Ziel dieser Diplomarbeit war die prototypische Entwicklung eines
+universellen Frameworks zur \cgen{}, welches möglichst viele Vorteile
+bestehender Technologien im Rahmen eines klaren, einheitlichen
+Formalismus in sich vereint. Insbesondere die mächtigen und praktischen
+Metaprogrammierungskonzepte der Lisp-Sprachfamilie haben diese Arbeit
+inspiriert und sollten in einer verallgemeinerten,
+Zielsprachenunabhängigen Form aufgegriffen werden.
+
+Zunächst wurden hierfür in \cref{model} die Modelltypisierungsgrade
+String, Objekt und Baumstruktur für die Repräsentation von Quelltext
+behandelt mit dem Ergebnis, dass alle drei für spezielle Aufgaben
+nützlich sind und daher gemeinsam verwendbar sein sollten: Während
+Strings am Anfang und Ende der Verarbeitungskette benötigt werden,
+ansonsten aber eine häufig zu niedrige, fehleranfällige Arbeitsebene
+bedeuten, sind typisierte Objekte aufgrund ihrer Sicherheit und
+Performanz für komplexere Verarbeitungsschritte geeignet, bringen
+allerdings den Overhead der Deklaration sowie eine
+Programmiersprachenabhängigkeit mit sich. Baumstrukturen bieten oft
+einen Kompromiss aus Flexibilität und Strukturierung und sind daher für
+einfache Vararbeitungsschritte geeignet, bei denen ein typisiertes
+Modell übertrieben erscheint. Als konkrete Baumrepräsentation wurden
+\sexps{} aufgrund ihrer Einfachheit und Redundanzfreiheit insbesondere
+gegenüber XML vorgezogen.
+
+In \cref{template} wurde eine Reihe von \cgen{}swerkzeugen vorgestellt
+und verglichen. Gemein ist all diesen Tools die Benutzung des
+Template-Konzepts - andererseits unterscheiden sich Modelle und
+Kontrollfluss stark voneinander. 
+
 
 Makros für beliebige Zielsprachen
 
@@ -4343,8 +4392,7 @@ werden. Die Parser- und Compilererstellung erfolgt nach einem
 kategorientheoretisch motivierten Baukastenansatz, so dass
 unter anderem Parser durch die Kombination von Arrows erzeugt werden.
 
-
-\lsection[end:disc]{Diskussion und Ausblick}
+\lsection[end:disc]{Diskussion}
 
   \begin{itemize}
   \item MagicL sauberer und klarer als Lisps
@@ -4384,6 +4432,9 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
   \item Merge für Teamarbeit und passive \cgen{}
   \end{itemize}
 \end{itemize}
+
+\lsection[end:future]{Ausblick}
+
 
 \cleardoublepage
 

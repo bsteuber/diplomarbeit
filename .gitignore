@@ -16,6 +16,7 @@ semantic.cache
 *.blg
 *.vrb
 *.lof
+*.dvi
 *.pdf
 _region_.tex
 gen/*
