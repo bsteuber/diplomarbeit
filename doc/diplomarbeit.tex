@@ -105,7 +105,7 @@
   \renewcommand{\fref}[1]{\ref{#1:fig:##1}}
   \renewcommand{\abb}[1]{Abb.\ref{#1:fig:##1}}
   \renewcommand{\fig}[3][\defaultscale]{%
-    \begin{figure}[htp]
+    \begin{figure}[h]
       \centering
       \includegraphics[scale=##1]{images/##2}
       \caption{##3}
@@ -1736,10 +1736,11 @@ Funktionen vor:
 \begin{itemize}
 \item $+ : \mathbb{R} \times \mathbb{R} \ato \mathbb{R}$ addiert zwei
   reelle Zahlen.
-\item $\mathrm{round} : \mathbb{R} \ato \mathbb{Z}$ ist die Betragsfunktion.
+\item $\mathrm{round} : \mathbb{R} \ato \mathbb{Z}$ ist die
+  Rundungsfunktion.
 \item $+1 : \mathbb{Z} \ato \mathbb{Z}$ addiert $1$ zu einer ganzen Zahl.
 \item $\mathrm{round} \circ + : \mathbb{R} \times \mathbb{R} \ato \mathbb{Z}$
-  addiert zwei reelle Zahlen und bildet anschließend den Betrag.
+  addiert zwei reelle Zahlen und rundet anschließend.
 \end{itemize}
 
 Die Komposition $\mathrm{round} \circ +$ (gesprochen "`round \textit{nach}
@@ -1749,7 +1750,7 @@ lassen sich also zwei im Diagramm aufeinander folgende Pfeile zu einem
 direkten zusammenfassen. Die Kategorientheorie "`vergisst"' nun den
 Bezug zu Mengen und Funktionen und arbeitet statt dessen mit Objekten
 und Morphismen, welche vollkommen abstrakt definiert sind und mit
-bestimmten Operationen eine Kategorie bilden:
+bestimmten Operationen eine Kategorie bilden.
 
 \lsection[cats:cat]{Kategorien}
 
@@ -1775,28 +1776,43 @@ wobei folgende Axiome erfüllt sein müssen:
 \end{itemize}
 }
 
+\fig{cat_potence}{Eine von einer Potenzmenge geblidete Kategorie}
+
 Indizes und Kategorien werden der Einfachheit halber weggelassen, wenn
 sie aus dem Kontext hervorgehen. Wie von Funktionen gewohnt, lässt sich
 $f \in \mathrm{Mor}_{A,B}$ auch schreiben als $f : A \ato B$. Sind $A$
 und $B$ identisch, bezeichnet man f auch als Endomorphismus.
 
-\fig{cat_simple}{Eine einfache Kategorie}
-
 Wie das Einführungsbeispiel erwarten lässt, bilden Mengen und darauf
 definierte Funktionen Kategorien. Die Kategorie, die alle denkbar
 möglichen Mengen und Funktionen enthält, heißt $\mathbf{Set}$. Das
 Einführungsbeispiel skizziert somit unvollständig eine Unterkategorie
-von $\mathbf{Set}$. \abb{cat_simple} zeigt eine andere simple
+von $\mathbf{Set}$. Es gibt allerdings durchaus auch andere Kategorien -
+beispielsweise können alle Mengen einer Potenzmenge als Objekte und die
+Teilmengenbeziehungen als Morphismen benutzt werden. \abb{cat_potence}
+zeigt solch eine Potenzmengenkategorie über $\{1,2,3\}$, wobei die
+Kompositionen nicht mit eingezeichnet sind. Im Folgenden wird die
+konkrete Bedeutung einer Kategorie nicht näher betrachtet.
+
+\fig{cat_simple}{Eine einfache vollständige Kategorie}
+
+\abb{cat_simple} zeigt eine simple, vollständig eingezeichnete
 Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
 Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle
-Kompositionen dieser Morphismen sind wieder in
-$\mathrm{Mor}^{\mathbf{C}}$ - denn jede Kategorie ist selbstverständlich
-unter Komposition geschlossen.
+Kompositionen davon sind wieder einer dieser vier Morphismen - ansonsten
+wäre die Kategorie nicht unter Komposition geschlossen (und damit keine
+Kategorie).
+
+Wie in diesen Beispielen lassen sich Kategorien in Diagrammen
+visualisieren, indem sie wie Multigraphen, also Graphen mit mehr als
+einer möglichen Kante zwischen zwei Knoten, gezeichnet werden. Formal
+sind allerdings nicht alle Kategorien Multigraphen, da letztere eine
+Menge von Knoten, Kategorien jedoch eine Klasse von Objekten besitzen.
 
 \fig{cat_comp}{Das Assoziativitätsaxiom als kommutatives Diagramm}
 
-Viele Definitionen der Kategorientheorie erfolgen über sogenannte
-kommutative Diagramme:
+Ergeben alle in einem Diagramm möglichen Pfade zwischen je zwei Objekten
+denselben Morphismus, wird das Diagramm als kommutativ bezeichnet:
 \defi{Kommutatives Diagramm}{ Ein Diagramm kommutiert, wenn für je zwei
   eingezeichnete Pfade $f=f_1 \circ \cdots \circ f_n : A \rightarrow B$
   und $g=g_1 \circ \cdots \circ g_n : A \rightarrow B$ zwischen zwei
@@ -1827,7 +1843,7 @@ $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
   \abb{cat_product} kommutiert, d.h.  $\pi_1 \circ \langle f,g \rangle =
   f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.  }
 
-\begin{figure}
+\begin{figure}[h]
   \centering
   \subfloat[Produkt]{
     \includegraphics[scale=0.3]{images/cat_product}
@@ -1946,10 +1962,10 @@ wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
 \item Assoziativität: $$\mu_A \circ T(\mu_A) = \mu_A \circ \mu_{T(A)}$$
 \item Neutrales Element: $$\mu_A \circ T(\eta_A) = \mu_A \circ \eta_{T(A)} = \mathrm{id}_{T(A)}$$
 \end{itemize}
-}
-$\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier den Identitätsfunktor,
-$\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den Identitätsmorphismus. Auch diese Gleichungen ließen sich
-als kommutative Diagramme darstellen.
+} $\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier
+den Identitätsfunktor, $\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den
+Identitätsmorphismus. Auch diese Gleichungen ließen sich als kommutative
+Diagramme darstellen.
 
 Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
 $T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
@@ -1990,11 +2006,30 @@ stehen. $\eta$ beschreibt dann die Erzeugung einer einelementigen Liste,
 $\mu$ reduziert eine Liste von Listen auf eine flache Liste. Über die
 Kleisli-Kategorie lassen sich damit bespielsweise nichtdeterministische
 Funktionen, die eine Liste möglicher Resultate zurückliefern, elegant
-Verknüpfen. Haskell (\sref{haskell}) benutzt Monaden unter
+Verknüpfen. Haskell \seec{haskell} benutzt Monaden unter
 anderem, um Seiteneffekte in eine normalerweise pur funktionale Sprache
 einzubauen, wie \sref{haskell:cats:monads} erläutert.
 
 \lsection[cats:sum]{Zusammenfassung}
+
+Kategorientheorie ist ein abstrakter Zweig der Mathematik, der sich mit
+Morphismen (Pfeilen) zwischen Objekten (Knoten) und insbesondere der
+Komposition von Morphismen befasst. Damit können unter anderem
+Verarbeitungsprozesse formal und graphisch darstellbar beschrieben
+werden, wobei die Möglichkeiten weit über mathematische Funktionen
+hinausgehen. Über Produkte und Coprodukte können kartesische Produkte
+und disjunkte Vereinigungen von Mengen auf Objekte in Kategorien
+verallgemeinert werden. Mit Funktoren lassen sich Abbildungen zwischen
+Kategorien beschreiben. Eine besondere Art von Funktoren sind Monaden,
+welche unter anderem ``eingepackte'' Werte wie Listen beschreiben
+können. Zu jeder Monade kann wiederum eine Kategorie gebildet werden,
+die Kleisli-Kategorie.
+
+Der Nutzen der Kategorientheorie für diese Arbeit besteht darin,
+allgemein und abstrakt die Kombination von Verarbeitungsschritten
+beschreiben zu können und somit ein formales Rahmenwerk für die
+Zusammensetzung von Compilern zu liefern. Konkret zeigt sich dies in der
+Umsetzung kategorientheoretischer Konzepte in Haskell.
 
 \lchapter[haskell]{Die Sprache Haskell}
 
@@ -2002,15 +2037,16 @@ Haskell ist eine funktionale Programmiersprache, die generell sehr
 mathematisch inspiriert ist. Beispielsweise sind Funktionen hier
 grundsätzlich pur, d.h. ohne Nebeneffekte. Dank der Haskell-Umsetzung
 von Monaden sind Berechnungen mit Nebeneffekten dennoch möglich. siehe
-\sref{cats:monads} und \sref{haskell:cats:monads}. Auch Objekte gibt es
-hier in der Form nicht - stattdessen wird mittels algebraischer
-Datentypen und Typklassen modelliert. Unterstützt wird dieser Ansatz
-durch ein statisches Typsystem, welches praktische Features wie
-Typinferenz oder abhängige Typen bereitstellt. Haskell arbeitet mit lazy
-evaluation, es werden also Funktionen und Datenstrukturen erst dann
-ausgewertet, wenn diese wirklich benötigt werden. Dies ermöglicht
-beispielsweise die Konstruktion unendlicher Listen und Bäume, solange
-nur endliche Teilmengen am Ende abgerufen werden.
+\sref{cats:monads} und \sref{haskell:cats:monads}. Auch
+objektorientierte Konzepte gibt es hier in der Form nicht - stattdessen
+wird mittels algebraischer Datentypen und Typklassen
+modelliert. Unterstützt wird dieser Ansatz durch ein statisches
+Typsystem, welches praktische Features wie Typinferenz oder abhängige
+Typen bereitstellt. Haskell arbeitet mit lazy evaluation, es werden also
+Funktionen und Datenstrukturen erst dann ausgewertet, wenn diese
+wirklich benötigt werden. Dies ermöglicht beispielsweise die
+Konstruktion unendlicher Listen und Bäume, solange nur endliche
+Teilmengen am Ende abgerufen werden.
 
 \lsection[haskell:functions]{Funktionen}
 
@@ -2527,6 +2563,33 @@ type IOArrow = Kleisli IO
 
 \lsection[haskell:sum]{Zusammenfassung}
 
+Haskell ist eine pur funktionale, statisch typisierte Programmiersprache
+mit Typinferenz. Konzepte wie Currying und Funktionen höherer Ordnung
+ermöglichen einen eleganten, modularen und punktfreien
+Programmierstil. Für die Definition eigener Datenstrukturen stehen
+algebraische Datentypen bereit, die in etwa die Rolle einer Klasse in
+objektorientierten Sprachen einnehmen. Es können auch Typvariablen
+verwendet werden, die deutlich mächtiger und präziser sind als
+beispielsweise Java-Generics\cite{JavaGenerics}. Die Rolle von
+Interfaces nehmen in Haskell Typklassen ein.
+
+In Haskell werden mit Arrows und Monaden auch einige
+kategorientheoretischen Konzepte umgesetzt und in Form von Typklassen
+bereitgestellt. Während Arrows allgemeiner und konzeptionell einfacher
+sind und optimal für eine punktfreie Formulierung von Algorithmen sind,
+können Monaden teilweise einfacher implementiert werden und ermöglichen
+mittels do-Notation eine punktierte Schreibweise mit benannten
+Zwischenvariablen. Alle Monaden lassen sich über die Kleisli-Kategorie
+in Arrows umwandeln und viele Arrows in Monaden.
+
+Haskell selbst nutzt Monaden, um Funktionen mit Seiteneffekten sauber in
+die ansonsten pure Sprache integrieren zu können. Die Monade \icode{IO}
+lässt sich als verstecktes Weiterreichen eines \icode{World}-Zustandes von
+Funktion zu Funktion veranschaulichen.
+
+MagicL legt den Schwerpunkt auf Arrows und beschreibt so allgemein
+Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
+
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
 Parser sind für die Umwandlung von Zeichenketten in Objekte
@@ -2607,7 +2670,8 @@ immer fehl und entspricht $fail : \mathrm{String} \rightarrow
 \mathrm{String} + a$ in $C$.
 
 Der Operator $\bigvee : Mor_{A,B} \times Mor_{A,B}
-\rightarrow Mor_{A,B} $ bietet Alternativen. Um Morphismen aus
+\rightarrow Mor_{A,B} $ bietet Alternativen, wodurch ein Backtracking im
+Fehlerfall möglich wird. Um Morphismen aus
 $\mathbf{C}$ in $\mathbf{C}_f$ benutzen zu können, gibt es den Funktor
 $\mathrm{lift}_f:\mathbf{C} \ato \mathbf{C}_f$, welcher die
 unveränderte, d.h. gelingende Operation für die neue Kategorie
@@ -2926,32 +2990,34 @@ ausgegeben, z.B.
 
 \lsection[arrowparser:sexpparser]{Parser auf \sexps}
 
-Unter \sexp{}-Parser würde man normalerweise
-
-\todo{Begriffsklärung \sexp{}-Parser}
-
-\todo{SexpParser Typ}
-
-Die Parser-Bibliothek an sich ist bereits nützlich, um Textdateien
-einlesen zu können. Das eigentliche Ziel aber ist die Verarbeitung von
-\sexps{}. Es lassen sich zwar bereits Streams von \sexps{} verarbeiten,
-es gibt aber bisher keine komfortablen Operationen, um das Innere einer
-\sexp{} zu testen oder zu verarbeiten. Da ein \sexp{} selbst wieder eine
-Liste und damit ein Stream ist, bietet es sich an, diesen ebenfalls über
-einen "`inneren Parser"' zu verarbeiten.
+Der Begriff \sexp{}-Parser bezeichnet in dieser Arbeit Parser, die
+Listen von \sexps{} als Eingabe und einen beliebigen Typ als Ausgabe
+haben. Der Parser aus dem vorigen Abschnitt ist daher in dieser
+Terminologie ein Char-Parser, der \sexps{} zurückliefert. Entsprechend
+ist der Typ \icode{SexpParser} in MagicL definiert als \icode{IOParser} (für
+Seiteneffekten wie Debug-Ausgaben) vom Token-Typ \icode{Sexp} ohne
+explizite Eingabe und mit beliebigem Rückgabewert:
+\begin{code}
+type SexpParser a = IOParser Sexp () a  
+\end{code}
+Die Parser-Bibliothek an sich kann bereits Streams von \sexps{}
+verarbeiten. Es gibt allerdings bisher keine komfortablen Operationen,
+um das Innere einer \sexp{} zu testen oder zu verarbeiten. Da ein
+\sexp{} selbst wieder eine Liste und damit ein Stream ist, bietet es
+sich an, diesen ebenfalls über einen "`inneren Parser"' zu verarbeiten.
 
 Beispielsweise könnte eine Liste von Personen folgenderweise
 repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
-  sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)} ersetzt
-  werden - aber es handelt sich ja nur um ein einfaches Beispiel.}:
+  sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)}
+  ersetzt werden - aber es handelt sich ja lediglich um ein Beispiel.}:
 \begin{code}
 (person Franz)
 (person Walter)
 (person Heinz)
 \end{code}
 
-Ein Parser, der eine Liste von Namensstrings produzieren soll, würde mit
-der bisherigen Bibliothek so aussehen:
+Ein Parser, der aus dieser Eingabe eine Liste von Namensstrings
+produzieren soll, würde mit der bisherigen Bibliothek so aussehen:
 
 \begin{code}
 parsePerson :: SexpParser String
@@ -3014,6 +3080,25 @@ macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 
 \lsection[arrowparser:sum]{Zusammenfassung}
 
+Parser werden in MagicL durch die Verschachtelung zweier Funktoren
+implementiert, die bestehende Arrows um bestimmte Möglichkeiten
+erweitern. Der \icode{FailFunctor} realisiert die Möglichkeit, mit einer
+Fehlermeldung zu Scheitern und per Backtracking Alternativen zu
+probieren. Der \icode{StateFunctor} setzt das Durchreichen von Zuständen
+um und wird benutzt, um den noch zu lesenden Stream als Liste zu
+verwalten. Das \icode{ParseFunctor} kombiniert beides, wobei der
+\icode{FailFunctor} doppelt verwendet wird, um auch Fehler zu
+ermöglichen, die nicht durch Backtracking zu beheben sind. Dies ist
+hilfreich, um teilweise sinnvollere Fehlermeldungung zu erhalten.
+
+Eine Parser-Bibliothek stellt neben Konstruktoren wie \icode{member}
+auch Kombinatoren wie \icode{many} bereit, die eine EBNF-artige
+Formulierung ermöglichen. Die Parser sind sehr allgemein, da sowohl
+Rückgabetyp als auch Token-Typ variabel sind, so dass mehr als nur
+Strings eingelesen werden können. Makros werden in MagicL als Parser auf
+\sexps{} definiert, die auch Subausdrücke rekursiv mit Parsern
+verarbeiten können.
+
 \lchapter[magicl]{Weitere Komponenten von MagicL}
 
 Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
@@ -3021,6 +3106,102 @@ sowie die damit in \cref{sexphs} und \cref{sexpcomp} implementierten
 Sprachen sind das Herzstück von MagicL. Darüber hinaus gibt es
 allerdings noch weitere Komponenten, die in den folgenden Abschnitten
 vorgestellt werden.
+
+\lsection[magicl:code]{Repräsentation von Quelltext}
+
+Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
+String-basierten Templates und daher mit
+Low-Level-Methoden. Syntaktische Konstrukte werden daher oft wiederholt,
+was zu häufigen Syntaxfehlern und einem relativ hohen Wartungsaufwand
+führt. Es würde beispielsweise viel Arbeit bedeuten, alle in einer
+generierten Java-Klasse definierten Arrays in Collections umzuwandeln,
+wenn die \icode{\{A, B, C\}}-Syntax überall direkt benutzt
+wurde. Hilfreich wäre es, wenn statt dessen überall ein Sub-Template
+\icode{genList} aufgerufen würde - nun müsste nur noch eine Stelle
+verändert werden um die erwünschte Anpassung durchzuführen. Diese
+Abstraktion ist auch mit einigen String-basierten Templates
+realisierbar. Ein weiteres Problem aber ist die Formatierung - denn auch
+generierter Quelltext wird eventuell gelesen werden. Ein Template für
+\icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
+da der Einrückungslevel immer relativ zur - leider im Template
+unbekannten - äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
+Code daher an einen Formatter wie Jalopy\cite{Jalopy} übergeben werden -
+für ein sprachunabhängiges Framework ist diese Option aber nicht
+zufriedenstellend.
+
+MagicL verfolgt einen anderen Ansatz und definiert ein typisiertes
+Modell für formatierten Code samt Compiler nach String. Hier handelt es
+sich um einen Nachbau des von Philip Wadler in
+\cite[S.223ff]{FunOfProgramming} vorgestellten Pretty-Printers. Die
+elementaren Konstruktor-Funktionen sind:
+\begin{code}
+newline :: Code
+text    :: String -> Code
+append  :: Code   -> Code -> Code
+group   :: Code   -> Code
+indent  :: Int    -> Code -> Code
+\end{code}
+
+\icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
+sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
+zu bekommen, indem es alle Zeilenumbrüche durch Leerzeichen
+ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
+Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
+Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
+\icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
+\begin{code}
+indent 2 (conc [text "hallo", newline, text "welt"])
+\end{code}
+den Text
+\begin{code}
+hallo
+  welt
+\end{code}
+ergeben - dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
+mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
+Funktionen wie
+\begin{code}
+  joinBy :: Code -> [Code]
+\end{code}
+- welche einen Seperator benutzt, um eine Liste zusammenzufügen.
+\begin{code}
+joinBy "; " [text "foo", text "bar", text "baz"]
+\end{code}
+würde also
+\begin{code}
+foo; bar; baz
+\end{code}
+ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
+syntaktische Programmiersprachenelemente abgeleitet, wie
+\icode{commaSep} für eine komma-separierte Liste oder \icode{parens},
+\icode{braces} und \icode{brackets} für die drei gängigen Arten der
+Klammerung.
+
+\lsubsection[magicl:code:prettysexp]{Beispiel: Ein Pretty-Printer für \sexps{}}
+
+\sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
+noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
+\begin{code}
+(a b (c d) e)
+\end{code}
+Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
+auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
+Zeichen eingerückt werden:
+\begin{code}
+(a
+  b
+  (c d)
+  e)
+\end{code}
+Dies lässt sich mit dieser rekursiven Funktion erreichen:
+\begin{code}
+layoutSexp :: Sexp -> Code
+layoutSexp (Symbol sym)    = text sym
+layoutSexp (Node children) = format (map layoutSexp children)
+  where format = parens . group . indent2 . lines
+\end{code} %<<
+Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
+spezifiziert werden.
 
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
 
@@ -3165,102 +3346,6 @@ ghc MyFileCompiler.hs  -- einige Parameter ausgelassen
 ./MyFileCompiler <inFile >outFile
 \end{code}
 
-\lsection[magicl:code]{Repräsentation von Quelltext}
-
-Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
-String-basierten Templates und daher mit
-Low-Level-Methoden. Syntaktische Konstrukte werden daher oft wiederholt,
-was zu häufigen Syntaxfehlern und einem relativ hohen Wartungsaufwand
-führt. Es würde beispielsweise viel Arbeit bedeuten, alle in einer
-generierten Java-Klasse definierten Arrays in Collections umzuwandeln,
-wenn die \icode{{A, B, C}}-Syntax überall direkt benutzt
-wurde. Hilfreich wäre es, wenn statt dessen überall ein Sub-Template
-\icode{genList} aufgerufen würde - nun müsste nur noch eine Stelle
-verändert werden um die erwünschte Anpassung durchzuführen. Diese
-Abstraktion ist auch mit einigen String-basierten Templates
-realisierbar. Ein weiteres Problem aber ist die Formatierung - denn auch
-generierter Quelltext wird eventuell gelesen werden. Ein Template für
-\icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
-da der Einrückungslevel immer relativ zur - leider im Template
-unbekannten - äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
-Code daher an einen Formatter wie Jalopy\cite{Jalopy} übergeben werden -
-für ein sprachunabhängiges Framework ist diese Option aber nicht
-zufriedenstellend.
-
-MagicL verfolgt einen anderen Ansatz und definiert ein typisiertes
-Modell für formatierten Code samt Compiler nach String. Hier handelt es
-sich um einen Nachbau des von Philip Wadler in
-\cite[S.223ff]{FunOfProgramming} vorgestellten Pretty-Printers. Die
-elementaren Konstruktor-Funktionen sind:
-\begin{code}
-newline :: Code
-text    :: String -> Code
-append  :: Code   -> Code -> Code
-group   :: Code   -> Code
-indent  :: Int    -> Code -> Code
-\end{code}
-
-\icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
-sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
-zu bekommen, indem es alle Zeilenumbrüche durch Leerzeichen
-ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
-Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
-Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
-\icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
-\begin{code}
-indent 2 (conc [text "hallo", newline, text "welt"])
-\end{code}
-den Text
-\begin{code}
-hallo
-  welt
-\end{code}
-ergeben - dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
-mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
-Funktionen wie
-\begin{code}
-  joinBy :: Code -> [Code]
-\end{code}
-- welche einen Seperator benutzt, um eine Liste zusammenzufügen.
-\begin{code}
-joinBy "; " [text "foo", text "bar", text "baz"]
-\end{code}
-würde also
-\begin{code}
-foo; bar; baz
-\end{code}
-ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
-syntaktische Programmiersprachenelemente abgeleitet, wie
-\icode{commaSep} für eine komma-separierte Liste oder \icode{parens},
-\icode{braces} und \icode{brackets} für die drei gängigen Arten der
-Klammerung.
-
-\lsubsection[magicl:code:prettysexp]{Beispiel: Ein Pretty-Printer für \sexps{}}
-
-\sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
-noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
-\begin{code}
-(a b (c d) e)
-\end{code}
-Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
-auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
-Zeichen eingerückt werden:
-\begin{code}
-(a
-  b
-  (c d)
-  e)
-\end{code}
-Dies lässt sich mit dieser rekursiven Funktion erreichen:
-\begin{code}
-layoutSexp :: Sexp -> Code
-layoutSexp (Symbol sym)    = text sym
-layoutSexp (Node children) = format (map layoutSexp children)
-  where format = parens . group . indent2 . lines
-\end{code} %<<
-Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
-spezifiziert werden.
-
 \lsection[magicl:test]{Test-Framework}
 
 MagicL enthält ein primitives Unit-Test-Framework für die Überprüfung
@@ -3301,9 +3386,7 @@ Standard-Compiler vom Rückgabetyp nach \icode{String} bereitsteht -
 stattdessen wird gewöhnlich ein Compiler nach \icode{Code}
 angeboten. Die Funktion \icode{testMacro} schaltet deshalb den
 Standard-Compiler nach \icode{Code} hinter ein
-Makro\footnote{Wünschenswert wäre ein System, das automatisch den
-  Zwischenschritt über \icode{Code} einfügt - dies ist aber im Rahmen
-  des Haskell-Typsystems nicht möglich.}:
+Makro:
 \begin{code}
 testMacro name mac testCases = 
   (testCompiler name 
@@ -3318,11 +3401,29 @@ Das zu testende Makro wird hier durch einen typisierten Aufruf von
 \icode{comp} referenziert. Alternativ können auch benannte Makros
 verwendet werden.
 
-\lsection[magicl:build]{Build-Tool}
-
-
-
 \lsection[magicl:sum]{Zusammenfassung}
+
+Für die Repräsentation von Quelltext benutzt MagicL das typisierte
+Modell \icode{Code}. Dadurch ist es möglich, mit Einrückung, Klammerung
+etc. auf strukturelle Weise umzugehen, was die Anfälligkeit für
+Syntaxfehler gegenüber String-basierten Templates verringert. Dieses
+Modell kann anschließend in Quelltext übersetzt werden.
+
+Für die allgemeine Spezifikation von Verarbeitungsprozessen stellt
+MagicL eine Schnittstelle mit drei Typklassen bereit, mit der einzelne
+Compiler mit beliebigen Arrows oder auch komplett anderen Methoden
+konstruiert und kombiniert werden können. Alles, was in einen
+\icode{IOArrow} von \icode{a} nach \icode{b} überführt werden kann,
+implementiert die Typklasse \icode{Executable}. Instanzen dieser Klasse
+können dann verwendet werden, um mit \icode{Compilable} feste Compiler
+zwischen zwei Typen zu verdrahten, die dann mittels Typinferenz
+automatisch gefunden werden können. Für die leichtere Benutzung können
+diese dann über die Polymorphe Funktion \icode{compile} aus der
+Typklasse \icode{Compiler} angesprochen werden, die den intern
+verwendeten \icode{Executable}-Typ versteckt.
+
+Ein minimales Test-Framework ermöglicht Unit Testing einzelner Compiler
+oder Makros.
 
 \lchapter[sexphs]{\sexp{}-Haskell}
 
@@ -3812,23 +3913,30 @@ Umbenennungen und andere Anpassungen beinhaltet, wie beispielsweise
 die Erweiterung vorher binärer Operatoren auf beliebig viele
 Argumente.
 
+\fig{flow_sexphs}{Kompilationsprozess von \sexp{}-Haskell}
+
 Implementiert wurde die Sprache durch ein typisiertes
 \icode{Haskell}-Modell sowie zwei Compiler zur Verarbeitung: Der erste
 ist ein Parser von \sexps{}, der zweite ein rein funktionaler Compiler
 nach \icode{Code}, woraus das MagicL-Framework letztlich den Quellcode
-generiert. Beide Compiler sind mittels
+generiert. \abb{flow_sexphs} zeigt den Vorgang als Kategoriendiagramm,
+wobei die Framework-interne Vor- bzw. Weiterverarbeitung auf
+String-Ebene grau eingezeichnet ist. Der gesamte
+\sexp{}-Haskell-Compiler ist die Komposition all dieser Compiler und
+damit ein Arrow von \icode{String} nach \icode{String}.
+
+Sowohl Parser als auch Generator sind mittels
 \icode{Compilable}-Implementationen für jeden Datentyp des
-Haskell-Modells konstruiert. Dies hat neben einer hohen
-Einheitlichkeit den Vorteil, dass beliebige Sub-Compiler mit
-\icode{comp} angesprochen und durch Haskell anhand der
-Modelldefinition gefunden werden können. Bei Parsern können auch
-Listen und \icode{Maybe}-Datentypen ohne Mehraufwand verarbeitet
-werden - bei anderen Compilern allerdings nicht, da hier das
-gewünschte Verhalten nicht für alle Modelle gleich ist. Die Kehrseite
-dieses Ansatzes sind die umständlichen
+Haskell-Modells konstruiert. Dies hat neben einer hohen Einheitlichkeit
+den Vorteil, dass beliebige Sub-Compiler mit \icode{comp} angesprochen
+und durch Haskell anhand der Modelldefinition gefunden werden
+können. Bei Parsern können auch Listen und \icode{Maybe}-Datentypen ohne
+Mehraufwand verarbeitet werden - bei anderen Compilern allerdings nicht,
+da hier das gewünschte Verhalten nicht für alle Modelle gleich ist. Die
+Kehrseite dieses Ansatzes sind die umständlichen
 \icode{Compilable}-Instanzdefinitionen, die vor allem für kleine
-Compiler nicht sinnvoll erscheinen - eine DSL für
-Modellverarbeitung könnte dies in Zukunft allerdings vereinfachen.
+Compiler nicht sinnvoll erscheinen - eine DSL für Modellverarbeitung
+könnte dies in Zukunft allerdings vereinfachen.
 
 Allgemein haben statisch typisierte Compiler den Vorteil einer
 frühzeitigen Typfehlererkennung und erlauben komplexe Algorithmen im
@@ -3838,7 +3946,9 @@ Aufwand, der insbesondere für kleine Sprachen oder Spracherweiterungen
 nicht sinnvoll erscheint. Deswegen stellt MagicL alternativ die
 Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
 bereit, welche im folgenden Kapitel präsentiert wird. Auch
-\sexp{}-Haskell hätte auf diese Weise verarbeitet werden können.
+\sexp{}-Haskell hätte auf diese Weise vermutlich einfacher verarbeitet
+werden können, wurde aber als Proof of Concept für typisierte
+Verarbeitung in dieser Form beibehalten.
 
 \lchapter[sexpcomp]{\sexp{}-Compiler}
 
