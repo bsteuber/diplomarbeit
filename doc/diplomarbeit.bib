@@ -19,6 +19,13 @@ title  = {Using Oslo to Speed Up Database Development},
 author = {Forte, Stephen},
 }
 
+@book{DesignPatterns,
+title = {Entwurfsmuster: Elemente wiederverwendbarer objektorientierter Software},
+author = {Gamma, Erich and Helm, Richard and Johnson, Ralph and Vlissides, John},
+publisher = {Addison-Wesley Verlag},
+year = {2004},
+}
+
 @article{Lisp,
 author = {Seibel, Peter},
 isbn = {1590592395},
@@ -73,39 +80,38 @@ year = 2008
 } 
 
 @book{JavaGenerics,
-  address = {Beijing},
-  author = {Naftalin, Maurice and Wadler, Philip},
-  publisher = {O'Reilly},
-  title = {Java Generics and Collections},
-  year = {2006},
-  isbn = {978-0-596-52775-4},
+address = {Beijing},
+author = {Naftalin, Maurice and Wadler, Philip},
+publisher = {O'Reilly},
+title = {Java Generics and Collections},
+year = {2006},
+isbn = {978-0-596-52775-4},
 }
 
 @book{Boost,
-    title = {{Boost C++ Libraries}},
-    publisher = {http://www.boost.org}
+title = {{Boost C++ Libraries}},
+editor = {http://www.boost.org}
 }
 
 @article{CPrep,
- author = {Ritchie, Dennis M.},
- title = {The development of the C language},
- journal = {SIGPLAN Not.},
- volume = {28},
- number = {3},
- year = {1993},
- issn = {0362-1340},
- pages = {201--208},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
+author = {Ritchie, Dennis M.},
+title = {The development of the C language},
+journal = {SIGPLAN Not.},
+volume = {28},
+number = {3},
+year = {1993},
+pages = {201--208},
+publisher = {ACM},
+address = {New York, NY, USA},
+}
 
 @book{Clojure,
- author = {Halloway, Stuart},
- title = {Programming Clojure},
- year = {2009},
- isbn = {1934356336, 9781934356333},
- publisher = {Pragmatic Bookshelf},
- }
+author = {Halloway, Stuart},
+title = {Programming Clojure},
+year = {2009},
+isbn = {1934356336, 9781934356333},
+publisher = {Pragmatic Bookshelf},
+}
 
 @book{OnLisp,
 url    = {http://www.paulgraham.com/onlisp.html},
@@ -126,22 +132,31 @@ isbn = {1-55860-191-0}
 }
 
 @article{EvolutionOfLisp,
- author = {Steele, Guy L. and Gabriel, Richard P.},
- title = {The evolution of Lisp},
- book = {History of programming languages---II},
- year = {1996},
- isbn = {0-201-89502-1},
- pages = {233--330},
- doi = {http://doi.acm.org/10.1145/234286.1057818},
- publisher = {ACM},
- address = {New York, NY, USA},
- url = {ttp://www.dreamsongs.com/Files/HOPL2-Uncut.pdf},
+author = {Steele, Guy L. and Gabriel, Richard P.},
+title = {The evolution of Lisp},
+book = {History of programming languages---II},
+year = {1996},
+isbn = {0-201-89502-1},
+pages = {233--330},
+doi = {http://doi.acm.org/10.1145/234286.1057818},
+publisher = {ACM},
+address = {New York, NY, USA},
+url = {ttp://www.dreamsongs.com/Files/HOPL2-Uncut.pdf},
 }
 
-@misc{Latex,
+@book{Latex,
+title = {LaTeX - kurz \& gut},
+author = {Dalheimer, Kalle and Günther, Karsten},
+edition = {3.},
+year = {2008},
+publisher = {O'Reilly},
 }
 
-@misc{LatexBeamer,
+@book{LatexBeamer,
+title = {User Guide to the Beamer Class},
+publisher = {http://latex-beamer.sourceforge.net},
+author = {Tantau, Till},
+year = {2007},
 }
 
 @book{Grundlagen,
@@ -156,24 +171,24 @@ keywords="{algebraic structures; data structures; structural induction; term
 }
 
 @article{Hughes,
-	author = {Hughes, John},
-	journal = {Science of Computer Programming},
-	title = {Generalising monads to arrows},
-	year = {2000}
+author = {Hughes, John},
+journal = {Science of Computer Programming},
+title = {Generalising monads to arrows},
+year = {2000}
 }
 
 @inproceedings{HaskellHistory,
- author = {Hudak, Paul and Hughes, John and Jones, Simon Peyton and Wadler, Philip},
- title = {A history of Haskell: being lazy with class},
- booktitle = {HOPL III: Proceedings of the third ACM SIGPLAN conference on History of programming languages},
- year = {2007},
- isbn = {978-1-59593-766-X},
- pages = {12-1--12-55},
- location = {San Diego, California},
- doi = {http://doi.acm.org/10.1145/1238844.1238856},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
+author = {Hudak, Paul and Hughes, John and Jones, Simon Peyton and Wadler, Philip},
+title = {A history of Haskell: being lazy with class},
+booktitle = {HOPL III: Proceedings of the third ACM SIGPLAN conference on History of programming languages},
+year = {2007},
+isbn = {978-1-59593-766-X},
+pages = {12-1--12-55},
+location = {San Diego, California},
+doi = {http://doi.acm.org/10.1145/1238844.1238856},
+publisher = {ACM},
+address = {New York, NY, USA},
+}
 
 @article{Parsec,
 url    = {http://research.microsoft.com/en-us/um/people/emeijer/Papers/Parsec.pdf},
@@ -183,14 +198,14 @@ year   = {2001}
 }
 
 @book{EBNF,
-  author    = {Ulrich Hedtst{\"u}ck},
-  title     = {Einf{\"u}hrung in die Theoretische Informatik: Formale
-               Sprachen und Automatentheorie},
-  publisher = {Oldenbourg},
-  year      = {2007},
-  edition   = {4.},
-  isbn      = {3-486-25515-0},
-  bibsource = {DBLP, http://dblp.uni-trier.de}
+author    = {Ulrich Hedtst{\"u}ck},
+title     = {Einf{\"u}hrung in die Theoretische Informatik: Formale
+             Sprachen und Automatentheorie},
+publisher = {Oldenbourg},
+year      = {2007},
+edition   = {4.},
+isbn      = {3-486-25515-0},
+bibsource = {DBLP, http://dblp.uni-trier.de}
 }
 
 @book{Jalopy,
@@ -214,19 +229,10 @@ author = {McCarthy, John}
 }
 
 @book{MetaobjectProtocol,
- author = {Kiczales, Gregor and Rivieres, Jim Des},
- title = {The  Art of the Metaobject Protocol},
- year = {1991},
- isbn = {0262111586},
- publisher = {MIT Press},
- address = {Cambridge, MA, USA},
- }
-
-
-
-Book{CodeGenWebsite,
-author = {Software Acumen Limited},
-title = {Code Generation},
-publisher = {http://www.codegeneration.net},
-year = 2006
-} 
+author = {Kiczales, Gregor and Rivieres, Jim Des},
+title = {The  Art of the Metaobject Protocol},
+year = {1991},
+isbn = {0262111586},
+publisher = {MIT Press},
+address = {Cambridge, MA, USA},
+}

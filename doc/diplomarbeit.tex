@@ -481,8 +481,6 @@ Kriterien bewertet.
 
 \lsubsection[model:crit:type]{Typisierung}
 
-\todo{lieber Validierung schreiben}
-
 Das wohl wesentliche Merkmal einer Modellrepräsentation ist seine
 Typisierung. Es gibt auf der einen Seite gänzlich untypisierte
 Repräsentationen wie beispielsweise Bitstreams, die viel Flexibilität,
@@ -794,7 +792,7 @@ können mit Bäumen ebenfalls gut durchgeführt werden.
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|}\hline
 \bf Modell                 & \bf String & \bf Objekt           & \bf \sexps{} & \bf XML & \bf JSON & \bf UML         \\\hline\hline
-\bf Validierung            & gering     & sehr hoch            & mittel       & mittel  & mittel   & relativ hoch    \\\hline
+\bf Typisierung            & gering     & sehr hoch            & mittel       & mittel  & mittel   & relativ hoch    \\\hline
 \bf Universell             & ja         & Klasse erforderlich  & ja           & ja      & ja       & ja              \\\hline
 \bf Sprachunabhängig       & ja         & nein                 & ja           & ja      & ja       & ja              \\\hline
 \bf Graphische Darstellung & Text       & Baum                 & Baum         & Baum    & Baum     & Graph           \\\hline
@@ -840,11 +838,14 @@ dieser Kriterien verglichen und bewertet.
 \lsubsection[template:crit:model]{Verwendete Modelle}
 
 Template-Engines unterscheiden sich sowohl in den Eingabe-, als auch in
-den Ausgabemodellen. Möglich sind Zeichenketten, typisierte Objekte
-sowie untypisierte Bäume wie \sexps{} oder XML \seec{model}. Auch
-die generierbaren Zielsprachen unterscheiden sich - manche Generatoren
-können jede Sprache generieren, während andere nur eine einzige oder
-eine Menge von Sprachen unterstützen.
+den Ausgabemodellen. Verwendet werden gewöhnlich Zeichenketten,
+typisierte Objekte sowie untypisierte Bäume wie \sexps{} oder XML
+\seec{model}. Mit den Modellen variieren auch die Typisierungsgrade und
+damit auch das Maß und der Zeitpunkt einer möglichen Validierung der Daten.
+
+Die generierbaren Zielsprachen unterscheiden sich ebenfalls - manche
+Generatoren können jede Sprache generieren, während andere nur eine
+einzige oder eine Familie von Sprachen unterstützen.
 
 \lsubsection[template:crit:def]{Template-Definition}
 
@@ -909,9 +910,8 @@ Generator entscheidet dann Anhand des Modells, welches Template für die
 Verarbeitung zuständig ist.
 
 \lsubsection[template:crit:sep]{Komponententrennung}
-\todo{MVC-Buch?}
 Die meisten Software-Systeme lassen sich durch eine
-Model-View-Controller-Architektur (MVC) beschreiben. Daten und deren
+Model-View-Controller-Architektur (MVC)\cite[S.5ff]{DesignPatterns} beschreiben. Daten und deren
 Verarbeitung werden vom Modell verwaltet. Ablaufsteuerung und Behandlung
 von Benutzerinteraktionen gehören in den Controller. Views sind für die
 graphische oder textuelle Formatierung der Modelle zuständig.
@@ -4445,7 +4445,7 @@ Rückgabeausdrücken anderer Makros.
 
 \lchapter[end]{Schluss}
 
-\lsection[end:summary]{Zusammenfassung}
+\lsection[end:sum]{Zusammenfassung}
 
 Ziel dieser Diplomarbeit war die prototypische Entwicklung eines
 universellen Frameworks zur \cgen{}, welches möglichst viele Vorteile
