@@ -516,10 +516,10 @@ können.
 \lsubsection[model:crit:attrib]{Attribute}
 
 Attribute sind benannte Komponenten eines Modells und nützlich, um
-spezielle Eigenschaften eines Modells festzuhalten. \todo{vgl. Slots,
-  OOP} Manche Modellrepräsentationen stellen direkt Attribute bereit,
-andere wie \sexps{} können diese beispielsweise über Unterknoten
-simulieren.
+spezielle Eigenschaften eines Modells festzuhalten. Unter anderem werden
+Attribute auch für objektorientierte Programmierung verwendet. Manche
+Modellrepräsentationen stellen direkt Attribute bereit, andere wie
+\sexps{} können diese beispielsweise über Unterknoten simulieren.
 
 \lsubsection[model:crit:list]{Repräsentation von Listen}
 
@@ -579,8 +579,7 @@ gesetzt - mit Leerzeichen als Trennsymbol. Beispiele für \sexps{} sind:
 Bäume mit benannten Knoten interpretiert - hierfür wird das erste
 Element einer Liste - typischerweise ein Symbol - als Name sowie alle
 weiteren als Unterknoten aufgefasst. Zwischen \icode{(foo)} und
-\icode{foo} wird dabei weiterhin unterschieden. Das letzte Beispiel
-entspricht damit dem Baum aus \abb{TODO}. Nicht alle gängigen
+\icode{foo} wird dabei weiterhin unterschieden. Nicht alle gängigen
 Verwendungen von \sexps{} fügen sich jedoch in dieses Baumschema
 ein. Beispielsweise enthält Common Lisp oft Konstrukte in der Art von
 \icode{(interval (1 10))}, wo in \icode{(1 10)} die 1 keinen Namen,
@@ -1188,11 +1187,10 @@ unerwartete Fehler wie Namenskonflikte auftreten.
 
 \lsection[template:xsl]{XSL}
 
-\todo{Literatur}
-
-Die Extensible Stylesheet Language (XSL) ist eine Sprachfamilie, mit der
-XML-Dokumente unter anderem in graphische Repräsentationen überführt
-werden können. XSL besteht aus drei XML-basierten Sprachen:
+Die Extensible Stylesheet Language (XSL)\cite{XSLT} ist eine
+Sprachfamilie, mit der XML-Dokumente unter anderem in graphische
+Repräsentationen überführt werden können. XSL besteht aus drei
+XML-basierten Sprachen:
 \begin{itemize}
 \item XSL - Formatting Objects (XSL-FO) zur Beschreibung des graphischen Layouts von Seiten
 \item XML Path Language (XPath) zum Adressieren von Elementen in XML-Dokumenten
@@ -1439,8 +1437,10 @@ Quasiquote ist dagegen sehr trickreich und gewöhnungsbedürftig, wie
 Unquotes ein Quote mit Syntax \icode{'}, welches nicht mit diesen
 interagiert.
 
-\todo{Generierung von beliebigem Code? Da macroexpand eine Funktion ist
-  prinzipiell möglich, aber nicht gut unterstützt. Upcase nervig}
+Da ausschließlich \sexps{} als Rückgabe von Makros möglich sind, kann
+mit dem Lisp-Makrosystem zunächst kein Code anderer Programmiersprachen
+generiert werden. Allerdings ist es möglich, mit Makros ein
+Lisp-Programm zu erzeugen, welches dann den Zielcode generiert.
 
 \lsection[template:sum]{Zusammenfassung}
 
@@ -1685,20 +1685,26 @@ und Framework-intern in einen String umgewandelt wird.
 \lsection[reqs:sum]{Zusammenfassung}
 
 Das zu entwickelnde \cgen{}sframework soll eine Makrobasierte,
-baukastenartige Konstruktion von Compilern ähnlich Lisp ermöglichen. Das
-Level von Zeichenketten soll für die Metaprogrammierung möglichst keine
-Rolle spielen - stattdessen sollen als Modellrepräsentationen sowohl
-\sexps{} - welche so einfach wie möglich definiert werden - als auch
-getypte Objekte verwendet werden können. Dies gilt auch für die
-Ausgabetypen von Makros, deren Pattern-Matching im Gegensatz zu Lisp
-nicht nur den Knotennamen, sondern beliebige \sexps{} unterstützen
-soll. Der Kontrollfluss von Makroaufrufen soll feiner als in Lisp
-gesteuert werden können, um "`lokale Makros"' zu ermöglichen. Neben der
-textuellen Repräsentation von \sexps{} sollen prinzipiell auch andere
-Datenformate unterstützt werden, weshalb eigene Parser erstellt und
-eingebunden werden können sollen. Eine allgemeine Schnittstelle soll
-schließlich die Integration von Makros, Parsern und durch Funktionen
-implementierte Compiler ermöglichen.
+baukastenartige Konstruktion von Compilern ähnlich Lisp ermöglichen,
+dabei allerdings beliebige Zielsprachen unterstützen. Das Level von
+Zeichenketten soll für die Metaprogrammierung möglichst keine Rolle
+spielen - stattdessen sollen als Modellrepräsentationen sowohl \sexps{}
+- welche so einfach wie möglich definiert werden - als auch getypte
+Objekte verwendet werden können. Dies gilt auch für die Ausgabetypen von
+Makros, deren Pattern-Matching im Gegensatz zu Lisp nicht nur den
+Knotennamen, sondern beliebige \sexps{} unterstützen soll. Der
+Kontrollfluss von Makroaufrufen soll feiner als in Lisp gesteuert werden
+können, um "`lokale Makros"' zu ermöglichen. Neben der textuellen
+Repräsentation von \sexps{} sollen prinzipiell auch andere Datenformate
+unterstützt werden, weshalb eigene Parser erstellt und eingebunden
+werden können sollen. Eine allgemeine Schnittstelle soll schließlich die
+Integration von Verarbeitungseinheiten wie Makros, Parsern und durch
+Funktionen implementierte Compiler ermöglichen.
+
+Darüber hinaus ist eine theoretische Fundierung für die Semantik der
+Kombination dieser Verarbeitungseinheiten. Diese wird in MagicL durch
+durch die Anwendung kategorientheoretische Konzepte erreicht, welche im
+folgenden Kapitel beschrieben werden.
 
 \lchapter[cats]{Kategorientheorie}
 
@@ -4190,7 +4196,7 @@ ist, welches die beste Art für MagicL ist, kurz und prägnant Makros zu
 definieren. Es ist beispielsweise vorstellbar, dass sich ein Konstrukt
 finden lässt, der die Eleganz und Knappheit von \icode{defmacro} mit der
 Ausdrucksmächtigkeit von \icode{autoMac} kombiniert. Diese Idee wird in
-\sref{TODO} weiter diskutiert.
+\sref{end:disc} weiter diskutiert.
 
 Zuletzt sollte die Moduldefinition für Compiler vereinfacht werden:
 \begin{code}
@@ -4384,8 +4390,6 @@ Auf die konkrete Implementation des Toplevel-Compiler-Compilers wird an
 dieser Stelle nicht weiter eingegangen - sie kann dem MagicL-Code
 für das Modul \icode{Comp2Haskell} entnommen werden.
 
-\todo{Zustände f. Gensym, Debug?}
-
 \lsubsection[sexpcomp:impl:example]{Beispiel: Ignorieren von Kommentaren}
 
 Praktisch alle Programmiersprachen benötigen die Möglichkeit von
@@ -4448,12 +4452,12 @@ Rückgabeausdrücken anderer Makros.
 \lsection[end:sum]{Zusammenfassung}
 
 Ziel dieser Diplomarbeit war die prototypische Entwicklung eines
-universellen Frameworks zur \cgen{}, welches möglichst viele Vorteile
-bestehender Technologien im Rahmen eines klaren, einheitlichen
-Formalismus in sich vereint. Insbesondere die mächtigen und praktischen
-Metaprogrammierungskonzepte der Lisp-Sprachfamilie haben diese Arbeit
-inspiriert und sollten in einer verallgemeinerten,
-Zielsprachenunabhängigen Form aufgegriffen werden.
+universellen Frameworks namens MagicL zur \cgen{}, welches möglichst
+viele Vorteile bestehender Technologien im Rahmen eines klaren,
+einheitlichen Formalismus in sich vereint. Insbesondere die mächtigen
+und praktischen Metaprogrammierungskonzepte der Lisp-Sprachfamilie haben
+diese Arbeit inspiriert und sollten in einer verallgemeinerten Form
+aufgegriffen werden.
 
 Zunächst wurden hierfür in \cref{model} die Modelltypisierungsgrade
 String, Objekt und Baumstruktur für die Repräsentation von Quelltext
@@ -4473,36 +4477,68 @@ gegenüber XML vorgezogen.
 
 In \cref{template} wurde eine Reihe von \cgen{}swerkzeugen vorgestellt
 und verglichen. Gemein ist all diesen Tools die Benutzung des
-Template-Konzepts - andererseits unterscheiden sich Modelle und
-Kontrollfluss stark voneinander. 
+Template-Konzepts, ansonsten sind die strukturellen Unterschiede
+allerdings groß. Manche Frameworks können Code in beliebigen Sprachen
+generieren, andere beschränken sich auf eine einzelne Sprache oder
+Sprachfamilie. Alle drei Modelltypen aus \cref{model} werden in
+verschiedenen Systemen verwendet, allerdings keines bietet diese
+gleichzeitig an. Die Bandbreite der einzelnen Metasprachen reicht von
+kaum mehr als dem bloßen Template-Formalismus aus Quasiquote und Unquote
+bis hin zu vollständigen Programmiersprachen. Tools, in denen Meta- und
+Zielsprache übereinstimmen oder übereinstimmen können, erlauben
+prinzipiell auch die Generierung von Meta-Code selbst, woraus sich
+interessante Möglichkeiten ergeben. Hier kann es allerdings zu einer
+Mehrdeutigkeit bei der Auswertung von Unquotes kommen, die meist nur
+umständlich umgangen werden kann. Das Aufrufen von Templates verläuft
+meist explizit wie bei einem Funktionsaufruf. Alternativ treten auch
+Makros auf, die implizit über den Namen des zu verarbeitenden Ausdrucks
+zugeordnet werden. XSLT unterstützt hier sogar ein Pfad-basiertes
+Matching.
+
+Von den untersuchten Tools konnten Lisp-Makros aufgrund ihrer
+Flexibilität, Mächtigkeit, Modularisierbarkeit und Einfachheit am
+stärksten überzeugen. Lisp-Dialekte stellen jedoch kein universelles
+\cgen{}swerkzeug da, da diese ausschließlich Lisp-Code generieren
+können. Die Übertragung auf beliebige Zielsprachen ist daher die
+wichtigste der in \cref{reqs} besprochenen Anforderungen. Auch externe
+Eingabeformate sollten durch die Konstruktion spezifischer Parser
+unterstützt werden können. Darüber hinaus wurden gegenüber Lisp weitere
+Verallgemeinerungen gefordert: So sollten neben \sexps{} auch Strings
+und Objekte als Modelle verwendet werden können, obwohl der Focus auf
+\sexps{} bleibt. Verarbeitungseinheiten wie Makros, Parser und anders
+implementierte Compiler sollen sowohl explizit aufrufbar sein als auch
+über ein Pattern-Matching, welches über den Knotennamen hinausgeht. Auch
+``lokale Makros'', welche nur im Kontext anderer Makros ausgewertet
+werden, sollten realisierbar sein, um auf ein komplexes ``Code-Walking''
+wie in Lisp üblich möglichst verzichten zu können.
+
+Eine weitere Forderung war die Möglichkeit, Verarbeitungseinheiten nach
+dem Baukastenprinzip in einer klaren Semantik miteinander auf
+verschiedene Weisen kombinieren zu können. Die theoretische Fundierung
+dieser Semantik liefert die Kategorientheorie, deren Grundzüge in
+\cref{cats} vorgestellt wurden. Kategorien bestehen aus Morphismen
+zwischen Objekten - wobei beide Begriffe axiomatisch definiert und somit
+zunächst bedeutungsneutral sind. Die häufigste Interpretation für
+Morphismen und Objekte in der Mathematik sind Funktionen und Mengen, im
+Rahmen dieser Arbeit kommen jedoch ausschließlich Verarbeitungsprozesse
+und Typen vor. Kategorien können anschaulich als Diagramme visualisiert
+werden. Innerhalb einer Kategorie können neben der Komposition Produkte
+und Coprodukte verwendet werden, um einfache Einheiten zu komplexeren
+zusammenzusetzen. Auch ganze Kategorien können über Funktoren
+aufeinander abgebildet werden. Monaden sind spezielle Funktoren auf
+einer Kategorie, die eine spezielle, durch sogenannte natürlichen
+Transformationen beschriebene Struktur besitzen.
+
+Die Sprache Haskell, die in \cref{haskell} präsentiert wurde, bietet in
+ihren Bibliotheken die Typklassen \icode{Arrow} und \icode{Monad},
+welche eine programmiersprachliche Umsetzung spezieller Kategorien und
+Monaden darstellen. Dies ist einer der Gründe, welhalb MagicL in Haskell
+implementiert worden ist.
 
 
-Makros für beliebige Zielsprachen
-
-MagicL ist ein Framework für \sexp-Compiler, welches
-{} intern mit getypten Modellen arbeitet. Zudem basiert diese
-Mplementation auf einer Haskell-Umsetzung kategorientheoretischer
-Konzepte (in \sref{haskell:cats} beschrieben), mit deren Hilfe
-beispielsweise in \sref{arrowparser} sehr allgemeine und elegante
-\sexp{}-Parser konstruiert werden. In \sref{todo} geht es um
-das Parsen von \sexps{} und die hierfür bereitgestellten
-Hilfsfunktionen. \sref{magicl:arch} erklärt die Rahmenarchitektur mit
-Modellen und Compilern, wobei Parser als spezielle Compiler aufgefasst
-werden. \sref{magicl:examples} zeigt Beispiele für verschiedene
-Modelle, Parser und Compiler, die Teil von MagicL sind.
 
 
-MagicL ist der Prototyp eines
-universellen Frameworks für den Entwurf von Programmier- und
-Auszeichnungssprachen. Es gibt dem Metaprogrammierer praktische
-Werkzeuge für das Parsing und Übersetzen neuer sowie für Generierung von
-Code bestehender Sprachen an die Hand, wobei insbesondere (jedoch
-nicht ausschließlich) aus \sexps{} aufgebaute Sprachen unterstützt
-werden. Die Parser- und Compilererstellung erfolgt nach einem
-kategorientheoretisch motivierten Baukastenansatz, so dass
-unter anderem Parser durch die Kombination von Arrows erzeugt werden.
-
-\lsection[end:disc]{Diskussion}
+\lsection[end:disc]{Diskussion und Ausblick}
 
   \begin{itemize}
   \item MagicL sauberer und klarer als Lisps
@@ -4513,6 +4549,7 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
     \item Allgemeines Compiler-Interface
     \item Typisierte Codegeneration mit erweiterbarer Bibliothek
     \end{itemize}
+  \item Einschränkungen im Typsystem
   \item Manches wirkt etwas umständilch und redundant
   \item[$\Rightarrow$] Hier könnte \cgen{} helfen
     \begin{itemize}
@@ -4520,8 +4557,8 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
     \item Kleine DSL für \icode{code}-Konstruktion (kein \icode{text}
       mehr nötig) - würde auch wieder bei Generierung aus anderen
       Srpachen helfen
+    \item Compiler (merge autoMac und defmacro, gensym -> Zustände)
     \end{itemize}
-\item DSL für Modell- und Compilerdefinition
 \item Verschiedene DSL's
   \begin{itemize}
   \item Text (Latex)
@@ -4532,19 +4569,18 @@ unter anderem Parser durch die Kombination von Arrows erzeugt werden.
   \end{itemize}
 \item \sexp{}-IDE
   \begin{itemize}
-  \item Struktureller Editor
+  \item Struktureller Editor, Makrobasiertes Theming
   \item Modellspezifische GUI-Plugins
   \item Netzwerktransparenz und synchrone Bearbeitung
   \end{itemize}
-\item Versionierung
+\item Sexp-Datenbank
   \begin{itemize}
+  \item Schema-frei
+  \item Versionierung 
   \item Diff (evtl. über IDE-Protokoll)
   \item Merge für Teamarbeit und passive \cgen{}
   \end{itemize}
 \end{itemize}
-
-\lsection[end:future]{Ausblick}
-
 
 \cleardoublepage
 
