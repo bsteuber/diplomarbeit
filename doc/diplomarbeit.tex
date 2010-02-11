@@ -3051,7 +3051,8 @@ nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
 \item \icode{compNode innerComp} verarbeitet einen Knoten, indem der
   übergebene Parser \icode{innerComp} auf das Knoteninnere angewendet
   wird. Da Parser in MagicL immer als Compiler definiert werden (siehe
-  \sref{magicl:arch:compiler}), heißt diese Funktion nicht \icode{parseNode}
+  \sref{magicl:compinterface}), heißt diese Funktion nicht
+  \icode{parseNode}
 \item \icode{macro name innerComp} % <<
   konsturiert nun einen Parser, der wie ein Makro das erste Element des
   Knotens mit dem Symbol \icode{name} vergleicht und im Erfolgsfall die
@@ -3913,11 +3914,10 @@ compiler ((compile :: IOArrow [Sexp] Haskell) >>>
 \lsection[sexphs:sum]{Zusammenfassung}
 
 Für die \sexp{}-basierte Erzeugung von Haskell-Code stellt MagicL die
-Sprache \sexp{}-Haskell bereit, welche im Wesentlichen nur eine
-geklammerte Teilmenge von Haskell darstellt und nur wenige
-Umbenennungen und andere Anpassungen beinhaltet, wie beispielsweise
-die Erweiterung vorher binärer Operatoren auf beliebig viele
-Argumente.
+Sprache \sexp{}-Haskell bereit, welche im Wesentlichen eine geklammerte
+Haskell-Teilmenge darstellt und nur wenige Umbenennungen und andere
+Anpassungen beinhaltet, wie beispielsweise die Erweiterung vorher
+binärer Operatoren auf beliebig viele Argumente.
 
 \fig{flow_sexphs}{Kompilationsprozess von \sexp{}-Haskell}
 
@@ -4497,45 +4497,106 @@ Matching.
 
 Von den untersuchten Tools konnten Lisp-Makros aufgrund ihrer
 Flexibilität, Mächtigkeit, Modularisierbarkeit und Einfachheit am
-stärksten überzeugen. Lisp-Dialekte stellen jedoch kein universelles
-\cgen{}swerkzeug da, da diese ausschließlich Lisp-Code generieren
-können. Die Übertragung auf beliebige Zielsprachen ist daher die
-wichtigste der in \cref{reqs} besprochenen Anforderungen. Auch externe
-Eingabeformate sollten durch die Konstruktion spezifischer Parser
-unterstützt werden können. Darüber hinaus wurden gegenüber Lisp weitere
-Verallgemeinerungen gefordert: So sollten neben \sexps{} auch Strings
-und Objekte als Modelle verwendet werden können, obwohl der Focus auf
-\sexps{} bleibt. Verarbeitungseinheiten wie Makros, Parser und anders
-implementierte Compiler sollen sowohl explizit aufrufbar sein als auch
-über ein Pattern-Matching, welches über den Knotennamen hinausgeht. Auch
-``lokale Makros'', welche nur im Kontext anderer Makros ausgewertet
-werden, sollten realisierbar sein, um auf ein komplexes ``Code-Walking''
-wie in Lisp üblich möglichst verzichten zu können.
+stärksten überzeugen. Lisp-Dialekte stellen jedoch noch kein
+universelles \cgen{}swerkzeug da, da diese ausschließlich Lisp-Code
+generieren können. Die Übertragung auf beliebige Zielsprachen ist daher
+die wichtigste der in \cref{reqs} besprochenen Anforderungen. Auch
+externe Eingabeformate sollten durch die Konstruktierbarkeit
+spezifischer Parser unterstützt werden können. Darüber hinaus wurden
+gegenüber Lisp weitere Verallgemeinerungen gefordert: So sollten neben
+\sexps{} auch Strings und Objekte als Modelle verwendet werden können,
+obwohl der Focus auf \sexps{} bleibt. Makros sollen sowohl explizit
+aufrufbar sein als auch über ein Pattern-Matching auf dem zu
+verarbeitenden Ausdruck, welches über einen Vergleich mit dem
+Knotennamen hinausgeht. Auch ``lokale Makros'', welche nur im Kontext
+anderer Makros ausgewertet werden, sollten realisierbar sein, um auf ein
+komplexes ``Code-Walking'' - wie in Lisp nötig - möglichst verzichten zu
+können.
 
-Eine weitere Forderung war die Möglichkeit, Verarbeitungseinheiten nach
-dem Baukastenprinzip in einer klaren Semantik miteinander auf
-verschiedene Weisen kombinieren zu können. Die theoretische Fundierung
-dieser Semantik liefert die Kategorientheorie, deren Grundzüge in
-\cref{cats} vorgestellt wurden. Kategorien bestehen aus Morphismen
-zwischen Objekten - wobei beide Begriffe axiomatisch definiert und somit
-zunächst bedeutungsneutral sind. Die häufigste Interpretation für
-Morphismen und Objekte in der Mathematik sind Funktionen und Mengen, im
-Rahmen dieser Arbeit kommen jedoch ausschließlich Verarbeitungsprozesse
-und Typen vor. Kategorien können anschaulich als Diagramme visualisiert
-werden. Innerhalb einer Kategorie können neben der Komposition Produkte
-und Coprodukte verwendet werden, um einfache Einheiten zu komplexeren
-zusammenzusetzen. Auch ganze Kategorien können über Funktoren
-aufeinander abgebildet werden. Monaden sind spezielle Funktoren auf
-einer Kategorie, die eine spezielle, durch sogenannte natürlichen
-Transformationen beschriebene Struktur besitzen.
+Eine weitere Forderung war die Möglichkeit, Verarbeitungseinheiten wie
+Makros, Parser und andere Compiler nach dem Baukastenprinzip auf
+verschiedene Weisen und in einer Semantik kombinieren zu können. Die
+theoretische Fundierung dieser Semantik liefert die Kategorientheorie,
+deren Grundzüge in \cref{cats} vorgestellt wurden. Kategorien bestehen
+aus Morphismen zwischen Objekten - wobei beide Begriffe axiomatisch
+definiert und somit zunächst bedeutungsneutral sind. Die häufigste
+Interpretation für Morphismen und Objekte in der Mathematik sind
+Funktionen und Mengen, im Rahmen dieser Arbeit kommen jedoch
+ausschließlich Verarbeitungsprozesse und Typen vor. Kategorien können
+anschaulich als Diagramme visualisiert werden. Innerhalb einer Kategorie
+können neben der Komposition Produkte und Coprodukte verwendet werden,
+um einfache Einheiten zu komplexeren zusammenzusetzen. Auch ganze
+Kategorien können über Funktoren aufeinander abgebildet werden. Monaden
+sind spezielle Funktoren auf einer Kategorie, die eine spezielle, durch
+natürlichen Transformationen beschriebene Struktur besitzen.
 
-Die Sprache Haskell, die in \cref{haskell} präsentiert wurde, bietet in
-ihren Bibliotheken die Typklassen \icode{Arrow} und \icode{Monad},
-welche eine programmiersprachliche Umsetzung spezieller Kategorien und
-Monaden darstellen. Dies ist einer der Gründe, welhalb MagicL in Haskell
-implementiert worden ist.
+Die funktionale Sprache Haskell, welche in \cref{haskell} präsentiert
+wurde, bietet in ihren Bibliotheken mit den Typklassen \icode{Arrow} und
+\icode{Monad} programmiersprachliche, auf Verarbeitungsprozesse
+eingeschränkte Umsetzungen von Morphismen und Monaden. Dies ist einer
+der Gründe, weshalb MagicL in Haskell implementiert wurde. Monaden und
+Arrows sind aufgrund der Kleisli-Kategorie generell gegeneinander
+austauschbar, wobei Arrows allerdings allgemeiner sind. Haskell selbst
+verwendet häufig Monaden, mit denen die Verarbeitung bestimmter
+parametrisierter Typen einheitlich beschrieben werden kann. Beispiele
+hierfür sind Listen sowie Variablen, die Null-Pointer enthalten dürfen
+sowie das Weiterreichen von Zuständen. Die \icode{IO}-Monade lässt sich
+als versteckter, hypothetischer Welt-Zustandes verstehen und wird in
+Haskell verwendet, um Operationen mit Seiteneffekten in die ansonsten
+pur funktionale Sprache integrieren zu können.
 
+MagicL verwendet als Verarbeitungsmodell Arrows statt Monaden, um
+möglichst allgemein zu bleiben. In \cref{arrowparser} wurde gezeigt, wie
+Parser-Arrows durch eine Verschachtelung der einfachen Typen
+\icode{FailFunctor} und \icode{StateFunctor} konstruiert werden
+können. \icode{FailFunctor} kapselt hierbei die Möglichkeit, mit der
+Rückgabe einer Fehlermeldung zu Scheitern, während \icode{StateFunctor}
+die Weitergabe eines Zustandes analog zur \icode{IO}-Monade beschreibt
+und für den Eingabestream verwendet wird. Darüber hinaus wurde eine mit
+EBNF vergleichbare, jedoch allgemeinere und erweiterbare
+Kombinator-Bibliothek entwickelt, mit der aus Parser-Arrows funktional
+Grammatiken konstruiert werden können. Makros wurden als Parser auf
+\sexp{}-Listen implementiert, so dass das in \cref{reqs} geforderte
+Matching durch Kombinatoren sowie der rekursive Abstieg durch lokal
+definierte Makros erfüllt werden.
 
+In \cref{magicl} wurde zunächst das Modell \icode{Code} vorgestellt, mit
+dem zu erzeugender Quelltext strukturell repräsentiert werden kann, um
+Syntaxfehler oder Probleme mit der Einrückung möglichst vermeiden zu
+können. Ähnlich wie die Kombinator-Bibliothek für Parser kann auch die
+Code-Bibliothek funktional erweitert werden, um weitere syntaktische
+Konstrukte zu erfassen. Darüber hinaus wurde eine universelle
+Compiler-Schnittstelle spezifiziert, mit der Verarbeitungseinheiten fest
+verdrahtet und so implizit über ihre Ein- und Ausgabetypen angesprochen
+werden können. Auf dieser Schnittstelle baut auch ein kleines
+Unit-Test-Framework auf, mit dem einzelne oder zusammengesetzte
+Verarbeitungseinheiten überprüft werden können.
+
+Mit den vorangehenden Werkzeugen war es bereits möglich, eigene Parser,
+Makros etc. in Haskell zu definieren und zu benutzen. In \cref{sexphs}
+wurde damit eine \sexp{}-Syntax für Haskell konstruiert, die sich nach
+Haskell-Quellcode kompilieren lässt. Obwohl in \sexp{}-Haskell selbst
+programmiert werden kann, dient diese Sprache in MagicL hauptsächlich
+als Zwischenstufe für Haskell-\cgen{} aus anderen \sexp{}-Sprachen. Die
+Implementation von \sexp{}-Haskell dient gleichzeitig als
+Anwendungsbeispiel für Compiler in MagicL, die mit typisierten
+Zwischenmodellen arbeiten. Hierfür wandelt ein Parser die \sexps{}
+zunächst in ein Haskell-Modell um, woraus ein funktionaler Compiler das
+Code-Modell erzeugt, aus dem MagicL dann den Quelltext generiert. Beide
+Verarbeitungseinheiten benutzen die universelle Compiler-Schnittstelle
+aus \cref{magicl}.
+
+Aufbauend auf \sexp{}-Haskell wurde in \cref{sexpcomp} die Sprache
+\sexp{}-Compiler entwickelt, eine DSL für die Beschreibung rein
+\sexp{}-basierter Compiler wie in Lisp üblich. Hierfür wurde zunächst
+ein Quasiquote-Operator für \sexp{}-Templates wie in Lisp üblich
+entwickelt, der sich allerdings in zwei Punkten unterscheidet. Er ist
+allgemeiner, da auch mehrere oder überhaupt keine Rückgaben
+ermöglicht werden, und löst Namensprobleme bei der Generierung von
+weiteren Templates einfach durch verschiedene
+Quasiquote-Operator-Namen. Darüber hinaus wurden Auto-Makros
+Lisp-Makrosystems, welches den \sexp{}-Baum von außen nach innen
+durchläuft und alle anwendbaren, Makros 
 
 
 \lsection[end:disc]{Diskussion und Ausblick}
