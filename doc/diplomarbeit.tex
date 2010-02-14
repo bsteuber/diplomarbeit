@@ -4591,57 +4591,136 @@ Aufbauend auf \sexp{}-Haskell wurde in \cref{sexpcomp} die Sprache
 \sexp{}-basierter Compiler wie in Lisp üblich. Hierfür wurde zunächst
 ein Quasiquote-Operator für \sexp{}-Templates wie in Lisp üblich
 entwickelt, der sich allerdings in zwei Punkten unterscheidet. Er ist
-allgemeiner, da auch mehrere oder überhaupt keine Rückgaben
-ermöglicht werden, und löst Namensprobleme bei der Generierung von
-weiteren Templates einfach durch verschiedene
-Quasiquote-Operator-Namen. Darüber hinaus wurden Auto-Makros
-Lisp-Makrosystems, welches den \sexp{}-Baum von außen nach innen
-durchläuft und alle anwendbaren, Makros 
-
+allgemeiner, da auch mehrere oder überhaupt keine Rückgaben ermöglicht
+werden, und löst Namensprobleme bei der Generierung von weiteren
+Templates einfach durch verschiedene Quasiquote-Operator-Namen. Darüber
+hinaus wurden sogenannte Auto-Makros bereitgestellt, welche die
+Lisp-Semantik einer globalen Makro-Liste, die automatisch rekursiv von
+außen nach innen auf eines Syntaxbaum angewendet wird, wiederspiegelt.
 
 \lsection[end:disc]{Diskussion und Ausblick}
 
-  \begin{itemize}
-  \item MagicL sauberer und klarer als Lisps
-    \begin{itemize}
-    \item Getypte Modelle
-    \item Praktische und flexible Parser-Konstruktion dank Kategorientheorie
-    \item[$\Rightarrow$] "`Makros a la EBNF"'
-    \item Allgemeines Compiler-Interface
-    \item Typisierte Codegeneration mit erweiterbarer Bibliothek
-    \end{itemize}
-  \item Einschränkungen im Typsystem
-  \item Manches wirkt etwas umständilch und redundant
-  \item[$\Rightarrow$] Hier könnte \cgen{} helfen
-    \begin{itemize}
-    \item Modellsprache
-    \item Kleine DSL für \icode{code}-Konstruktion (kein \icode{text}
-      mehr nötig) - würde auch wieder bei Generierung aus anderen
-      Srpachen helfen
-    \item Compiler (merge autoMac und defmacro, gensym -> Zustände)
-    \end{itemize}
-\item Verschiedene DSL's
-  \begin{itemize}
-  \item Text (Latex)
-  \item Graphen und Petrinetze
-  \item Test-Framework (Haskell)
-  \item Make-Tool (Haskell)
-  \item andere Programmier- und Auszeichnungssprachen
-  \end{itemize}
-\item \sexp{}-IDE
-  \begin{itemize}
-  \item Struktureller Editor, Makrobasiertes Theming
-  \item Modellspezifische GUI-Plugins
-  \item Netzwerktransparenz und synchrone Bearbeitung
-  \end{itemize}
-\item Sexp-Datenbank
-  \begin{itemize}
-  \item Schema-frei
-  \item Versionierung 
-  \item Diff (evtl. über IDE-Protokoll)
-  \item Merge für Teamarbeit und passive \cgen{}
-  \end{itemize}
-\end{itemize}
+MagicL erfüllt alle in \cref{reqs} gestellten Anforderungen. Es ist ein
+\cgen{}sframework, in dem einfache Compiler nach dem Baukastenprinzip
+elegant zu komplexeren Verarbeitungseinheiten kombiniert werden
+können. Obwohl der Schwerpunkt auf der Verarbeitung von \sexps{} liegt,
+können beliebige Datentypen für Modelle verwendet werden. Auch können
+beliebige Programmier- und Auszeichnugssprachen eingelesen oder
+generiert werden, weshalb es sich um ein universelles Framework handelt.
+Die gegenüber List verallgemeinerte Definition von Makros als Parsern
+auf \sexp{}-Streams ermöglicht einen sehr flexiblen Kontrollfluss sowie
+die Verwendung einer Arrow-basierten, erweiterbaren
+Kombinatorbibliothek, die mächtiger ist ist als EBNF oder XPath-Patterns
+in XSLT.
+
+Dennoch handelt es sich bei dieser Arbeit um einen Prototypen und nicht
+etwa ein ausgereiftes System, das in seiner jetzigen Form für den
+Einsatz in konkreten Projekten gedacht ist. Dieser Abschnitt soll daher
+einen Überblick geben über all das, was derzeit in MagicL nicht oder
+nicht optimal möglich ist. Dabei wird diskutiert, welche fundamentalen
+Designentscheidungen in einem möglicherweise Nachfolger anders getroffen
+werden könnten und an welchen Stellen noch Nachbesserungen oder
+Erweiterungen möglich sind. Auch sollen Ideen für \sexp{}-gestützte
+Modellierung und Verarbeitung aufgezählt werden, die hier nicht weiter
+verfolgt wurden, aber interessante Forschungsrichtungen für die Zukunft
+darstellen könnten.
+
+\lsubsection[end:disc:realworld]{Nutzung in der realen Welt}
+
+Generell lag bei der Implementation von MagicL die Prioritär auf
+theoretischer Korrektheit und klarer Semantik, jedoch weniger auf
+konkreten Anwendungen. Dies spiegelt sich auch in der Wahl von Haskell
+und Kategorientheorie als Basistechnologien wieder, welche zwar
+mathematisch elegant sind, sicherlich jedoch die meisten Anwender
+abschrecken würden. Hierfür könnte eine einfachere Compiler-DSL nützlich
+sein, die ohne mathematisches Hintergrundwissen benutzbar ist. Diese DSL
+könnte dann entweder in die bestehende Arrow-Implementation überführt
+oder komplett anders - und dabei eventuell effizienter als die
+verschachtelten Parser-Funktoren, die vergleichsweise langsam laufen -
+realisiert werden.
+
+Ein weiterer Aspekt der Realweltnutzung liegt in der Integrierbarkeit in
+bestehende Systeme. MagicL-Compiler können mit einem installierten
+Haskell-System interpretiert oder mit dem Glasgow Haskell Compiler
+(GHC)\cite{ghc} in native Programme übersetzt werden, welche von
+beliebigen Build-Scripten aufgerufen werden können. Dennoch wären
+Interoperationalität und Portabilität bei einer Umsetzungssprache wie
+Java deutlich höher.
+
+\lsubsection[end:disc:compiler_defs]{Vereinfachung von
+  Compiler-Definitionen} 
+
+Auch im Rahmen der Arrow-Architektur 
+
+So löst MagicL zwar prinzipiell das Problem baukastenartiger,
+theoretisch fundierter, beliebig typisierter und sprachunabhängiger
+\cgen{}; wendet allerdings selbst zu wenig \cgen{} an, um das Optimum an
+Bedienbarkeit zu erreichen.
+
+Beispielsweise ist die Definition von
+typisierten Compilern über die \icode{Compilable}-Schnittstelle
+\sref{sexphs:code} in Haskell (und damit auch in \sexp{}-Haskell)
+relativ umständlich. Hierfür könnte eine neue Modellierungssprache
+bereitgestellt und nach \sexp{}-Haskell kompiliert werden.
+
+Auch die ausschließlich \sexp{}-basierte Verarbeitung mittels
+\sexp{}-Compiler ist sicherlich noch nicht optimal, da als Parser
+spezifizierte Makros noch immer mehr Aufwand bedeuten als in
+Lisp-Dialekten. Für exakte Lisp-Makros könnte zwar einfach ein
+\icode{defmacro} bereitgestellt werden, dies würde allerdings die
+Allgemeinheit des Parser-Ansatzes zerstören. Auto-Makros sind der
+Versuch eines Kompromisses aus Universalität und Lisp-Komfort, bieten
+allerdings mit Sicherheit nicht das Optimum in beiden Hinsichten. Eine
+interessante Erweiterung wären eventuell ``lokale Auto-Makros'', die
+zwar in jeder Verschachtelungstiefe, dennoch nur innerhalb eines oder
+mehrerer speziellen Makros ausgewertet wird. Dennoch kann die Frage,
+welches Meta-Sprachdesign die volle Flexibilität kategorientheoretischer
+Parser mit einer einfachst-möglichen Nutzbarkeit verbindet, an dieser
+Stelle nicht umfassend beantwortet werden.
+
+\lsubsection[end:disc:new_dsls]{Weitere DSLs}
+
+Eine weitere \sexp{}-DSLs könnte die Benutzung des typisierten
+Code-Modells über Quasiquotes erleichtern. Darüber hinaus könnte neben
+Haskell die \sexp{}-basierte Erzeugung beliebiger weiterer Sprachen
+direkt unterstützt werden - seien es Java, PHP, Latex oder auch
+VHDL. Denn erst das Vorhandensein dieser Backends macht ein Framework
+auch praktisch universell.
+
+\lsubsection[end:disc:generalize]{Theoretische Verallgemeinerungen}
+
+Beispielsweise ermöglicht die generische Compiler-Schnittstelle zwar das
+automatische Finden von Compilern, nicht aber die selbstständige Suche
+von Pfaden über mehrere Stationen - dies würde nur funktionieren, wenn
+das Haskell-Typsystem eine Prolog-artige Tiefensuche\cite{Prolog}
+anbieten würde oder eine künftige Implementation nicht über
+Haskell-Typen, sondern Datenstrukturen erfolgen würde.
+
+Sexp-Typ verallgemeinern? Sexp = Tree String, Char? Parser auf Symbolen!
+Gemischte Bäume, vgl. Quasiquote - dynamisch typisiert?
+
+Parser-Templates? Prolog-Makros (bidirektional?)
+Umgang mit Mehrdeutigkeiten
+
+\lsubsection[end:disc:ide]{Entwicklungsumgebung}
+
+\sexp{}-IDE
+ Struktureller Editor, Makrobasiertes Theming
+ Modellspezifische GUI-Plugins
+ Netzwerktransparenz und synchrone Bearbeitung
+ Type-Time Inference
+
+\lsubsection[end:disc:db]{Datenbank}
+
+Verteilte Sexp-Datenbank
+ Schema-frei
+ Versionierung 
+ Diff (evtl. über IDE-Protokoll)
+ Merge für Teamarbeit und passive \cgen{}
+ Echtzeit?
+
+\lsubsection[end:disc:networking]{Vernetzung}
+
 
 \cleardoublepage
 
