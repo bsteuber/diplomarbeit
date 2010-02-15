@@ -4617,22 +4617,21 @@ Dennoch handelt es sich bei dieser Arbeit um einen Prototypen und nicht
 etwa ein ausgereiftes System, das in seiner jetzigen Form für den
 Einsatz in konkreten Projekten gedacht ist. So löst MagicL zwar
 prinzipiell das Problem baukastenartiger, theoretisch fundierter,
-beliebig typisierter und sprachunabhängiger \cgen{}; benutzt allerdings
-beispielsweise zu wenig \cgen{} an, um auch das Optimum an Bedienbarkeit
-zu erreichen.
+beliebig typisierter und sprachunabhängiger \cgen{}, erzielt allerdings
+mit Sicherheit noch nicht eine optimale Bedienbarkeit.
 
 Dieser Abschnitt soll daher einen Überblick geben über all das, was
 derzeit in MagicL nicht oder nicht gut möglich ist. Dabei wird
-diskutiert, welche fundamentalen Designentscheidungen in einem
-möglicherweise Nachfolger anders getroffen werden könnten und an welchen
-Stellen noch Nachbesserungen oder Erweiterungen möglich sind. Auch
-sollen Ideen für \sexp{}-gestützte Modellierung und Verarbeitung
-aufgezählt werden, die hier nicht weiter verfolgt wurden, aber
-interessante Forschungsrichtungen für die Zukunft darstellen könnten.
+diskutiert, welche fundamentalen Designentscheidungen in einem möglichen
+Nachfolger anders getroffen werden könnten und an welchen Stellen noch
+Nachbesserungen oder Erweiterungen möglich sind. Darüber hinaus sollen
+Ideen für \sexp{}-gestützte Modellierung und Verarbeitung aufgezählt
+werden, die hier nicht weiter verfolgt wurden, aber interessante
+Forschungsrichtungen für die Zukunft darstellen könnten.
 
 \lsubsection[end:disc:realworld]{Nutzung in der realen Welt}
 
-Generell lag bei der Implementation von MagicL die Prioritär auf
+Generell lag bei der Implementation von MagicL die Priorität auf
 theoretischer Korrektheit und klarer Semantik, jedoch weniger auf
 konkreten Anwendungen. Dies spiegelt sich in der Wahl von Haskell und
 Kategorientheorie als Basistechnologien wieder, welche zwar mathematisch
@@ -4647,7 +4646,7 @@ Parser-Funktoren, die vergleichsweise langsam laufen.
 Ein weiterer Aspekt der Realweltnutzung besteht in der Integrierbarkeit
 in bestehende Systeme. MagicL-Compiler können mit einem installierten
 Haskell-System interpretiert oder mit dem Glasgow Haskell Compiler
-(GHC)\cite{ghc} in native Programme übersetzt werden, welche von
+(GHC)\cite{Ghc} in native Programme übersetzt werden, welche von
 beliebigen Build-Scripten aufgerufen werden können. Dennoch wären
 Interoperationalität und Portabilität bei einer Umsetzungssprache wie
 Java deutlich höher.
