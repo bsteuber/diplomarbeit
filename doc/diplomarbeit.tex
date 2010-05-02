@@ -172,16 +172,41 @@
 \newcommand{\cgen}{Code"=Generierung}
 \newcommand{\cpp}{C\texttt{++}}
 
-
-\begin{document}
-
-\begin{titlepage}
 \title{Prototyp eines \sexp{}-basierten Frameworks für
   sprachübergreifende \cgen{}} 
 \author{Benjamin Teuber} 
 \date{\today}
-\maketitle
-\end{titlepage}
+
+\begin{document}
+
+\begin{titlepage}
+
+  \makeatletter
+  \parindent = 0pt
+  \sffamily\bfseries
+
+  \null
+  \vskip 1cm
+  {\Huge\@title\par}
+  \vskip 1.5cm
+
+  {\Large\@author\par}
+  \vskip 1cm
+
+  {\large\@date\par}
+  \vskip 1cm
+
+  \vfill
+  {Diplomarbeit am\\
+   Arbeitsbereich "`Theoretische Grundlagen der Informatik"',\\
+   Department Informatik,\\
+   Universität Hamburg\par
+  }
+  {\vskip 1.5em}
+
+  {Erstbetreuer: Dr.\ Daniel Moldt\par}
+  {Zweitbetreuer: Prof.\ Dr.\ Leonie Dreschler-Fischer\par}
+ \end{titlepage}
 \thispagestyle{empty}
 
 \pagenumbering{roman}
@@ -195,7 +220,7 @@ allerdings aufgrund der verwendeten Syntax und Datenstrukturen recht
 Fehleranfällig und umständlich in der Benutzung. Eine weitgehend
 vergessene, aber äußerst elegante und praktische Form der \cgen{} bietet
 dagegen die Lisp-Sprachfamilie, welche mit \sexps{} als universeller,
-einfacher Datenstruktur arbeitet sowie mit Makros, welche als
+einfacher Datenstruktur arbeitet sowie mit Makros, die als
 ``Lightweight-Compiler'' fungieren.
 
 Diese Diplomarbeit beschäftigt sich mit der Frage, wie der Lisp-Ansatz
