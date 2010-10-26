@@ -13,9 +13,9 @@ import Data.Maybe
 
 comp2haskell :: LispMacro
 
-comp2haskell = (applyParser (liftA2 gen compAutoCompiler ((many (genQuotes <+> (take >>^ single))) >>^ concat)) compAuto)
+comp2haskell = (applyParser (liftA2 gen compCompiler ((many (genQuotes <+> (take >>^ single))) >>^ concat)) compAuto)
   where
-    compAutoCompiler = (macro "compiler" (compSymbol &&& (optMacro "imports" (many take))))
+    compCompiler = (macro "compiler" (compSymbol &&& (optMacro "imports" (many take))))
     extractAutoMacs defs = (mapMaybe extractAutoMac defs)
     extractAutoMac (Node (Symbol "autoMac" : name : _)) = (Just name)
     extractAutoMac _ = Nothing
