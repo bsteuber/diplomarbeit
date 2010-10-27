@@ -172,9 +172,9 @@
 \newcommand{\cgen}{Code"=Generierung}
 \newcommand{\cpp}{C\texttt{++}}
 
-\title{Prototyp eines \sexp{}-basierten Frameworks für
-  sprachübergreifende \cgen{}} 
-\author{Benjamin Teuber} 
+\title{Prototyp eines \sexp{}-basierten Rahmenwerks für
+  \mbox{sprachübergreifende} \cgen{}} 
+\author{Benjamin Teuber\\aus Hamburg} 
 \date{\today}
 
 \begin{document}
@@ -217,7 +217,7 @@ tritt in den verschiedensten Formen auf. Entsprechend groß ist die
 Vielfalt verwendeter Werkzeuge - seien es der C-Präprozessor, PHP oder
 auch XSL-Transformationen. Die meisten bestehenden Technologien sind
 allerdings aufgrund der verwendeten Syntax und Datenstrukturen recht
-Fehleranfällig und umständlich in der Benutzung. Eine weitgehend
+fehleranfällig und umständlich in der Benutzung. Eine weitgehend
 vergessene, aber äußerst elegante und praktische Form der \cgen{} bietet
 dagegen die Lisp-Sprachfamilie, welche mit \sexps{} als universeller,
 einfacher Datenstruktur arbeitet sowie mit Makros, die als
@@ -253,6 +253,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \acro{HTML}{Hypertext Markup Language}
 \acro{JVM}{Java Virtual Machine}
 \acro{MDA}{Model Driven Architecture}
+\acro{PDF}{Portable Document Format}
 \acro{PHP}{PHP: Hypertext Preprocessor}
 \acro{UML}{Unified Modelling Language}
 \acro{XML}{Extensible Markup Language}
@@ -412,6 +413,10 @@ zu implementieren ist.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
+Zunächst stellt \sref{intro:example} ein einführendes Beispiel für die
+Verwendung von \cgen{} vor, das im weiteren Verlauf dieser Arbeit immer
+wieder aufgegriffen werden kann.
+
 \cref{model} erläutert verschiedene Möglichkeiten der Repräsentation von
 Quellcode und anderen Modellen und die damit verbundenen Vor- und
 Nachteile. Hier werden insbesondere \sexps{} vorgestellt - welche in
@@ -490,6 +495,23 @@ In \cref{end} wird die gesamte Arbeit zusammengefasst und
 diskutiert. Zudem werden weitere Verbesserungs- und
 Erweiterungsmöglichkeiten vorgestellt, die zukünftig aufgegriffen werden
 könnten.
+
+\lsection[intro:example]{Anwendungsbeispiel}
+
+Für die einfachere Erstellung von Präsentationen soll eine DSL namens
+Slide erstellt werden, die Konzepte wie Folientitel, Aufzählungen,
+Bilder etc. in einer kurzen und eleganten Notation
+bereitstellt. Slide-Code wird vom Modellierer - hier dem Ersteller einer
+Präsentation - geschrieben und vom Slide-Compiler in
+Latex\cite{Latex}-Code mit der Beamer\cite{LatexBeamer}-Klasse übersetzt
+\seea{flow_example_simple}, aus der anschließend eine PDF-Datei erzeugt
+werden kann.
+
+\fig[0.4]{flow_example_simple}{Der Slide-Compiler} 
+
+Die Aufgabe eines Werkzeugs zur \cgen{} besteht nun darin, den
+Meta-Programmierer bei der Entwicklung des Slide-Compilers soweit wie
+möglich zu unterstützen.
 
 \lchapter[model]{Repräsentation von Modellen}
 
@@ -1573,22 +1595,7 @@ Modellrepräsentationen und den Kompilationsprozess. Zunächst wird jedoch
 der allgemeine Arbeitsablauf anhand eines konkreten Beispiels
 diskutiert.
 
-\lsection[reqs:example]{Anwendungsbeispiel}
-
-Für die einfachere Erstellung von Präsentationen soll eine DSL namens
-Slide erstellt werden, die Konzepte wie Folientitel, Aufzählungen,
-Bilder etc. in einer kurzen und eleganten Notation
-bereitstellt. Slide-Code wird vom Modellierer geschrieben und von einem
-geeigneten Compiler beispielsweise in Latex\cite{Latex}-Code mit der
-Beamer\cite{LatexBeamer}-Klasse übersetzt \seea{flow_simple}.
-
-\fig[0.4]{flow_simple}{Arbeitsablauf für das Slide-Beispiel} 
-
-Der Slide-Compiler selbst wurde von MagicL aus Meta-Code erzeugt,
-welchen ein Meta-Programmierer in einer geeigneten, von MagicL
-bereitgestellten DSL zur Compiler-Definition geschrieben
-hat. Selbstverständlich kann es sich hierbei auch um die gleiche Person
-handeln.
+\todo{auf Beiepiel bezug nehmen?}
 
 \lsection[reqs:model]{Modellrepräsentation}
 
