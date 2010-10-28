@@ -377,7 +377,7 @@ Generierung zu erzeugen.
 Leider ist das System ausschließlich auf die Erzeugung von Lisp-Code
 ausgerichtet und wird normalerweise nicht für andere Zielsprachen
 benutzt - eine der wenigen Ausnahmen ist Parenscript\cite{Parenscript},
-ein Tool zur Erzeugung von JavaScript-Code aus Common Lisp. Generell
+ein Werkzeug zur Erzeugung von JavaScript-Code aus Common Lisp. Generell
 wird die Generierung anderer Sprachen von Lisp-System selbst aber
 schlecht unterstützt, so dass die Bereitstellung derartiger Bibliotheken
 mit unverhältnismäßig hohem Aufwand verbunden sind. Lisp-Dialekte werden
@@ -430,7 +430,7 @@ Fast alle \cgen{}swerkzeuge benutzen Templates für die
 Quelltext-Erzeugung - wenn auch auf sehr verschiedene Arten und
 Weisen. \cref{template} beschreibt Templates zunächst anhand der
 Begriffe Quasiquote und Unquote, welche aus der Lisp-Welt
-stammen. Anschließend wird eine Auswahl Template-basierter Tools
+stammen. Anschließend wird eine Auswahl Template-basierter Werkzeuge
 vorgestellt und in Hinblick vorher erarbeiteter Kriterien evaluiert -
 unter anderem auch Lisp-Makros.
 
@@ -716,7 +716,7 @@ zuzuordnen. Dies könnte dann derart aussehen:
 
 \fig{model_slide_sexp}{Baumansicht einer Folie in \sexps{}}
 
-Trotz der simplen Struktur und Syntax, die auch benötigte Tools wie
+Trotz der simplen Struktur und Syntax, die auch benötigte Werkzeuge wie
 Editoren, Parser usw. vereinfachen, bieten \sexps{} also eine
 universelle Modellierungssprache an, mit der auch Attribute und Listen
 indirekt repräsentiert werden können.
@@ -845,35 +845,35 @@ geschrieben werden könnte.
 JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
 JavaScript\cite{JavaScript}, weshalb es direkt von einem JavaScript-Interpreter
 eingelesen werden kann. Dies macht JSON vor allem für Webanwendungen
-interessant. Mit JSON können anonyme Objekte mit Attributen sowie Listen
+interessant. Mit JSON können anonyme Objekte mit Attributen (auch Listen)
 explizit repräsentiert werden. Als Blätter sind Strings und elementare
 Datentypen zugelassen, die beim Einlesen dynamisch typisiert werden.
 
-Das Auto-Beispiel kann in JSON wie folgt repräsentiert werden:
+Das Folien-Beispiel kann in JSON wie folgt repräsentiert werden:
 \begin{code}
 {
-  "color"    : "red",
-  "specials" : ["ac", "navigation"]
+  "title" : "My Slide"
+  "image" : {
+    "source"  : "diagram.png"
+    "caption" : "This is a diagram"
+  }
+  "list"  : ["one", "two", "three"]
 }
 \end{code}
-Die Benennung als \icode{car} muss außerhalb erfolgen, d.h. bei einem
+Die Benennung als \icode{slide} muss außerhalb erfolgen, d.h. bei einem
 übergeordneten Objekt als Attribut oder auf der höchsten Ebene
 beispielsweise durch den Dateinamen.
 
-Auch wenn es hier Attribute statt Unterknoten gibt, ist JSON \sexps{}
-sehr nah. Denn ein Attribut ist strukturell nichts anderes als ein
-Unterknoten mit Namen, wie auch das Auto-Beispiel in beiden Sprachen
-zeigt. Es gibt nur zwei strukturelle Unterschiede: Zum einen
-differenziert JSON zwischen ein- und listenwertigen Attributen, während
-ein \sexp{} standardmäßig eine Liste von Unterelementen ist. Zum anderen
-unterscheidet sich die äußerste Ebene, wo bei \sexps{} ein Name, in JSON
-hingegen ein Wert steht.
+Aufgrund der Austauschbarkeit von Attributen und benannten Unterknoten
+sind JSON und \sexps{} gleich ausdrucksstark, wie das Beispiel
+zeigt. Der einzige strukturelle Unterschied besteht im obersten Knoten,
+der bei JSON anonym und bei \sexps{} benannt ist.
 
 \lsection[model:uml]{UML}
 
 UML ist eine graphische Modellierungssprache, die speziell für die
 Spezifikation von Softwaresystemen entworfen wurde und insbesondere den
-objektorientierten, imperativen Entwurf unterstützt. Viele Tools können
+objektorientierten, imperativen Entwurf unterstützt. Viele Werkzeuge können
 aus UML beispielsweise Java-Quellcode generieren. Es gibt in UML eine
 Reihe verschiedener Diagrammarten, die verschiedene Knoten- und
 Kantentypen in einem Graphen erlauben. Teilweise können auch Unterknoten
@@ -882,26 +882,27 @@ meist in einem XML-Format, da UML keine eigene Serialisierung definiert.
 
 Nach graphischen Elementen ist bereits eine Teilmenge der
 UML-Klassen\-diagramme äquivalent zu XML etc., da diese bereits
-knotenbenannte Bäume mit Attributen darstellen kann. Die Abbildungen
-\fref{car_sexp} und \fref{car_xml} benutzen ausschließlich solche
-Komponenten - diese wurden allerdings zweckentfremdet, indem
-beispielsweise Vererbungskanten für Unterknoten verwendet wurden. In
-diesem Sinne ist UML also universell. Eine semantisch korrekte Abbildung
-auf UML-Objektdiagramme ist ebenfalls möglich, allerdings mit einem
-größeren Aufwand verbunden. \abb{car_uml} zeigt das Auto-Beispiel als
-Objektdiagramm.
+knotenbenannte Bäume mit Attributen darstellen kann. Die bisherigen
+Abbildungen dieses Kapitels benutzen beispielsweise Aggregations- und
+Attributkanten um Unterknoten und Attribute zu repräsentieren.  Es
+handelt sich hierbei jedoch nicht um semantisch korrekte UML-Diagramme -
+beispielsweise wurden benannte Knoten wie UML-Klassen
+aufgemalt. \abb{model_slide_uml} zeigt eine Modellierung des
+Folienbeispiels als UML-Objektdiagramm.
 
-\fig{car_uml}{Auto-Beispiel als UML-Objektdiagramm}
+\fig{model_slide_uml}{Folienbeispiel als UML-Objektdiagramm}
 
-Obwohl UML also als universelle Modellierungssprache betitelt ist und
-dies theoretisch auch ist, handelt es sich aus praktischer Sicht doch
-eher um eine DSL für objektorientierte Software-Architekturen.
+Wenn man also die von UML (mehr oder weniger) klar definierte,
+objektorientierte Semantik aller graphischen Elemente berücksichtigt,
+handelt es nicht nicht mehr um eine abstrakte, domänenunabhängige
+Sprache.
 
 \lsection[model:sum]{Zusammenfassung}
 
-Es gibt drei grundlegende Arten, ein Modell zu repräsentieren, die
-alle ihre Daseinsberechtigung haben und über Parser, Generatoren und
-Compiler ineinander umgewandelt werden können.
+Es gibt in bestehenden Code-Geneneratoren drei grundlegende Arten, ein
+Modell zu repräsentieren, die alle ihre Daseinsberechtigung haben und
+über Parser, Generatoren und Compiler ineinander umgewandelt werden
+können.
 
 Strings sind immer nötig, wenn ein Modell dauerhaft gespeichert oder
 verschickt werden soll. Für alle anderen Zwecke sind diese dagegen eher
@@ -909,19 +910,20 @@ unpraktisch.
 
 Für eine aufwändigere Verarbeitung, die komplexe Rechnungen oder
 Algorithmen erfordert, eignen sich Objekte am besten. Fehler werden vor
-allem bei statisch typisierten Objekten frühestmöglich erkannt. Dafür ist
-es allerdings nötig, spezielle Klassen bzw. Datentyp-Definition für
-diese Modelle zu definieren. Zudem ist eine Übertragbarkeit zwischen
+allem bei statisch typisierten Objekten frühestmöglich erkannt. Dafür
+ist es allerdings nötig, spezielle Klassen bzw. Datentypen für diese
+Modelle zu definieren. Zudem ist eine Übertragbarkeit zwischen
 Programmiersprachen im Allgemeinen nicht gegeben.
 
 Untypisierte Baumrepräsentation eignen sich aufgrund ihrer Struktur und
 Flexibilität besonders für die Erzeugung und Bearbeitung von Modellen -
 mit einem geeigneten universellen Editor könnten Benutzer komfortabel
-und ohne nervige Syntaxfehler Modelle beliebiger Domänen erzeugen, ohne
-dass der Editor vorher Informationen über Syntax oder Semantik der
-Modelle benötigt. Auch die maschinelle Erzeugung von Modellen ist in
-einer Baumrepräsentation am einfachsten. Simple Verarbeitungsprozesse
-können mit Bäumen ebenfalls gut durchgeführt werden.
+und ohne die Möglichkeit von Syntaxfehlern Modelle beliebiger Domänen
+erzeugen, ohne dass der Editor vorher Informationen über Syntax oder
+Semantik der Modelle benötigt. Auch die maschinelle Erzeugung von
+Modellen ist in einer Baumrepräsentation am einfachsten. Simple
+Verarbeitungsprozesse können mit Bäumen ebenfalls gut durchgeführt
+werden.
 
 \begin{sidewaysfigure}[tp]
   \centering
@@ -929,7 +931,7 @@ können mit Bäumen ebenfalls gut durchgeführt werden.
 \bf Modell                        & \bf String & \bf Objekt           & \bf \sexps{}    & \bf XML  & \bf JSON & \bf UML         \\\hline\hline
 \bf Typisierung                   & gering     & sehr hoch            & mittel          & mittel   & mittel   & relativ hoch    \\\hline
 \bf Universell                    & ja         & Klasse erforderlich  & ja              & ja       & ja       & ja              \\\hline
-\bf Programmiersprachenunabhängig & ja         & nein                 & ja              & ja       & ja       & ja              \\\hline
+\bf Domänenunabhängig             & ja         & nein                 & ja              & ja       & ja       & nein            \\\hline
 \bf Graphische Darstellung        & Text       & Graph                & Baum            & Baum     & Baum     & Graph           \\\hline
 \bf Unterknoten                   & nein       & selten               & ja              & ja       & nein     & ja              \\\hline
 \bf Attribute                     & nein       & fast immer           & nein            & primitiv & ja       & ja              \\\hline
@@ -941,14 +943,14 @@ können mit Bäumen ebenfalls gut durchgeführt werden.
 \end{sidewaysfigure}
 
 \abb{model_sum} zeigt eine tabellarische Zusammenfassung des in diesem
-Abschnitt erfolgten Vergleichs von Strings, Objekten, den
-Baumrepräsentationssprachen \sexps{}, XML und JSON sowie der graphischen
-Modellierungssprache UML. Den \sexps{} fällt unter den
-Baumrepräsentationen eine besondere Rolle zu, da diese im Gegensatz zu
-beispielsweise XML minimal und redundanzfrei definiert sind, ohne an
-Ausdrucksmächtigkeit zu verlieren. Damit gibt es in Tools, die \sexps{}
-benutzen, keinerlei unnötige Komplexität. Aus diesem Grund widmet sich
-diese Arbeit weitgehend der \sexp-gestützten Code-Generierung.
+Abschnitt erfolgten Vergleichs von Strings, Objekten, UML sowie den
+Baumrepräsentationssprachen \sexps{}, XML und JSON. Den \sexps{} fällt
+unter den Baumrepräsentationen eine besondere Rolle zu, da diese im
+Gegensatz zu beispielsweise XML minimal und redundanzfrei definiert
+sind, ohne an Ausdrucksmächtigkeit zu verlieren. Damit wird \sexps{}
+verarbeitenden Werkzeugen keinerlei unnötige Komplexität
+aufgezwungen. Aus diesem Grund widmet sich diese Arbeit weitgehend der
+\sexp-gestützten Code-Generierung.
 
 \lchapter[template]{Template-basierte \cgen{}}
 
@@ -957,65 +959,78 @@ die gewisse statische Bereiche in jedem Dokument identisch sind, während
 sich nur die dynamischen Bereiche ändern - beispielsweise eine Webseite,
 die Daten aus einer Datenbank anzeigt. Auch bei der Erzeugung von
 Programmen tritt dieser Fall auf, so dass Templates eine große Rolle bei
-\cgen{} spielen. Ein Template definiert die
-statischen Bereiche und lässt Platzhalter für die dynamischen. Es
-handelt sich dabei im Grunde um eine mathematische Funktion, deren
-Eingabe die dynamischen Daten und deren Ausgabe ein fertiges Dokument
-ist.
+\cgen{} spielen. Ein Template legt die statischen Bereiche fest und lässt
+Platzhalter für die dynamischen. Es handelt sich dabei im Grunde um eine
+mathematische Funktion, deren Eingabe die dynamischen Daten und deren
+Ausgabe ein fertiges Dokument ist.
 
-Es gibt viele verschiedene Tools, die vom Template-Prinzip Gebrauch
+Gewissermaßen können also Templates bereits in jeder Programmiersprache
+definiert werden, die Funktionsdefinitionen ermöglicht. Solch eine
+Funktion müsste das Zieldokument mittels String-Operatoren
+zusammensetzen, was im Normalfall zu umständlich ist. Stattdessen wird
+eine ``schablonenartige'' Notation bevorzugt, die sich gut anhand der im
+Lisp-Umfeld üblichen Operatoren Quasiquote\footnote{Neben Quasiquote ist
+  auch der Begriff Backquote üblich. Neben dem Quasiquote gibt es in
+  Lisp-Sprachen auch ein einfaches Quote, welches einen komplett
+  statischen Bereich erzeugt, ohne darin auf Unquotes zu achten.} und
+Unquote beschreiben lässt. Ein Quasiquote erzeugt ein Template, und das
+Innere eines Quasiquotes wird als statisch interpretiert, solange darin
+kein Unquote auftritt. Ein Unquote, welches nur innerhalb eines
+Quasiquote auftauchen darf, erzeugt einen dynamischen Unterabschnitt,
+welcher in der vom Werkzeug bereitgestellten Meta-Sprache beschrieben
+ist. Hier werden die Eingabeparameter des Templates verwendet. Der
+Vorteil dieser Notationsform besteht darin, dass ein Template - bis auf
+die dynamischen Abschnitte - genauso aussieht wie das Zieldokument und
+dadurch gut lesbar wird.
+
+Es gibt viele verschiedene Werkzeuge, die vom Template-Prinzip Gebrauch
 machen. Diese unterscheiden sich oft neben der Syntax in vielen weiteren
 Punkten. Dieser Abschnitt stellt zunächst diese Vergleichskriterien vor,
-anschließend wird eine Auswahl Template-basierter Tools zur \cgen{} anhand
-dieser Kriterien verglichen und bewertet.
+anschließend wird eine Auswahl Template-basierter Werkzuge zur \cgen{}
+anhand dieser Kriterien verglichen und bewertet.
 
 \lsection[template:crit]{Vergleichskriterien}
+
+\todo{Absatz}
+
 \lsubsection[template:crit:model]{Verwendete Modelle}
 
 Template-Engines unterscheiden sich sowohl in den Eingabe-, als auch in
-den Ausgabemodellen. Verwendet werden gewöhnlich Zeichenketten,
-typisierte Objekte sowie untypisierte Bäume wie \sexps{} oder XML
-\seec{model}. Mit den Modellen variieren auch die Typisierungsgrade und
-damit auch das Maß und der Zeitpunkt einer möglichen Validierung der Daten.
+den Ausgabemodellen. Verwendet werden für beides gewöhnlich
+Zeichenketten, typisierte Objekte sowie untypisierte Bäume wie \sexps{}
+oder XML \seec{model}. Mit den Modellen variieren auch die
+Typisierungsgrade und damit auch das Maß und der Zeitpunkt einer
+möglichen Validierung der Daten.
 
 Die generierbaren Zielsprachen unterscheiden sich ebenfalls - manche
 Generatoren können jede Sprache generieren, während andere nur eine
 einzige oder eine Familie von Sprachen unterstützen.
 
-\lsubsection[template:crit:def]{Template-Definition}
+\lsubsection[template:crit:def]{Template-Erzeugung}
 
-Die Definition von Templates lässt sich Anhand der Operationen
-Quasiquote\footnote{Neben Quasiquote ist auch der Begriff Backquote
-  üblich. Neben dem Quasiquote gibt es in Lisp-Sprachen auch ein
-  einfaches Quote, welches einen komplett statischen Bereich erzeugt,
-  ohne darin auf Unquotes zu achten.} und Unquote erläutern, welche aus
-dem Lisp-Umfeld stammen.
+Auch wenn fast alle Ansätze der Template-Erzeugung sich mit Quote und
+Unquote beschreiben lassen, gibt es einige Unterschiede bei der genauen
+Verwendung dieser.
 
-Ein Quasiquote erzeugt ein Template, und das Innere eines Quasiquotes
-wird als statisch interpretiert, solange darin kein Unquote
-auftritt. Nicht überall sind Quasiquotes explizit - oft interpretieren
+Nicht überall sind Quasiquotes explizit - oft interpretieren
 Anwendungen auch automatisch die äußerste Ebene einer Template-Datei als
-quotiert. Manche Tools zur \cgen{} besitzen kein universelles
+quotiert. Manche Werkzeuge zur \cgen{} besitzen kein universelles
 Quasiquote, mit dem sich wirklich jede gewünschte, Quellcode erzeugende
 Funktion ausdrücken lässt. Aus syntaktischen Gründen könnte es
 beispielsweise nicht möglich sein, eine variable Anzahl an Statements zu
 erzeugen.
 
-Ein Unquote, welches nur innerhalb eines Quasiquote auftauchen darf,
-erzeugt einen dynamischen Unterabschnitt, welcher meist in einer
-Programmiersprache beschrieben ist. Hier werden die Parameter verwendet,
-die beim Aufruf an das Template übergeben werden. Je nach Anwendung kann
-innerhalb eines Unquote eventuell wieder ein Quasiquote vorkommen, so
-dass ein Sub-Template erzeugt wird. Manche Systeme benutzen auch ein
-implizites Unquote, welches automatisch eingesetzt wird, wenn ein Token
-mit dem Namen eines Template-Parameters übereinstimmt.
+Auch die Möglichkeit zur Schachtelung weiter Quasiquotes in
+Unquote-Bereichen ist nicht überall gegeben. Manche Systeme benutzen
+auch ein implizites Unquote, welches automatisch eingesetzt wird, wenn
+ein Token mit dem Namen eines Template-Parameters übereinstimmt.
 
 Es gibt generell auch die Möglichkeit, Code nicht über Templates,
 sondern direkt über die Manipulation von Objekten zu
 erzeugen. Beispielsweise kann in einer Programmiersprache ohne
 Template-Engine eine Funktion definiert werden, die mit String-Operationen
 arbeitet, letztlich aber die gleiche Aufgabe erfüllt wie ein
-Template. Manche Tools bieten neben Templates ebenfalls die
+Template. Manche Werkzeuge bieten neben Templates ebenfalls die
 programmatische Erzeugung von Code an. Normalerweise jedoch ist, wenn
 möglich, die Erzeugung mittels Quasiquote und Unquote zu bevorzugen, da hier
 der generierende Code dem generierten ähnelt, was eine bessere
@@ -1024,7 +1039,7 @@ Lesbarkeit mit sich bringt.
 \lsubsection[template:crit:lang]{Metaprogrammiersprache}
 
 Die Bandbreite bei der Sprachmächtigkeit in Unquote-Bereichen ist hoch:
-Es gibt Tools, die überhaupt keine Berechnungen, sondern lediglich das
+Es gibt Werkzeuge, die überhaupt keine Berechnungen, sondern lediglich das
 Einfügen der Parameter zulassen. Auf der anderen Seite stehen
 vollständige (Meta-)Programmiersprachen - Zwischenstufen sind ebenfalls
 möglich. Zudem gibt es Unterschiede beim mit einem Metaprogramm
@@ -1064,7 +1079,7 @@ Aufgabenverteilung innerhalb des Projektes. Deswegen gelten
 beispielsweise Views, die komplexe Berechnungen am Modell vornehmen, als
 schlechter Stil. Es ist daher von Vorteil, wenn Generatoren eine
 Trennung von Model, View und Controller unterstützen oder gar forcieren
-- auf der anderen Seite sollte das Tool aber nicht im Wege stehen, wenn
+- auf der anderen Seite sollte das Werkzeug aber nicht im Wege stehen, wenn
 eine ungewöhnliche Aufgabe andere Mittel erfordert.
 
 \lsubsection[template:crit:gentemp]{Generierung von Templates}
@@ -1588,7 +1603,7 @@ tabellarische Übersicht dieses Vergleichs.
 \begin{sidewaysfigure}[tp]
 \subfloat{
 \begin{tabular}{|l|l|l|l|l|} \hline
-\bf Tool                    &\bf PHP                    &\bf C-Makros    &\bf StringTemplate                 &\bf Templates in \cpp{}         \\\hline\hline  
+\bf Werkzeug                &\bf PHP                    &\bf C-Makros    &\bf StringTemplate                 &\bf Templates in \cpp{}         \\\hline\hline  
 \bf Eingabemodell           &Objekt                     &String          &Objekt als String                  &Typname/Wert/Template           \\\hline                      
 \bf Eingabevalidierung      &relativ stark              &schwach         &stark                              &stark                           \\\hline       
 \bf Ausgabemodell           &String                     &String          &String                             &Code für Funktion/Klasse        \\\hline     
@@ -1607,7 +1622,7 @@ tabellarische Übersicht dieses Vergleichs.
 }\\
 \subfloat{
 \begin{tabular}{|l|l|l|l|} \hline
-\bf Tool                    &\bf Template Haskell         &\bf XSLT                    &\bf Lisp              \\\hline\hline    
+\bf Werkzeug                &\bf Template Haskell         &\bf XSLT                    &\bf Lisp              \\\hline\hline    
 \bf Eingabemodell           & Objekt                      &XML                         &\sexp{}               \\\hline           
 \bf Eingabevalidierung      & stark                       &mittel                      &mittel                \\\hline      
 \bf Ausgabemodell           & Code als Objekt             &XML                         &\sexp{}               \\\hline      
@@ -4599,7 +4614,7 @@ Modell übertrieben erscheint. Als konkrete Baumrepräsentation wurden
 gegenüber XML vorgezogen.
 
 In \cref{template} wurde eine Reihe von \cgen{}swerkzeugen vorgestellt
-und verglichen. Gemein ist all diesen Tools die Benutzung des
+und verglichen. Gemein ist all diesen Werkzeugen die Benutzung des
 Template-Konzepts, ansonsten sind die strukturellen Unterschiede
 allerdings groß. Manche Frameworks können Code in beliebigen Sprachen
 generieren, andere beschränken sich auf eine einzelne Sprache oder
@@ -4607,7 +4622,7 @@ Sprachfamilie. Alle drei Modelltypen aus \cref{model} werden in
 verschiedenen Systemen verwendet, allerdings keines bietet diese
 gleichzeitig an. Die Bandbreite der einzelnen Metasprachen reicht von
 kaum mehr als dem bloßen Template-Formalismus aus Quasiquote und Unquote
-bis hin zu vollständigen Programmiersprachen. Tools, in denen Meta- und
+bis hin zu vollständigen Programmiersprachen. Werkzeugen, in denen Meta- und
 Zielsprache übereinstimmen oder übereinstimmen können, erlauben
 prinzipiell auch die Generierung von Meta-Code selbst, woraus sich
 interessante Möglichkeiten ergeben. Hier kann es allerdings zu einer
@@ -4618,7 +4633,7 @@ Makros auf, die implizit über den Namen des zu verarbeitenden Ausdrucks
 zugeordnet werden. XSLT unterstützt hier sogar ein Pfad-basiertes
 Matching.
 
-Von den untersuchten Tools konnten Lisp-Makros aufgrund ihrer
+Von den untersuchten Werkzeugen konnten Lisp-Makros aufgrund ihrer
 Flexibilität, Mächtigkeit, Modularisierbarkeit und Einfachheit am
 stärksten überzeugen. Lisp-Dialekte stellen jedoch noch kein
 universelles \cgen{}swerkzeug da, da diese ausschließlich Lisp-Code
