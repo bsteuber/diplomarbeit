@@ -103,7 +103,7 @@
     Abschnitt~\ref{#1:sec:##1}%
   }%
   \renewcommand{\fref}[1]{\ref{#1:fig:##1}}
-  \renewcommand{\abb}[1]{Abb.\ref{#1:fig:##1}}
+  \renewcommand{\abb}[1]{Abb.~\ref{#1:fig:##1}}
   \renewcommand{\fig}[3][\defaultscale]{%
     \begin{figure}[h]
       \centering
@@ -170,10 +170,11 @@
 \newcommand{\sexp}{S"=Expression}
 \newcommand{\sexps}{S"=Expressions}
 \newcommand{\cgen}{Code"=Generierung}
+\newcommand{\mprog}{Meta"=Programmierung}
 \newcommand{\cpp}{C\texttt{++}}
 
 \title{Prototyp eines \sexp{}-basierten Rahmenwerks für
-  \mbox{sprachübergreifende} \cgen{}} 
+  \mbox{sprachübergreifende} \mprog{}} 
 \author{Benjamin Teuber\\aus Hamburg} 
 \date{\today}
 
@@ -255,6 +256,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \acro{MDA}{Model Driven Architecture}
 \acro{PDF}{Portable Document Format}
 \acro{PHP}{PHP: Hypertext Preprocessor}
+\acro{SQL}{Structured Query Language}
 \acro{UML}{Unified Modelling Language}
 \acro{XML}{Extensible Markup Language}
 \acro{XML-RPC}{XML Remote Procedure Call}
@@ -263,6 +265,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \acro{XSL-FO}{XSL - Formatting Objects}
 \acro{XSLT}{XSL Transformation}
 \acro{W3C}{World Wide Web Consortium}
+\acro{WWW}{World Wide Web}
 \end{acronym}
 \addcontentsline{toc}{section}{Abkürzungsverzeichnis}
 
@@ -275,7 +278,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \pagenumbering{arabic}
 
 Modellgetriebene Softwareentwicklung ist in aller Munde: UML\cite{UML}
-feiert bald sein 15-jähriges Bestehen \footnote{Der
+feiert bald sein 15-jähriges Bestehen\footnote{Der
   Standarisierungsprozess von UML begann 1994, als Gary Booch und Jim
   Rumbaugh mit der Vereinheitlichung ihrer Modellierungstechniken
   begannen. \cite[S. 17]{UML}}, IBM vermarktet seit Jahren das Produkt
@@ -496,13 +499,15 @@ diskutiert. Zudem werden weitere Verbesserungs- und
 Erweiterungsmöglichkeiten vorgestellt, die zukünftig aufgegriffen werden
 könnten.
 
-\lsection[intro:example]{Anwendungsbeispiel}
+\lsection[intro:example]{Anwendungsdomäne}
 
-Für die einfachere Erstellung von Präsentationen soll eine DSL namens
-Slide erstellt werden, die Konzepte wie Folientitel, Aufzählungen,
-Bilder etc. in einer kurzen und eleganten Notation
-bereitstellt. Slide-Code wird vom Modellierer - hier dem Ersteller einer
-Präsentation - geschrieben und vom Slide-Compiler in
+Für die einfachere Diskussion verschiedener Werkzeuge und Konzepte
+versucht diese Arbeit, möglichst eine einheitliche Domäne für
+Anwendungsbeispiele zu verwenden. Dabei geht es um eine fiktive, zu
+erstellende DSL für Präsentationen - genannt Slide - die Konzepte wie
+Folientitel, Aufzählungen, Bilder etc. in einer kurzen und eleganten
+Notation bereitstellt. Slide-Code wird vom Modellierer - hier dem
+Ersteller einer Präsentation - geschrieben und vom Slide-Compiler in
 Latex\cite{Latex}-Code mit der Beamer\cite{LatexBeamer}-Klasse übersetzt
 \seea{flow_example_simple}, aus der anschließend eine PDF-Datei erzeugt
 werden kann.
@@ -515,15 +520,20 @@ möglich zu unterstützen.
 
 \lchapter[model]{Repräsentation von Modellen}
 
-Es gibt im Wesentlichen drei Arten, ein Modell zu repräsentieren: Als
-rohe Zeichenkette, als typisiertes Objekt oder durch eine ungetypte
-Baumrepräsentation. Beispiele für letztere sind unter anderem \sexps{}, XML
-sowie JSON. Dieses Kapitel erarbeitet zunächst Vergleichskriterien für
-Repräsentationsformen. Anschließend werden alle diese Ansätze sowie die
-graphische Repräsentationssprache UML vorgestellt und anhand der
+In bestehenden \cgen{}swerkzeugen werden Modelle für Ein- und Ausgaben
+auf eine von drei Arten repräsentiert: Als rohe Zeichenkette, als
+typisiertes Objekt oder durch eine ungetypte
+Baumrepräsentation. Beispiele für letztere sind unter anderem \sexps{},
+XML sowie JSON. Dieses Kapitel erarbeitet zunächst Vergleichskriterien
+für Repräsentationsformen. Anschließend werden alle diese Ansätze sowie
+die graphische Repräsentationssprache UML vorgestellt und anhand der
 Kriterien bewertet.
 
 \lsection[model:crit]{Vergleichskriterien}
+
+Als Vergleichskriterien für die Bewertung von
+Modellrepräsentationen werden Typisierungsgrad, Universalität,
+graphische Darstellung sowie Komposition von Modellen verwendet.
 
 \lsubsection[model:crit:type]{Typisierung}
 
@@ -534,45 +544,74 @@ aber keinerlei Typsicherheit oder strukturellen Datenzugriff mit sich
 bringen. Auf der anderen Seite stehen statisch getypte Objekte, die
 komfortablen Zugriff und Typsicherheit garantieren, im Gegenzug aber
 sehr unflexibel sind. Dazwischen stehen universelle Notationen wie XML,
-die eine Struktur, aber keine Typisierung besitzen.
+die eine Struktur, aber keine direkte Typisierung besitzen\footnote{Es
+  gibt zwar die Möglichkeit, XML-Dokumente gegen eine externe
+  Spezifikation zu validieren oder automatisch in ein typisiertes Objekt
+zu überführen. Allerdings ist dies eher mit einer Grammatik
+zum Parsen von Strings vergleichbar als mit inhärent typisierten Daten.}.
 
-\lsubsection[model:crit:univ]{Universalität} Manche
-Codegeneratoren sind nur für eine spezielle Ausgabesprache gedacht, was
-sich in den festen Modellen wiederspiegelt. Andere verwenden Modelle,
-die bereits universell und direkt auf jede Domäne anwendbar
-sind. Dazwischen liegen Systeme, in denen der Metaprogrammierer neue
-Modelle definieren kann, so dass eine Übertragbarkeit vorliegt, die
-allerdings mit einem kleinen Mehraufwand verbunden ist.
+\lsubsection[model:crit:univ]{Universalität} 
+
+Manche Codegeneratoren sind nur für eine spezielle Ausgabesprache
+gedacht, was sich in den festen Modellen wiederspiegelt. Andere
+verwenden Modelle, die bereits universell und direkt auf jede Domäne
+anwendbar sind. Dazwischen liegen Systeme, in denen der
+Metaprogrammierer neue Modelle definieren kann, so dass eine
+Übertragbarkeit vorliegt, die allerdings mit einem kleinen Mehraufwand
+verbunden ist.
 
 \lsubsection[model:crit:graphic]{Graphische Darstellung}
 
-Die Möglichkeit, ein Modell zu visualisieren oder gar mit einem GUI zu
-bearbeiten, ist sehr praktisch für Dokumentation, Übersichtlichkeit
-sowie Zusammenarbeit mit Domänenexperten, die das verwendete System
-nicht genau verstehen müssen.
+Die Möglichkeit, ein Modell zu visualisieren oder gar mit einer
+graphischen Benutzeroberflächea zu bearbeiten, ist sehr praktisch für
+Dokumentation, Übersichtlichkeit sowie Zusammenarbeit mit
+Domänenexperten, die das verwendete System nicht genau verstehen müssen.
 
 \lsubsection[model:crit:compose]{Komposition}
 
-Modelle lassen sich oft als Bäume beschreiben, in denen die Kinder eines
-Knotens als Untermodelle oder Komponenten aufgefasst werden. Dies
-entspricht dem Entwurfsmuster Komposition\cite[S.182f]{CompositePattern}. Eine
-Modellrepräsentation sollte deshalb das Konzept Unterknoten abbilden
-können.
+Sinnvollerweise sollten Modelle schachtelbar sein, so dass
+komplexe Modelle aus einfacheren zusammengesetzt werden können.
+Dies lässt sich durch die Konzepte Unterknoten oder Attribut ausdrücken.
 
-\lsubsection[model:crit:attrib]{Attribute}
+Modelle lassen sich oft als knotenbenannte Bäume beschreiben, in denen
+die Kinder eines Knotens als Untermodelle oder Komponenten aufgefasst
+werden. Dies entspricht dem Entwurfsmuster
+Komposition\cite[S.182f]{CompositePattern}. Unterknoten sind nicht
+weiter gekennzeichnet und können somit nur durch ihre Reihenfolge oder
+ihren Inhalt (zu dem auch der Name gehört) unterschieden
+werden. \abb{model_tree} zeigt eine simple Aufzählung als
+Listenknoten mit zwei Unterknoten.
 
-Attribute sind benannte Komponenten eines Modells und nützlich, um
-spezielle Eigenschaften eines Modells festzuhalten. Unter anderem werden
-Attribute auch für objektorientierte Programmierung verwendet. Manche
-Modellrepräsentationen stellen direkt Attribute bereit, andere wie
-\sexps{} können diese beispielsweise über Unterknoten simulieren.
+\fig{model_tree}{Eine einfache Aufzählung als Baumstruktur}
 
-\lsubsection[model:crit:list]{Repräsentation von Listen}
+Attribute hingegen ordnen auf Ebene des Oberknotens Eigenschaftsnamen
+Werte zu, was eher dem gängigen Bild von Objekteigenschaften
+entspricht. Eine Komposition durch Attribute ist nur dann möglich, wenn
+als Werte wiederum beliebige Modelle zugelassen sind - was
+beispielsweise nicht für XML-Attribute gilt. Da bereits eine Benennung auf
+oberer Ebene erfolgt, besitzen Unterknoten hier oft keinen Namen
+mehr. Manche Repräsentationen erlauben auch Listenwertige
+Attribute. \abb{model_attr} zeigt die Repräsentation eines betitelten
+Bildes durch Attribute, welche als beschriftete Kanten dargestellt
+werden.
 
-Aufzählungen kommen in Modellen ebenfalls häufig vor, weshalb diese
-dargestellt werden können sollten. Auch hier gibt es Repräsentation wie
-JSON, die Listen direkt unterstützen, und solche, die sie durch
-Unterknoten repräsentieren.
+\fig{model_attr}{Eigenschaften eines Bildes als Attribute}
+
+Beide Sichtweisen lassen sich leicht ineinander überführen. Um
+beispielsweise Attribute durch Unterknoten zu ersetzen, wird pro
+Attribut ein neuer Knoten desselben Namens eingeführt (oder ein
+bestehender, anonymer Unterknoten benannt). So zeigt
+\abb{model_attr_as_node} das letzte Beispiel nochmals in
+Knotenrepräsentation. Aus diesem Grund reicht bereits die komplette
+Unterstützung eines der beiden Konzepte, um alle Ausdrucksmöglichkeiten
+bereitzustellen.
+
+\fig{model_attr_as_node}{Eigenschaften eines Bildes als Knoten}
+
+\medskip{}
+
+Im nächsten Abschnitt werden die verschiedenen Modellarten im Hinblick
+auf diese Kriterien diskutiert.
 
 \lsection[model:string]{Strings}
 
@@ -581,7 +620,14 @@ schließlich sind sie lediglich Bitfolgen. Damit sind Strings immer dann
 erforderlich, wenn Modelle zur persistenten Speicherung oder
 Kommunikation serialisiert werden müssen.
 
-Da Zeichenketten keinerlei Struktur oder Typisierung ermöglichen, ist
+Um ein Modell als String zu repräsentieren, muss zunächst eine Syntax
+festgelegt werden. Eine Folie, die eine Aufzählung enthält, könnte
+beispielsweise so codiert werden:
+\begin{code}
+a slide titled "My Slide" with list "one", "two" and "three"  
+\end{code}
+
+Da Zeichenketten per se keinerlei Struktur oder Typisierung ermöglichen, ist
 eine String-Repräsentation für die Erzeugung und Bearbeitung sowie
 komplexere Verarbeitung von Modellen eher ungeeignet. Vor der
 Verarbeitung sollte ein String deshalb vom Parser in ein strukturiertes
@@ -602,8 +648,12 @@ werden Typfehler erst beim Zugriff, bei \cgen{} also vermutlich erst im
 Übersetzungsvorgang erkannt. In den meisten Sprachen gibt es Attribute
 für Objekte sowie einen Listen- oder Arraydatentyp. Unbenannte
 Komponenten haben Objekte gewöhnlich nicht - eine Ausnahme bilden
-Haskell-Datentypen \sees{haskell}. Eine Visualisierung von
-Objekten kann als Baum mit benannten Kanten erfolgen.
+Haskell-Datentypen \sees{haskell}. Eine Visualisierung von Objekten kann
+als Graph mit benannten Kanten erfolgen. \abb{model_slide_obj} zeigt
+obiges Folienbeispiel in einer statisch typisierten Programmiersprache
+mit listenwertigen Attributen.
+
+\fig{model_slide_obj}{Folie als typisiertes Objekt}
 
 \lsection[model:sexp]{\sexps}
 
@@ -617,8 +667,8 @@ verwendeten Sonderzeichen enthalten. Listen werden in runde Klammern
 gesetzt - mit Leerzeichen als Trennsymbol. Beispiele für \sexps{} sind:
 \begin{itemize}
 \item \icode{foo}
-\item \icode{(bar)}
-\item \icode{(user (name Harald) (email Harry@baz.com))}
+\item \icode{(slide)}
+\item \icode{(list one two three)}
 \end{itemize}
 
 \sexps{} sind zwar formal als Listen definiert, werden aber meist als
@@ -641,25 +691,35 @@ Repräsentationsform für strukturierte Daten. Das Modell selbst ist
 ungetypt, da in den Blättern Strings stehen. Eine Validierung kann
 daher erst nach dem Einlesen erfolgen.
 
-Attribute und Listen\footnote{Hier wird die oben erläuterte
-  Interpretation als Baum vorausgesetzt - ansonsten wären Listen
-  explizit verfügbar.} sind in der Grundstruktur zunächst nicht
-vorgesehen, können aber über Unterknoten simuliert
-werden. Beispielsweise könnte ein rotes Auto mit den Extras Klimaanlage
-und Navigationssystem wie folgt dargestellt
-werden:
+Attribute sind in der Grundstruktur nicht vorgesehen, können aber wie
+oben beschrieben durch Unterknoten simuliert werden. Beispielsweise
+könnte eine Folie mit Bild und Aufzählung wie folgt dargestellt werden:
 \begin{code}
-(car
-  (color red)
-  (specials ac navigation))
+(slide 
+  (title My Slide)
+  (image
+    (source diagram.png)
+    (caption This is a diagram))
+  (list one two three))
+\end{code}
+Dies entspricht dem Baum in \abb{model_slide_sexp}. In konkreten
+Lisp-Dialekten würde man diese Repräsentation selten anfinden: Zum einen
+würde eine String-Notation zur Unterscheidung von Werten und Variablen
+verwendet werden. Zum anderen ist es üblich, feste Parameter wie
+Folientitel nicht zu benennen, sondern implizit durch die Reihenfole
+zuzuordnen. Dies könnte dann derart aussehen:
+\begin{code}
+(slide "My Slide"
+  (image "diagram.png" "This is a diagram")
+  (list "one" "two" "three"))
 \end{code}
 
-Dies entspricht dem Baum in \abb{car_sexp}.
-\fig{car_sexp}{Baumrepräsentation des Auto-Beispiels} Trotz der simplen
-Struktur und Syntax, die auch benötigte Tools wie Editoren, Parser
-usw. vereinfachen, bieten \sexps{} also eine universelle
-Modellierungssprache an, mit der auch Attribute und Listen indirekt
-repräsentiert werden können.
+\fig{model_slide_sexp}{Baumansicht einer Folie in \sexps{}}
+
+Trotz der simplen Struktur und Syntax, die auch benötigte Tools wie
+Editoren, Parser usw. vereinfachen, bieten \sexps{} also eine
+universelle Modellierungssprache an, mit der auch Attribute und Listen
+indirekt repräsentiert werden können.
 
 \lsection[model:xml]{XML}
 
@@ -668,28 +728,34 @@ auf eine detailierte Einführung verzichtet wird. Wie bei \sexps{}
 handelt es sich um eine strukturierte, ungetypte Repräsentation, die
 einem knotenbenannten Baum entspricht. XML unterscheidet sich von
 \sexps{} - Syntax zunächst ausgenommen - hauptsächlich durch das
-Vorhandensein von Attributen. Darüber hinaus gibt es Features wie
-Namensräume, Referenzen und CDATA-Abschnitte, welche Zeichenketten
-repräsentieren können, die mit XML-Syntax interferieren würden.
+Vorhandensein von Attributen, die allerdings nur Strings als Werte
+erlauben. Darüber hinaus gibt es Features wie Namensräume, Referenzen
+und CDATA-Abschnitte, welche Zeichenketten repräsentieren können, die
+mit XML-Syntax interferieren würden.
 
-Das Auto-Beispiel könnte durch
+Das Folien-Beispiel lässt sich in XML wie folgt modellieren:
 \begin{code}
-<car color="red">
-  <specials>
-    <special>AC</special>
-    <special>Navigation</special>
-  </specials>
-</car>
+<slide title="My Slide">
+  <image source="diagram.png">
+    This is a diagram
+  </image>
+  <list>
+    <item>one</item>
+    <item>two</item>
+    <item>three</item>
+  </list>
+</slide>
 \end{code} %"<
-repräsentiert werden. Die Farbe ist hier ein Attribut. Das Beispiel
-zeigt, dass die XML-Syntax im Vergleich zu \sexps{} eine erhöhte
-Redundanz aufweist. Die erzwungene Wiederholung des Knotennamens in
-schließenden Tags soll die Robustheit im Falle vergessener Tags erhöhen,
-hat aber neben dem erhöhten Schreibaufwand den Nachteil, dass XML damit
-im Gegensatz zu \sexps{} eine kontextsensitive Sprache und folglich
-aufwändiger zu parsen wird. XML-Parser, die kontextfreie
-Parser-Generatoren benutzen, müssen deshalb anschließend in einem
-zusätzlichen Durchlauf die korrekte Zuordnung der Schließ-Tags
+Titel und Bildquelle werden als Attribute modelliert, als
+Bildanschrift wird implizit das Innere vom Knoten \icode{image}
+verwendet. Das Beispiel zeigt, dass die XML-Syntax im Vergleich zu
+\sexps{} eine erhöhte Redundanz aufweist. Die erzwungene Wiederholung
+des Knotennamens in schließenden Tags soll die Robustheit im Falle
+vergessener Tags erhöhen, hat aber neben dem erhöhten Schreibaufwand den
+Nachteil, dass XML damit im Gegensatz zu \sexps{} eine kontextsensitive
+Sprache und folglich aufwändiger zu parsen wird. XML-Parser, die
+kontextfreie Parser-Generatoren benutzen, müssen deshalb anschließend in
+einem zusätzlichen Durchlauf die korrekte Zuordnung der Schließ-Tags
 überprüfen. Die Schreibarbeit lässt sich zwar durch die Verwendung eines
 speziellen XML-Editors wieder verringern, allerdings könnte ein solcher
 auch die Zuordnung von Unterknoten - beispielsweise durch Einrückung -
@@ -698,26 +764,29 @@ verdeutlichen, was die Redundanz wieder unnötig erscheinen lässt.
 Ein anderer Grund weshalb das Beispiel umständlich wirkt ist, dass
 XML-Knoten als Unterknoten zwar beliebig viele XML-Knoten, aber - im
 Gegensatz zu \sexps{} nur einen String besitzen können. Aus diesem Grund
-muss der XML-Baum bei der Specials-Aufzählung um eine Ebene erweitert
-werden. \abb{car_xml} zeigt diesen Baum, wobei Attribute als zweiter
-Kantentyp, der nur Strings als Kinder zulässt, aufgefasst werden.
+sowie dem Nichtvorhandensein listenwertiger Attribute sind zusätzliche
+\icode{item}-Knoten erforderlich\footnote{Würde man stattdessen den
+\icode{list}-Knoten weglassen, gäbe es Probleme bei mehreren Listen auf
+einer Folie.}. \abb{model_slide_xml} zeigt die Baumdarstellung dieses
+Beispiels.
 
-\fig{car_xml}{Repräsentation eines Autos in XML}
+\fig{model_slide_xml}{Baumansicht einer Folie in XML}
 
-Ein häufiges Problem bei der Definition von XML-Formaten ist die
-Frage, ob eine spezielle Eigenschaft durch einen Unterknoten oder
-durch ein Attribut repräsentiert werden sollte. Attribute sind in der
-Schreibweise kürzer und deshalb komfortabler, auf der anderen Seite
-aber weniger ausdrucksmächtig als Unterknoten, da sie nur Strings,
-nicht aber Werte mit innerer Struktur\footnote{Es ist zwar möglich,
-  über einen Attribut-String im XML-Format innere Struktur in
-  Attribute einzubauen - dieser würde dann aber nicht automatisch
-  geparst werde, so dass von diesem Trick eher abzuraten ist.}
-benutzen können. Es kommt deshalb durchaus vor, dass eine Eigenschaft
-zunächst als Attribut realisiert wird, dann aber später bei wachsender
-Komplexität und Modellierungsgenauigkeit durch einen Unterknoten
-ersetzt werden muss, wodurch eine Inkompatibilität zu alten Dateien
-entsteht.
+Ein häufiges Problem bei der Definition von XML-Formaten ist die Frage,
+ob eine spezielle Eigenschaft durch einen Unterknoten oder durch ein
+Attribut repräsentiert werden sollte. Attribute sind in der Schreibweise
+kürzer und deshalb komfortabler, auf der anderen Seite erlauben sie aber
+keine zusammengesetzten Werte\footnote{Es ist zwar möglich, über einen
+  Attribut-String im XML-Format innere Struktur in Attribute einzubauen
+  - dieser würde dann aber nicht automatisch geparst werde, so dass von
+  diesem Trick eher abzuraten ist.}. Es kommt deshalb durchaus vor, dass
+eine Eigenschaft zunächst als Attribut realisiert wird, dann aber später
+bei wachsender Komplexität und Modellierungsgenauigkeit durch einen
+Unterknoten ersetzt werden muss, wodurch eine Inkompatibilität zu alten
+Dateien entsteht. Beispielsweise könnte es sich nachträglich als Fehler
+herausstellen, den Folientitel als Attribut gewählt zu haben, wenn
+spätere Slide-Erweiterungen es erlauben sollen, Titel mittels
+\icode{color}-Tag einzufärben.
 
 Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
 oder vielmehr ein optionales Feature, was nur aufgrund der umständlichen
@@ -748,8 +817,29 @@ Teil des Grund-XML sein müssen. Moderner wäre ein Entwurf mit
 minimaler Basissprache, in der Doppelpunkte in Knotennamen zugelassen
 sind, sowie einem Plugin-System, welches unter anderem einen
 Namespace-Präprocessor bereitstellt, der die Doppelpunkte korrekt
-interpretiert.
-
+interpretiert. Auf diese Weise wäre es auch möglich, alternative
+Lösungen für das Namensraumproblem anzubieten. Beispielsweise könnte ein
+anderer Ansatz eine Wiederholung der Namespace-Abkürzung in jedem Tag
+vermeiden, indem ein spezielles Tag \icode{in-namespace} eingeführt
+wird, so dass statt
+\begin{code}
+<slide:list>
+  <slide:item>one</slide:item>  
+  <slide:item>two</slide:item>  
+  <slide:item>three</slide:item>  
+</slide:list>
+\end{code}
+nun
+\begin{code}
+<in-namespace ns="slide">
+  <list>
+    <item>one</item>  
+    <item>two</item>  
+    <item>three</item>  
+  </list>  
+</in-namespace>
+\end{code}
+geschrieben werden könnte.
 \lsection[model:json]{JSON}
 
 JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
@@ -836,17 +926,17 @@ können mit Bäumen ebenfalls gut durchgeführt werden.
 \begin{sidewaysfigure}[tp]
   \centering
 \begin{tabular}{|l|l|l|l|l|l|l|}\hline
-\bf Modell                 & \bf String & \bf Objekt           & \bf \sexps{} & \bf XML & \bf JSON & \bf UML         \\\hline\hline
-\bf Typisierung            & gering     & sehr hoch            & mittel       & mittel  & mittel   & relativ hoch    \\\hline
-\bf Universell             & ja         & Klasse erforderlich  & ja           & ja      & ja       & ja              \\\hline
-\bf Sprachunabhängig       & ja         & nein                 & ja           & ja      & ja       & ja              \\\hline
-\bf Graphische Darstellung & Text       & Baum                 & Baum         & Baum    & Baum     & Graph           \\\hline
-\bf Unterknoten            & nein       & nach Sprache         & ja           & ja      & nein     & ja              \\\hline
-\bf Attribute              & nein       & ja                   & nein         & ja      & ja       & ja              \\\hline
-\bf Listen                 & nein       & ja                   & nein         & nein    & ja       & nein            \\\hline
-\bf Feature-Anzahl         & minimal    & nach Sprache         & minimal      & mittel  & klein    & groß            \\\hline
+\bf Modell                        & \bf String & \bf Objekt           & \bf \sexps{}    & \bf XML  & \bf JSON & \bf UML         \\\hline\hline
+\bf Typisierung                   & gering     & sehr hoch            & mittel          & mittel   & mittel   & relativ hoch    \\\hline
+\bf Universell                    & ja         & Klasse erforderlich  & ja              & ja       & ja       & ja              \\\hline
+\bf Programmiersprachenunabhängig & ja         & nein                 & ja              & ja       & ja       & ja              \\\hline
+\bf Graphische Darstellung        & Text       & Graph                & Baum            & Baum     & Baum     & Graph           \\\hline
+\bf Unterknoten                   & nein       & selten               & ja              & ja       & nein     & ja              \\\hline
+\bf Attribute                     & nein       & fast immer           & nein            & primitiv & ja       & ja              \\\hline
+\bf Listenwertige Attribute       & nein       & meistens             & nein            & nein     & ja       & nein            \\\hline
+\bf Feature-Anzahl                & minimal    & nach Sprache         & minimal         & mittel   & klein    & groß            \\\hline
 \end{tabular}
-  \caption{Vergleich verscheidener Modellrepräsentationen}
+  \caption{Vergleich verschiedener Modellrepräsentationen}
   \label{magicl:fig:model_sum}
 \end{sidewaysfigure}
 
