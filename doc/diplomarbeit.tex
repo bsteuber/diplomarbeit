@@ -623,9 +623,9 @@ Kommunikation serialisiert werden müssen.
 Um ein Modell als String zu repräsentieren, muss zunächst eine Syntax
 festgelegt werden. Eine Folie, die eine Aufzählung enthält, könnte
 beispielsweise so codiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 a slide titled "My Slide" with list "one", "two" and "three"  
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Da Zeichenketten per se keinerlei Struktur oder Typisierung ermöglichen, ist
 eine String-Repräsentation für die Erzeugung und Bearbeitung sowie
@@ -694,25 +694,25 @@ daher erst nach dem Einlesen erfolgen.
 Attribute sind in der Grundstruktur nicht vorgesehen, können aber wie
 oben beschrieben durch Unterknoten simuliert werden. Beispielsweise
 könnte eine Folie mit Bild und Aufzählung wie folgt dargestellt werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (slide 
   (title My Slide)
   (image
     (source diagram.png)
     (caption This is a diagram))
   (list one two three))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dies entspricht dem Baum in \abb{model_slide_sexp}. In konkreten
 Lisp-Dialekten würde man diese Repräsentation selten anfinden: Zum einen
 würde eine String-Notation zur Unterscheidung von Werten und Variablen
 verwendet werden. Zum anderen ist es üblich, feste Parameter wie
 Folientitel nicht zu benennen, sondern implizit durch die Reihenfole
 zuzuordnen. Dies könnte dann derart aussehen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (slide "My Slide"
   (image "diagram.png" "This is a diagram")
   (list "one" "two" "three"))
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \fig{model_slide_sexp}{Baumansicht einer Folie in \sexps{}}
 
@@ -734,7 +734,7 @@ und CDATA-Abschnitte, welche Zeichenketten repräsentieren können, die
 mit XML-Syntax interferieren würden.
 
 Das Folien-Beispiel lässt sich in XML wie folgt modellieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 <slide title="My Slide">
   <image source="diagram.png">
     This is a diagram
@@ -745,7 +745,7 @@ Das Folien-Beispiel lässt sich in XML wie folgt modellieren:
     <item>three</item>
   </list>
 </slide>
-\end{code} %"<
+\end{code}\end{DIFnomarkup} %"<
 Titel und Bildquelle werden als Attribute modelliert, als
 Bildanschrift wird implizit das Innere vom Knoten \icode{image}
 verwendet. Das Beispiel zeigt, dass die XML-Syntax im Vergleich zu
@@ -822,15 +822,15 @@ Lösungen für das Namensraumproblem anzubieten. Beispielsweise könnte ein
 anderer Ansatz eine Wiederholung der Namespace-Abkürzung in jedem Tag
 vermeiden, indem ein spezielles Tag \icode{in-namespace} eingeführt
 wird, so dass statt
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 <slide:list>
   <slide:item>one</slide:item>  
   <slide:item>two</slide:item>  
   <slide:item>three</slide:item>  
 </slide:list>
-\end{code}
+\end{code}\end{DIFnomarkup}
 nun
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 <in-namespace ns="slide">
   <list>
     <item>one</item>  
@@ -838,7 +838,7 @@ nun
     <item>three</item>  
   </list>  
 </in-namespace>
-\end{code}
+\end{code}\end{DIFnomarkup}
 geschrieben werden könnte.
 \lsection[model:json]{JSON}
 
@@ -851,7 +851,7 @@ Blätter sind Strings und elementare Datentypen zugelassen, die beim
 Einlesen dynamisch typisiert werden.
 
 Das Folien-Beispiel kann in JSON wie folgt repräsentiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 {
   "title" : "My Slide"
   "image" : {
@@ -860,8 +860,8 @@ Das Folien-Beispiel kann in JSON wie folgt repräsentiert werden:
   }
   "list"  : ["one", "two", "three"]
 }
-\end{code}
-\begin{code}
+\end{code}\end{DIFnomarkup}
+\begin{DIFnomarkup}\begin{code}
 {
   "title" : "My Slide"
   "image" : {
@@ -870,7 +870,7 @@ Das Folien-Beispiel kann in JSON wie folgt repräsentiert werden:
   }
   "list"  : ["one", "two", "three"]
 }
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die Benennung als \icode{slide} muss außerhalb erfolgen, d.h. bei einem
 übergeordneten Objekt als Attribut oder auf der höchsten Ebene
 beispielsweise durch den Dateinamen.
@@ -1141,14 +1141,14 @@ schwer umzusetzen.
 
 Als Beispiel hier ein PHP-Template, welches HTML-Code für eine
 Aufzählungsliste erzeugt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 <ul>
 <? foreach ($items as $item) {
      echo("<li>" . $item . "</li>");
    }
 ?>
 </ul>
-\end{code} %$
+\end{code}\end{DIFnomarkup} %$
 Hierbei ist \icode{$items} %$
  der Eingabeparameter, der eine Liste von
 Strings enthält.  Aufgrund der fehlenden Möglichkeit zur Schachtelung
@@ -1197,13 +1197,13 @@ Helper-Klassen, deren Methoden aus den Templates aufgerufen werden
 können, unterstützen würde.
 
 Die Erzeugung einer HTML-Liste kann in StringTemplate wie folgt aussehen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 <ul>
 $items:{
   <li> $it$ </li>
 }$
 </ul>
-\end{code} %$
+\end{code}\end{DIFnomarkup} %$
 Über die Eingabeliste \icode{items} wird automatisch iteriert und für
 jedes Element ein anonymes inneres Template aufgerufen, um den
 Listeneintrag zu erzeugen. Da der innere Template-Parameter nicht
@@ -1228,7 +1228,7 @@ Verwendungsmöglichkeiten von Templates finden sich in der Bibliothek
 Boost\cite{Boost}.
 \begin{figure}
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 template<int N> struct fib {
   static const int result = fib<N-1>::result + fib<N-2>::result;
 };
@@ -1242,7 +1242,7 @@ template<> struct fib<1> {
 };
 
 // fib<10>::result ergibt 55
-  \end{code}
+  \end{code}\end{DIFnomarkup}
   \caption{Die Fibonacci-Folge mit \cpp{}-Templates}
   \label{magicl:fig:cpp-fibonacci}
 \end{figure}
@@ -1297,7 +1297,7 @@ nummeriert werden, um Namenskonflikte zu vermeiden.
 
 \begin{figure}[h]
   \centering
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 -- Template-Definition
 summ n = summ' n [| 0 |]
 summ' 0 code = code
@@ -1305,7 +1305,7 @@ summ' n code = [| \x -> $(summ' (n-1) [|$code+x|] ) |]
 
 -- Aufruf
 $(summ 3)  -- ergibt (\x1 -> \x2 -> \x3 -> 0+x1+x2+x3)
-\end{code} %$
+\end{code}\end{DIFnomarkup} %$
   \caption{Generierung einer anonymen Funktion mit n Parametern in Template Haskell}
   \label{magicl:fig:ths-summ}
 \end{figure}
@@ -1325,11 +1325,11 @@ deutlich erhöht wird.
 
 \begin{figure}[h]
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 tupleNums n = TupE [LitE (IntegerL i) | i <- [1..n]]
 
 $(tupleNums 5) -- ergibt (1, 2, 3, 4, 5)
-  \end{code} %$
+  \end{code}\end{DIFnomarkup} %$
   \caption{Generierung von Tupeln dynamischer Länge in Template Haskell}
   \label{magicl:fig:ths-tuple}
 \end{figure}
@@ -1347,7 +1347,7 @@ beispielsweise ein Makro, mit dessen Hilfe sich zwei verschachtelte
 Iterationen über Zahlen komfortabler notieren lassen.
 \begin{figure}[h]
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 #define loop2d(xmax, ymax)   \
   for(int x=0; x<xmax; x++)  \
    for(int y=0; y<ymax; y++)
@@ -1356,7 +1356,7 @@ loop2d(2, 3) {
   printf("(%d-%d) ", x, y);
 }
 // Ergibt "(0-0) (0-1) (0-2) (1-0) (1-1) (1-2) "
-  \end{code}
+  \end{code}\end{DIFnomarkup}
 \caption{Ein simples C-Makro für zwei verschachtelte Schleifen}
   \label{magicl:fig:c-loop2d}
 \end{figure}
@@ -1428,7 +1428,7 @@ kombiniert werden, dass ein funktional aufgerufenes Template dennoch
 Aufzählungslisten in HTML übersetzt.
 \begin{figure}
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 Eingabe:
 <list>
   <item>foo</item>
@@ -1451,7 +1451,7 @@ Ausgabe:
   <li>bar</li>
   <li>baz</li>
 </ul>
-  \end{code} %"<
+  \end{code}\end{DIFnomarkup} %"<
   \caption{Erzeugung einer Aufzählungsliste mit XSLT}
   \label{magicl:fig:xslt-example}
 \end{figure}
@@ -1494,7 +1494,7 @@ meist ähnliche Konstrukte.
 
 \begin{figure}[h]
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 Einfaches Quasiquote ohne Unquote - ergibt (+ 1 2 3):
 
  `(+ 1 2 3)
@@ -1508,7 +1508,7 @@ Quasiquote mit Unquote - ergibt (+ 1 7 3) falls x=2:
 Unquote mit Splicing - ergibt (+ 1 2 3 4 5) falls input = (2 3 4):
 
 `(+ 1 ,@input 5)
-  \end{code}
+  \end{code}\end{DIFnomarkup}
   \caption{Drei Beispiele für Quasiquotes in Common Lisp}
   \label{magicl:fig:lisp-quotes}
 \end{figure}
@@ -1543,7 +1543,7 @@ resultierende \sexp{} als Funktionsaufruf interpretiert.
 
 \begin{figure}[h]
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 Makro:
 
 (defmacro aif (condition then-part else-part)
@@ -1570,7 +1570,7 @@ Wird kompiliert nach:
   (if it
       (get-address it)
       (error "No address found")))    
-  \end{code}
+  \end{code}\end{DIFnomarkup}
   \caption{Das Makro \icode{aif} und seine Verwendung}
   \label{magicl:fig:lisp-aif}
 \end{figure}
@@ -1595,7 +1595,7 @@ schreiben lässt.
 
 \begin{figure}[h]
   \centering
-  \begin{code}
+  \begin{DIFnomarkup}\begin{code}
 Definition eines "Meta-Makros":
 
 (defmacro metamacro (name cmd)
@@ -1610,7 +1610,7 @@ Wird kompiliert nach:
 
 (defmacro mymacro (x)
   `(print ,x))
-  \end{code}
+  \end{code}\end{DIFnomarkup}
   \caption{Ein Makro-erzeugendes Makro in Common Lisp}
   \label{magicl:fig:lisp-macrogen}
 \end{figure}
@@ -2263,10 +2263,10 @@ Funktionsaufrufe in Haskell benötigen keine Klammern, sondern werden
 einfach durch Leerzeichen in der Form \icode{funktion arg1 arg2 arg3}
 notiert. Definitionen von Funktionen erfolgen gewöhnlich über
 Gleichungen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 addTwo :: Int -> Int
 addTwo x = x + 2  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die erste Zeile deklariert den Typen von addTwo, welcher mit \icode{Int
   -> Int} eine Funktion ist, die einen \icode{Int} als Eingabe bekommt
 und ebenfalls einen \icode{Int} zurückgibt. Typdeklarationen sind
@@ -2277,10 +2277,10 @@ deshalb meist verwendet.
 
 Typen von Funktionen mit mehreren Parametern erscheinen
 zunächst verwirrend:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 add :: Int -> Int -> Int
 add x y = x + y  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der Typoperator \icode{->} ist rechtsassoziierend, weshalb \icode{Int ->
   Int -> Int} äquivalent ist zu \icode{Int -> (Int -> Int)}. Streng
 genommen besitzt eine Funktion in Haskell nämlich immer nur genau einen
@@ -2293,16 +2293,16 @@ bekommt die Funktion \icode{map} mit Typsignatur \icode{(a -> b) -> [a]
   -> [b]} eine Funktion und wendet diese Elementweise auf eine Liste an
 - \icode{a} und \icode{b} stehen hier für beliebige Typen. Um nun zu
 jedem Element einer Liste die Zahl 5 zu addieren, kann nun der Code
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 map (add 5) [1, 2, 3, 4]  -- ergibt [6, 7, 8, 9]
-\end{code}
+\end{code}\end{DIFnomarkup}
 verwendet werden -- \icode{add 5} erzeugt also eine Funktion, die 5 zu
 ihrem Parameter addiert. Auch Funktionen können direkt auf diese Art
 definiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 addFiveToList :: [Int] -> [Int]
 addFiveToList = map (add 5)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Infixoperatoren wie \icode{+} können ebenfalls vom Programmierer selbst
 definiert werden -- auch die Operatorpräzedenz kann angepasst werden,
@@ -2314,21 +2314,21 @@ Currying, so dass beispielsweise mit \icode{(-2)} eine Funktion erzeugt
 wird, die vom Argument 2 subtrahiert. Für die obige, sogenannte
 punktfreie Art der Funktionsdefinition mittels Currying ist auch der
 Kompositionsoperator \icode{.} nützlich:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (.) :: (b -> c) -> (a -> b) -> (a -> c)
 (g . f) x = g (f x)
 
 addFiveThenMultiplyByThree :: Int -> Int
 addFiveThenMultiplyByThree = (*3) . (+5)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Lokale Funktionen können über das Schlüsselwort \icode{where} definiert
 werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 sumSquare x y = square (x + y)
   where
     square x = x * x
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[haskell:data]{Datentypen}
 
@@ -2341,23 +2341,23 @@ eine der beiden obigen Kategorien einzuordnen ist.
 
 Daneben gibt es Typaliase -- beispielsweise ist der Typ String lediglich
 ein Alias für Listen von Buchstaben:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type String = [Char]
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Die letzte Kategorie sind algebraische Datentypen, welche mit dem
 \icode{data}-Schlüsselwort definiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Shape = Point
            | Circle Float
            | Rectangle Float Float
-\end{code}
+\end{code}\end{DIFnomarkup}
 Hier sind \icode{Point}, \icode{Circle} und \icode{Rectangle}
 verschiedene Konstruktoren, mit denen Instanzen vom Typ Shape erzeugt
 werden können. Konstruktoren in Haskell können sowohl als Funktionen --
 z.B. \icode{Rectangle :: Float -> Float -> Shape} -- als auch zum Pattern
 Matching verwendet werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 shapeArea :: Shape -> Float
 
 -- Pattern Matching in Gleichungen
@@ -2370,12 +2370,12 @@ shapeArea s = case s of
                 Point         -> 0
                 Circle r      -> pi * r * r
                 Rectangle x y -> x * y
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Datentypen können auch durch Typvariablen parametrisiert sein,
 beispielsweise beschreibt der eingebaute Typ \icode{Maybe} Werte, die
 nicht immer vorhanden sind:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Maybe a = Nothing | Just a
 
 tryFindRecord :: Database -> ID -> Maybe Record
@@ -2384,7 +2384,7 @@ tryFindRecord db id = if hasRecord db id
                         Just (fetchRecord db id)
                       else
                         Nothing
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{Nothing} entspricht also in etwa \icode{null} in anderen Sprachen
 -- mit dem Unterschied, dass in Haskell ganz klar definiert ist, wo dies
 vorkommen kann und wo nicht.
@@ -2405,18 +2405,18 @@ können. Dies kann mit Hilfe von Typklassen erreicht werden, welche
 vergleichbar mit Interfaces in objektorientierten Sprachen sowie
 polymorphen Funktionen sind. Beispielsweise ist das Haskell-Äquivalent
 zu Javas \icode{toString()} die Typklasse \icode{Show} gegeben:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Show a where
   show :: a -> String
-\end{code}
+\end{code}\end{DIFnomarkup}
 Algebraische Datentypen (nicht aber Typaliase) können Typklassen mittels
 \icode{instance} implementieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Show Shape where
   show Point           = "point"
   show (Circle r)      = "circle with radius " ++ show r
   show (Rectangle x y) = "rectangle
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{++} ist der Haskell-Operator für Konkatenation von Listen.
 Arithmetische Operationen sind ebenfalls durch Typklassen definiert, so
 dass diese auch für beispielsweise komplexe Zahlen überladen werden
@@ -2424,7 +2424,7 @@ können.
 
 Typvariablen können nun mittels \icode{=>} auf bestimmte Typklassen
 eingeschränkt werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 formatList :: (Show a) => [a] -> String
 formatList xs = "{" ++ concat listWithSeparators ++ "}"
   where listWithSeparators :: [String]
@@ -2433,7 +2433,7 @@ formatList xs = "{" ++ concat listWithSeparators ++ "}"
         stringList = map show xs
 
 showList [1, 2, 3] -- ergibt "{1 - 2 - 3}"
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \todo{Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
  Hier: (...) => als Auslassung}
@@ -2444,11 +2444,11 @@ Die Haskell-Bibliotheken bieten viele kategorientheoretische Begriffe an,
 die allerdings alle bestimmten Einschränkungen
 unterliegen. Beispielsweise sind die Objekte einer Kategorie hier immer
 Haskell-Typen. Die Typklasse \icode{Category} ist wie folgt definiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Category cat where
   id   :: cat a a
   (.)  :: cat b c -> cat a b -> cat a c
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein Typ \icode{cat}, der selbst zwei Typparameter benötigt, ist also eine
 Instanz von \icode{Category}, wenn es generische Identitäts- und
 Kompositionsoperatoren gibt, die für beliebige Typen $a,b,c$ benutzt
@@ -2476,11 +2476,11 @@ benutzt MagicL "`Funktionen, die fehlschlagen können"' oder "`Funktionen
 mit Nebeneffekten"' als Kategorien, die jeweils auch normale Funktionen
 enthalten. Zusätzlich wird eine Operation auf Tupeln gefordert, aus der
 sich ein Produkt zusammensetzen lässt -- ein Coprodukt wird zunächst nicht gefordert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Category ar) => Arrow ar where
   arr   :: (a -> b) -> ar a b
   first :: ar a b  -> ar (a, c) (b, c)
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{arr} ist der Funktor, der jede Funktion auf einen Arrow
 abbildet\footnote{Die Typen werden hierbei auf sich selbst abgebildet.}.
 \icode{first} ist eine Funktion, die aus einem Arrow einen Arrow auf
@@ -2489,7 +2489,7 @@ dagegen unverändert durchschleift. Somit lassen sich zusätzliche Werte
 weiterreichen, außerdem lassen sich aus \icode{first} sinnvolle
 Operationen ableiten:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
   second :: ar a b -> ar (c, a) (c, b)
   second = arr swap >>> first f >>> arr swap
     where swap (x, y) = (y, x)
@@ -2500,7 +2500,7 @@ Operationen ableiten:
   (&&&) :: ar a b -> ar a b' -> ar a (b, b')
   f &&& g = arr diag >>> (f *** g)
     where diag x = (x,x)
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 \begin{itemize}
 \item \icode{second} ist analog zu \icode{first}, reicht allerdings das erste
@@ -2515,30 +2515,30 @@ zusammengesetzt.
 \end{itemize}
 
 Möchte man einen Arrow mit einer Funktion verknüpfen, gibt es mit
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 f >>^ func = f >>> arr func
-\end{code}% <<
+\end{code}\end{DIFnomarkup}% <<
 noch etwas syntaktischen Zucker.
 
 \lsubsection[haskell:cats:coproducts]{Coprodukte: Die Klasse \texttt{ArrowChoice}}
 
 Die Haskell-Entsprechung zu einer disjunkten Vereinigung ist der
 \icode{Either}-Datentyp, der folgendermaßen definiert ist:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Either a b = Left a | Right b
-\end{code}
+\end{code}\end{DIFnomarkup}
 Coprodukte für Arrows werden durch die Klasse \icode{ArrowChoice} beschrieben:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Arrow ar) => ArrowChoice ar where
   left :: ar a b -> ar (Either a c) (Either b c)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Auch hier wird mit \icode{left} nur eine einfache Operation gefordert,
 aus der sich anschließend alles weitere konstruieren lässt. Diese
 Funktion wandelt einen Arrow von \icode{a} nach \icode{b} um in
 einen Arrow von \icode{Either a c} nach \icode{Either b c}. Bei einem
 \icode{Left}-Wert wird also der ursprüngliche Arrow angewendet, ein
 \icode{Right}-Wert wird dagegen unverändert weitergereicht.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
   right :: ar a b -> ar (Either c a) (Either c b)
   right f = arr swap >>> left f >>> arr swap
     where swap (Left x)  = Right x
@@ -2552,7 +2552,7 @@ einen Arrow von \icode{Either a c} nach \icode{Either b c}. Bei einem
     where dropEither (Left x)  = x
           dropEither (Right x) = x
 
-\end{code} %<<
+\end{code}\end{DIFnomarkup} %<<
 Die Definitionen sind weitgehend analog zu den entsprechenden
 Produkt-Operationen:
 \begin{itemize}
@@ -2570,10 +2570,10 @@ Produkt-Operationen:
 
 Die Haskell-Bibliotheken definieren eine Klasse \icode{Functor}, welche
 allerdings nur Endofunktoren über der Kategorie $\mathbf{Hask}$ repräsentieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein Datenkonstruktor \icode{f} ist also Instanz von \icode{Functor},
 wenn die Operation \icode{fmap} Funktionen von \icode{a} nach \icode{b}
 auf Funktionen von \icode{f a} nach \icode{f b} abbildet. Der
@@ -2581,10 +2581,10 @@ mathematische Funktor besteht hier also aus \icode{(f,fmap)}.
 
 Diese Arbeit benutzt stattdessen eine eigene \icode{Functor}-Klasse,
 die Verschiedene Kategorien zulässt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Functor f ar | f -> ar where
   lift :: ar a b -> f a b
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die Arrows \icode{f} und \icode{ar} bilden eine Instanz von
 \icode{Functor}, wenn eine \icode{lift}-Operation \icode{ar}-Arrows auf
 \icode{f}-Arrows zwischen den gleichen Typen abbildet -- wobei der Typ
@@ -2601,12 +2601,12 @@ Alle hier verwendeten \icode{Functor}-Instanzen konstruieren aus einem
 z.B. erweitert der \icode{FailFunctor} einen Arrow-Typ um mögliches
 Scheitern. Die Instanz-Deklaration dafür sieht im Gerüst folgendermaßen
 aus (die Details werden in \sref{arrowparser:fail} erläutert):
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype FailFunctor ar a b = ...
 
 instance (Arrow ar) => Functor (FailFunctor ar) ar where
   lift f = ...
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsubsection[haskell:cats:monads]{Monaden}
 
@@ -2615,24 +2615,24 @@ Monaden über der Kategorie $\mathbf{Hask}$. $\eta$ aus
 \sref{cats:monads} heißt hier \icode{return}, statt $\mu$ wird der
 Operator \icode{>>=} %<<
 mit anderer Signator gefordert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Monad m where
   return :: a -> m a
   (>>=)  :: m a -> (a -> m b) -> m b
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 Es gibt auch eine genaue Entsprechung von $\mu$, die hier \icode{join}
 heißt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 join :: (Monad m) => m (m a) -> m a
 join x = x >>= id
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 Zu jeder Haskell-Monade \icode{m} lässt sich wieder die
 Kleisli-Kategorie bilden, die die Datentypen als Objekte sowie die
 Funktionen \icode{a -> m b} als Morphismen enthält. Die
 Haskell-Bibliotheken stellen hierfür den Datentyp \icode{Kleisli}
 bereit:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype Kleisli m a b = Kleisli (a -> m b)
 
 instance (Monad m) => Category (Kleisli m)
@@ -2644,7 +2644,7 @@ instance (Monad m) => Arrow (Kleisli m)
   where arr fun = Kleisli (return . fun)
         first (Kleisli f) = Kleisli tupleF
           where tupleF (x, z) = f x >>= (\ y -> return (y, z))
-\end{code} %<<
+\end{code}\end{DIFnomarkup} %<<
 
 Arrows und Monaden werden beide verwendet, um abstrakt Verknüpfungen von
 speziellen Operationen zu beschreiben. Arrows sind allgemeiner, denn
@@ -2655,10 +2655,10 @@ lässt sich \icode{>>=} % <<
 nicht konstruieren. Hierfür wird zusätzlich die Operation \icode{app}
 benötigt, die von der Typklasse \icode{ArrowApply} definiert wird (für
 Details siehe \cite[S. 18f]{Hughes}):
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Arrow ar) => ArrowApply ar where
   app :: ar (ar a b, a) b
-\end{code}
+\end{code}\end{DIFnomarkup}
 Mit \icode{app} wird also ein Arrow bereitgestellt, der als Parameter
 einen weiteren Arrow sowie eine Eingabe bekommt, um dann den übergebenen
 Arrow auf die Eingabe anzuwenden. Damit ist es möglich, Arrows
@@ -2680,17 +2680,17 @@ bereitgestellt werden muss -- wie obiger Code zeigt lässt sich dies
 bereits mittels \icode{>>=} % <<
 ausdrücken. Zudem gibt es für Monaden in Haskell die praktische
 \icode{do}-Notation:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 do x <- foo
    y <- bar x
    return (x, y)
-\end{code}
+\end{code}\end{DIFnomarkup}
 ist syntaktischer Zucker für
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 foo >>= (\ x ->
   bar x >>= (\ y ->
     return y))
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt --
 dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
 zuständig ist (siehe \sref{haskell:cats:monads:examples:io}). Diese
@@ -2718,18 +2718,18 @@ verketten, werden normalerweise viele Fallunterscheidungen benötigt, da
 bei jeder Funktion die Rückgabe geprüft und nur im Erfolgsfall die
 nächste aufgerufen muss. Haskell vereinfacht dies, indem \icode{Maybe}
 zur Monade erklärt wird:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Monad Maybe
   where return = Just
         (Nothing >>= _) = Nothing
         (Just x  >>= f) = f x
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 Obiges Code-Beispiel
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 do x <- foo
    y <- bar x
    return (x, y)
-\end{code}
+\end{code}\end{DIFnomarkup}
 würde in der Maybe-Monade so interpretiert werden: Wenn \icode{foo}
 erfolgreich ist, wird das Ergebnis (lokal) in \icode{x}
 gespeichert. Ist daraufhin \icode{bar x} ebenfalls erfolgreich, wird
@@ -2747,9 +2747,9 @@ Haskell integrieren. Die \icode{IO}-Monade bietet hier eine Lösung: Man
 stelle sich einen fiktiven Datentyp \icode{World} vor, der den gesamten
 Zustand der externen Welt enthält. \icode{IO a} ist nun eine Funktion,
 die die Welt liest und eine andere Welt sowie ein a zurückgibt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype IO a = World -> (World, a)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Zum Verketten zweier \icode{IO}-Operationen wird die von der ersten
 zurückgegebene Welt an die zweite übergeben. Damit dies nicht von Hand
 geschehen muss, wird \icode{IO} wieder als Monade deklariert. Nun gibt
@@ -2767,9 +2767,9 @@ wird deshalb immer in der \icode{IO}-Monade ausgeführt.
 
 Dank der Kleisli-Kategorie lassen sich mittels \icode{IO} auch Arrows
 bereitstellen, die Nebeneffekte enthalten:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type IOArrow = Kleisli IO
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[haskell:sum]{Zusammenfassung}
 
@@ -2891,20 +2891,20 @@ Die Haskell-Entsprechung von $\mathrm{String}+B$ ist \icode{Either
   String b}, was sich mit \icode{Failable b} abkürzen lässt, wenn man
 den parametrisierten Typ \icode{Failable} einführt:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type Failable a = Either String a
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Der Fehlerfall wird durch \icode{Left String} ausgedrückt, ein Erfolg
 durch \icode{Right a}. Fehlschlagende Arrows nun sind in MagicL durch den
 Typ \icode{FailFunctor} implementiert:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype FailFunctor ar a b = FailF (ar a (Failable b))
 
 instance (Arrow ar) => Functor (FailFunctor ar) ar where
     lift f = FailF (f >>> arr Right)
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 Arrows von \icode{a} nach \icode{b}, die fehlschlagen können, sind also
 Arrows von \icode{a} nach \icode{Failable b}, die in den zusätzlichen
@@ -2916,26 +2916,26 @@ Der Arrow \icode{fail} wird in eine \icode{Arrow} erweiternde Typklasse
 ausgegliedert, so dass dieser auch in anderen Kategorien bereitgestellt
 werden könnte:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Arrow ar) => ArrowFail ar where
   fail :: ar String a
 
 instance (ArrowChoice ar) => ArrowFail (FailFunctor ar) where
   fail = FailF (arr Left)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Dem Oder-Operator $\bigvee$ entspricht in Haskell \icode{<+>}, welcher
 von der Typklasse \icode{ArrowPlus} aus den Haskell-Bibliotheken
 bereitgestellt wird und für \icode{FailFunctor} wie folgt implementiert
 ist:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance (ArrowChoice ar) => ArrowPlus (FailFunctor ar) where
   FailF f <+> FailF g = FailF ((f &&& id) >>> arr proc >>> (g ||| arr Right))
    where proc :: (Either a b, c) -> Either c b
          proc (Left  _, y) = Left y
          proc (Right x, _) = Right x
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 Es werden also zunächst \icode{f} und die Identität parallel evaluiert --
 dies ist nötig, um die Eingabe "`durchzuschleifen"'. Anschließend
@@ -2950,9 +2950,9 @@ Die Typabhängigkeit von \icode{ArrowChoice} ist nötig, weil
 \icode{FailFunctor ar} nur dann ein \icode{Arrow} ist, wenn \icode{ar}
 ein Coprodukt anbietet. Denn die Komposition in $C_{f}$ ist definiert
 durch $g_{f} \circ f_{f} = ([fail,g] \circ f)_{f}$, was in Haskell
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 FailF g . FailF f = FailF (f >>> (arr Left ||| g))
-\end{code} %<<
+\end{code}\end{DIFnomarkup} %<<
 entspricht. Tritt in \icode{f} ein Fehler auf, wird dieser also wieder
 in ein \icode{Left} eingepackt und zurückgegeben. Ansonsten wird das
 durch \icode{|||} implizit aus dem \icode{Right}-Konstruktor ausgepackte
@@ -2982,12 +2982,12 @@ abgebildet werden, ist diese Abbildung Teil eines Funktors $F_s: C_{s}
 In MagicL gibt es die Typklasse \icode{StateFunctor}, die einen weiteren
 Typparameter \icode{s} für den Zustand bekommt:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype StateFunctor s ar a b = StateF (ar (a, s) (b, s))
 
 instance (Arrow ar) => Functor (StateFunctor s ar) ar where
     lift = StateF . first
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 Die "`geliftete"' Version eines Arrows soll den Zustandsparameter
 unverändert weitergeben -- dies entspricht genau der
@@ -2997,7 +2997,7 @@ Das Lesen und Schreiben von Zuständen wird von den Funktionen \icode{get} und
 \icode{put} bereitgestellt, welche in der Typklasse \icode{ArrowState}
 definiert werden:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Arrow ar) => ArrowState s ar | ar -> s where
   get :: ar a s
   put :: ar s ()
@@ -3006,7 +3006,7 @@ instance (Arrow ar) => ArrowState s (StateFunctor s ar)
   where
     get = StateF (arr (\ (_, state) -> (state, state)))
     put = StateF (arr (\ (state, _) -> ((), state)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \icode{get} ignoriert also den Eingabewert und gibt den aktuellen
 Zustand zurück, während \icode{put} den übergebenen Zustand
@@ -3052,14 +3052,14 @@ wird beispielsweise bei der Funktion \icode{macro}
 Die Haskell-Definition vom \icode{FailFunctor} benutzt als Zustandstyp
 einen Stream (als Liste repräsentiert) vom Token-Typ \icode{t}:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newtype ParseFunctor t ar a b =
   P (StateFunctor
      [t]
      (FailFunctor (FailFunctor ar))
      a
      b)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Dank der Implementation als Funktor ist die Kategorie, in der der Parser
 ausgeführt wird, frei wählbar. So können rein funktionale Parser in
@@ -3067,10 +3067,10 @@ $Hask_p$ konstruiert werden. Benötigt man aber Debug Outputs (z.B. bei
 der Suche einer Endlosschleife) oder andere Seiteneffekte, kann
 $\mathbf{IO}_p$ benutzt werden. In MagicL werden diese Kategorien durch
 die Typaliase \icode{FunParser} wowie \icode{IOParser} bereitgestellt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type FunParser t a b = ParseFunctor t (->) a b
 type IOParser  t a b = ParseFunctor t IOArrow a b
-\end{code}
+\end{code}\end{DIFnomarkup}
 Eine geeignete innere Kategorie könnte
 sogar interaktive Debugger, Netzwerktransparenz oder sonstige Features
 anbieten. Auch der variable Token-Typ erzeugt viele Möglichkeiten:
@@ -3109,7 +3109,7 @@ Operatoren sind bereits Konkatenation (\icode{>>>}) %<<
 und Alternative (\icode{<+>}) abgedeckt, darüber hinaus gibt es für
 Instanzen von \icode{ArrowPlus} unter anderem folgende Funktionen:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 optional :: (...) => ar a b -> ar a (Maybe b)
 optional f = (f >>^ Just) <+> constArrow Nothing
   where constArrow x = arr (\ _ -> x)
@@ -3131,7 +3131,7 @@ sepBy sep item =
     where
       unMaybeList  Nothing  = []
       unMaybeList (Just xs) = xs
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 \icode{optional} erzeugt einen Arrow, der, sollte der übergebene Arrow
 scheitern, \icode{Nothing} zurückgibt -- dabei aber "`erfolgreich"'
@@ -3159,44 +3159,44 @@ werden kann.
 \lsection[arrowparser:sexp]{Beispiel: Ein Parser für \sexps{}}
 
 \sexps{} sind in MagicL wie folgt definiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Sexp = Symbol String
           | Node [Sexp]
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Aufgrund der Einfachheit diese Struktur und der praktischen
 Parser-Library ist es möglich, in vier kurzen Zeilen einen Parser zu
 entwerfen, der als Text repräsentierte \sexps{} in die typisierte
 Repräsentation überführt:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 whitespace = skip (many (member " \t\n"))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Zunächst wird Whitespace als beliebige Anhäufung von Spaces, Tabs und
 Newlines definiert, die ignoriert werden soll.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 parseSymbol = many1 (notMember " \t\n()") >>^ Symbol
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 Ein Symbol ist eine Kette von Zeichen, die weder Whitespace noch
 Klammern sind. Dieses wird gleich an den \icode{Symbol}-Konstruktor
 übergeben, um den Typ \icode{Sexp} zu erhalten.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 parseNode = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq ')')
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 Ein Knoten ist eine von Klammern umgebene Liste von \sexps{}, die
 mittels \icode{Node}-Konstruktor zu einem \sexp{} wird.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 Ein \sexp{} ist nun entweder ein Symbol oder ein Knoten, wobei davor und
 danach Whitespace auftreten darf.
 
 Tritt bei Lesen ein Fehler auf, wird automatisch eine brauchbare Fehlermeldung
 ausgegeben, z.B.
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 "(test) )"  ==>  Empty stream expected: ")"
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[arrowparser:sexpparser]{Parser auf \sexps}
 
@@ -3207,9 +3207,9 @@ Terminologie ein Char-Parser, der \sexps{} zurückliefert. Entsprechend
 ist der Typ \icode{SexpParser} in MagicL definiert als \icode{IOParser} (für
 Seiteneffekten wie Debug-Ausgaben) vom Token-Typ \icode{Sexp} ohne
 explizite Eingabe und mit beliebigem Rückgabewert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type SexpParser a = IOParser Sexp () a  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die Parser-Bibliothek an sich kann bereits Streams von \sexps{}
 verarbeiten. Es gibt allerdings bisher keine komfortablen Operationen,
 um das Innere einer \sexp{} zu testen oder zu verarbeiten. Da ein
@@ -3220,23 +3220,23 @@ Beispielsweise könnte eine Liste von Personen folgenderweise
 repräsentiert sein\footnote{Dieses Format ist unnötig redundant und
   sollte vermutlich besser durch \icode{(persons Franz Walter Heinz)}
   ersetzt werden -- aber es handelt sich ja lediglich um ein Beispiel.}:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (person Franz)
 (person Walter)
 (person Heinz)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Ein Parser, der aus dieser Eingabe eine Liste von Namensstrings
 produzieren soll, würde mit der bisherigen Bibliothek so aussehen:
 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 parsePerson :: SexpParser String
 parsePerson = take >>^ proc >>> (fail ||| id)
   where proc (Node [Symbol "person", Symbol x]) = Right x
         proc _ = Left ("Not a person: " ++ show x)
 parsePersons :: SexpParser [String]
 parsePersons = many parsePerson
-\end{code} % <<
+\end{code}\end{DIFnomarkup} % <<
 
 Die Verarbeitung von Hand mittels \icode{Node} und \icode{Symbol} im
 Pattern-Matching ist relativ umständlich. Deswegen gibt es eine Reihe
@@ -3266,28 +3266,28 @@ nützlicher Hilfsfunktionen für die Konstruktion von \sexp{}-Parsern:
   Funktion \icode{looseMacro} mit identischer Signatur.
 \end{itemize}
 Das obige Beispiel lässt sich nun umschreiben:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 parsePerson  = macro "person" takeSymbol
 parsePersons = many parsePerson
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \icode{macro} benutzt \icode{forceParser} aus
 \sref{arrowparser:parse}, um das Backtracking auszuhebeln, sobald das
 Symbol übereinstimmt, was wieder für bessere Fehlermeldungen
 sorgt. Allerdings bedeutet dies, dass Code wie
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 macro "foo" (symbolMacro "bar") <+> macro "foo" (symbolMacro "baz")
-\end{code}
+\end{code}\end{DIFnomarkup}
 nicht erwartungsgemäß funktioniert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (foo bar)   => ()  d.h. Erfolg, kein Ergebnis
 (foo baz)   => Symbol bar expected: baz
-\end{code}
+\end{code}\end{DIFnomarkup}
 Es sollte deshalb immer nur ein Makro für jeden Begriff benutzt und
 eine etwaige Oder-Verknüpfung ins Innere verlegt werden -- hier also:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[arrowparser:sum]{Zusammenfassung}
 
@@ -3345,13 +3345,13 @@ Modell für formatierten Code samt Compiler nach String. Hier handelt es
 sich um einen Nachbau des von Philip Wadler in
 \cite[S.223ff]{FunOfProgramming} vorgestellten Pretty-Printers. Die
 elementaren Konstruktor-Funktionen sind:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 newline :: Code
 text    :: String -> Code
 append  :: Code   -> Code -> Code
 group   :: Code   -> Code
 indent  :: Int    -> Code -> Code
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
 sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
@@ -3360,28 +3360,28 @@ ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
 Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
 Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
 \icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 indent 2 (conc [text "hallo", newline, text "welt"])
-\end{code}
+\end{code}\end{DIFnomarkup}
 den Text
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 hallo
   welt
-\end{code}
+\end{code}\end{DIFnomarkup}
 ergeben -- dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
 mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
 Funktionen wie
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
   joinBy :: Code -> [Code]
-\end{code}
+\end{code}\end{DIFnomarkup}
 -- welche einen Separator benutzt, um eine Liste zusammenzufügen.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 joinBy "; " [text "foo", text "bar", text "baz"]
-\end{code}
+\end{code}\end{DIFnomarkup}
 würde also
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 foo; bar; baz
-\end{code}
+\end{code}\end{DIFnomarkup}
 ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
 syntaktische Programmiersprachenelemente abgeleitet, wie
 \icode{commaSep} für eine Komma-separierte Liste oder \icode{parens},
@@ -3392,25 +3392,25 @@ Klammerung.
 
 \sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
 noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (a b (c d) e)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
 auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
 Zeichen eingerückt werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (a
   b
   (c d)
   e)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dies lässt sich mit dieser rekursiven Funktion erreichen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 layoutSexp :: Sexp -> Code
 layoutSexp (Symbol sym)    = text sym
 layoutSexp (Node children) = format (map layoutSexp children)
   where format = parens . group . indent2 . lines
-\end{code} %<<
+\end{code}\end{DIFnomarkup} %<<
 Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
 spezifiziert werden.
 
@@ -3430,27 +3430,27 @@ in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
 enthalten, weshalb IOArrow verwendet wird. Typen, mit denen sich
 Compiler repräsentieren lassen, implementieren die Typklasse
 \icode{Executable}:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Executable x a b | x -> a b where
   toIO :: x -> IOArrow a b
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{x} ist selbst ein parametrisierter Typ, der die Ein- und
 Ausgabetypen \icode{a} und \icode{b} bereits determiniert. Die einfachsten
 Instanzen von \icode{Executable} werden durch IOArrows selbst sowie pure
 Funktionen gebildet:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Executable (IOArrow a b) a b where
   toIO = id
 
 instance Executable (a -> b) a b where
   toIO f = Kleisli (return . f)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Auch Parser sind ausführbar, sofern der zugrundeliegende Arrow-Typ es
 ist:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance (...) => Executable (ParseFunctor t ar () a) [t] a where
   toIO = toIO . execParser
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein Parser von \icode{()} nach \icode{a} mit Token-Typ \icode{t} wird
 demnach beim Ausführen zu einem \icode{IOArrow} von \icode{[t]} nach
 \icode{a}. Der bei der Parser-Komposition noch implizite
@@ -3463,25 +3463,25 @@ Parser-Modul gearbeitet werden.
 Nun soll es möglich sein, einen ausführbaren Typen zu benutzen, um einen
 eindeutigen Compiler von \icode{a} nach {b} einzurichten. Dies geschieht
 über die Typklasse \icode{Compilable}:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class (Executable x a b) => Compilable x a b | a b -> x where
   comp :: x
-\end{code}
+\end{code}\end{DIFnomarkup}
 Da es nur einen ausgezeichneten Compiler von \icode{a} nach \icode{b}
 geben kann, determinieren \icode{a} und \icode{b} gemeinsam \icode{x},
 wobei die umgekehrte Abhängigkeit ebenfalls -- von \icode{Executable}
 geerbt -- besteht. Es handelt sich also um eine 1:1-Beziehung. Die
 Spezifikation eines simplen funktionalen Compilers würde so aussehen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (A -> B) A B where
   comp x = ...
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der Parser, der einen \sexp{} aus einem String erzeugt, kann auch als
 Compiler spezifiziert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (FunParser Char () Sexp) String Sexp where
   comp = many parseSexp
-\end{code}
+\end{code}\end{DIFnomarkup}
 Auf diese Weise kann der Parser automatisch durch einen Aufruf von
 \icode{comp} gefunden werden.
 
@@ -3489,7 +3489,7 @@ Da Listen- und Maybe-Datentypen von Parsern fast immer mit \icode{many}
 und \icode{optional} verarbeitet werden, können für \icode{[a]} und
 \icode{Maybe a} Standard-Parser bereitgestellt werden, die den
 bestehenden Parser für \icode{a} mit diesen Funktionen transformieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance (Compilable (ParseFunctor t ar () a) [t] a, ...) =>
   Compilable (ParseFunctor t ar () [a]) [t] [a] where
     comp = many comp
@@ -3497,20 +3497,20 @@ instance (Compilable (ParseFunctor t ar () a) [t] a, ...) =>
 instance (Compilable (ParseFunctor t ar () a) [t] a. ...) =>
   Compilable (ParseFunctor t ar () (Maybe a)) [t] (Maybe a) where
     comp = optional comp
-\end{code}
+\end{code}\end{DIFnomarkup}
 Nun können beispielsweise auch Streams von \sexps{} durch den Aufruf von
 \icode{comp :: FunParser Char () [Sexp]} geparst werden, ohne dass dieser
   Parser manuell spezifiziert wurde.
 
 Zuletzt "`vergisst"' die Typklasse \icode{Compiler} den zur Definition
 verwendeten Typen und bietet eine allgemeine Umwandlung von A nach B an:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 class Compiler a b where
   compile :: IOArrow a b
 
 instance (Compilable x a b) => Compiler a b where
   compile = toIO comp
-\end{code}
+\end{code}\end{DIFnomarkup}
 Nun kann ein beliebiger Compiler ungeachtet seines Implementationstyps
 einfach über einen explizit typisierten \icode{compile}-Aufruf, wie etwa
 \\\icode{compile :: IOArrow String [Sexp]}, gefunden werden. Leider ist
@@ -3525,23 +3525,23 @@ Um die Kompilation von Textdateien zu vereinfachen, wird die Funktion
 \icode{String} nach \icode{String} umwandelt. Dies funktioniert
 allerdings nur, wenn bereits Standardcompiler von \icode{String} nach
 \icode{a} und von \icode{b} nach \icode{String} bekannt sind.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 compileStr :: (Compiler String a, Executable x a b, Compiler b String) =>
                x -> String -> IO String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile
-\end{code} % $
+\end{code}\end{DIFnomarkup} % $
 Für die Erzeugung selbstständiger Compiler benutzt \icode{compiler}
 stdin als Eingabe- und stdout als Ausgabe-Stream:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 compiler :: (Compiler String a, Executable x a b, Compiler b String) => x -> IO ()
 compiler f = do
   input <- getContents
   output <- compileStr f input
   putStr output  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Damit kann ein Compiler als Stand-Alone-Programm erzeugt und mit Hilfe
 von Ein- und Ausgabeumleitungen auf Dateien angewendet werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 module MyFileCompiler where
 -- einige Import-Anweisungen
 
@@ -3555,7 +3555,7 @@ ghc MyFileCompiler.hs  -- einige Parameter ausgelassen
 ==== Aufruf ====
 
 ./MyFileCompiler <inFile >outFile
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[magicl:test]{Test-Framework}
 
@@ -3563,7 +3563,7 @@ MagicL enthält ein primitives Unit-Test-Framework für die Überprüfung
 einzelner Compiler (und damit auch Parser und Makros). Zunächst werden
 dafür die Eingaben und erwarteten Ausgaben als Strings in Listen
 notiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 exprCases = [ ( "(Str 42)"                    -- Sexp-Haskell 
                 , "\"42\"" )                  -- Haskell 
 
@@ -3579,16 +3579,16 @@ exprCases = [ ( "(Str 42)"                    -- Sexp-Haskell
               , ( "(map + myList)"            -- Sexp-Haskell 
                 , "(map (+) myList)" )        -- Haskell 
               ]  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dieses Beispiel spezifiziert, wie einige Ausdrücke der im nächsten
 Kapitel vorgestellten Sprache \sexp{}-Haskell nach Haskell übersetzt
 werden sollen. Durchgeführt wird ein Testlauf mit der Funktion
 \icode{testCompiler}:
-\begin{code} 
+\begin{DIFnomarkup}\begin{code} 
 testCompiler :: 
   (Compiler String a, Executable x a b, Compiler b String) => 
   String -> x -> [(String, String)] -> IO ()
-\end{code}
+\end{code}\end{DIFnomarkup}
 Als Eingaben werden ein Namensstring, der Compiler selbst (als
 Executable-Instanz, damit nicht nur fest verdrahtete Compiler getestet
 werden können) sowie eine Liste von Testfällen erwartet. Das Testen
@@ -3598,16 +3598,16 @@ stattdessen wird gewöhnlich ein Compiler nach \icode{Code}
 angeboten. Die Funktion \icode{testMacro} schaltet deshalb den
 Standard-Compiler nach \icode{Code} hinter ein
 Makro:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 testMacro name mac testCases = 
   (testCompiler name 
                 ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
                 testCases)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der Aufruf für obige Testfälle sieht beispielsweise wie folgt aus:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 testMacro "expr" (comp :: SexpParser Expr) exprCases  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Das zu testende Makro wird hier durch einen typisierten Aufruf von
 \icode{comp} referenziert. Alternativ können auch benannte Makros
 verwendet werden.
@@ -3671,35 +3671,35 @@ redundant, so dass nur eines von beiden benötigt wird.
 Funktions- oder Konstruktoraufrufe müssen in der \sexp{}-Version immer
 geklammert werden, können aber unverändert nach Haskell übernommen
 werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (myFun 1 4 52)              Sexp-Haskell
 =>
 (myFun 1 4 52)              Haskell
-\end{code}
+\end{code}\end{DIFnomarkup}
 Haskell-Infixoperatoren werden in Präfixnotation überführt und können
 in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (+ 1 4 (- 52 10 4))         Sexp-Haskell
 =>
 (1 + 4 + (52 - 10 - 4))     Haskell
-\end{code}
+\end{code}\end{DIFnomarkup}
 Als Infixoperatoren werden Symbole interpretiert, die ausschließlich
 aus Zeichen der Liste \icode{!\$\%&/=\?*+-.:<|>^}
 bestehen. Kommt ein solcher Operator jedoch nicht am Anfang eines
 Ausdrucks, sondern im Inneren vor, ist die (binäre) Funktion selbst
 gemeint, was in Haskell der Präfixformulierung durch Klammerung
 entspricht:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (foldr1 * xs)               Sexp-Haskell
 =>
 (foldr1 (*) xs))            Haskell
 
 ergibt 24 mit xs = [1, 2, 3, 4]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die Definition neuer benannter Funktionen erfolgt weiterhin mit
 \icode{=}, wobei mit \icode{where} weiterhin lokale Definitionen
 eingeführt werden können:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= (sumOfSquares x y)
    (+ x2 y2)
  (where                     Sexp-Haskell
@@ -3712,9 +3712,9 @@ sumOfSquares x y = (x2 + y2)
   where
     x2 = (x * x)            Haskell
     y2 = (y * y)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Anonyme Funktionen werden mit \icode{fun} definiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (map 
   (fun x (+ x 5))           Sexp-Haskell
   xs)
@@ -3724,7 +3724,7 @@ Anonyme Funktionen werden mit \icode{fun} definiert:
 (map
   (\ x -> (x + 5))          Haskell
   xs)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Anonyme Funktionen mit mehreren Parametern können in der Form
 \icode{(fun (args x y z) ...)} definiert werden.
 
@@ -3732,7 +3732,7 @@ Anonyme Funktionen mit mehreren Parametern können in der Form
 
 Wie in Haskell können Konstrukturen mittels Pattern Matching zerlegt
 werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= (countMaybe (Just x)) x)
 (= (countMaybe Nothing)  0)      Sexp-Haskell
 
@@ -3740,12 +3740,12 @@ werden:
 
 countMaybe (Just x) = x
 countMaybe Nothing  = 0          Haskell
-\end{code}
+\end{code}\end{DIFnomarkup}
 Für Listen etc. stehen die ``Pseudo-Konstruktoren'' \icode{List},
 \icode{Cons}, \icode{Tuple} und \icode{Str} bereit, die wie die
 entsprechenden Haskell-Konstrukte sowohl zum Erzeugen als auch zum
 Matching verwendet werden können:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= (listTo3Tuple (List x y z)) 
    (Tuple x y z))
 
@@ -3761,7 +3761,7 @@ listTo3Tuple [x, y, z] = (x, y, z)
 dropTwo (x : y : xs) = xs              Haskell
 
 helloWorld = "Hello World"
-\end{code}
+\end{code}\end{DIFnomarkup}
 Im Gegensatz zu richtigen Konstruktoren können diese Operatoren eine
 beliebige Anzahl Parameter verarbeiten.
 
@@ -3770,7 +3770,7 @@ beliebige Anzahl Parameter verarbeiten.
 Typen werden eins zu eins nach \sexp{}-Haskell übernommen, wobei
 parametrisierte Typen geklammert werden. Typdeklarationen erfolgen
 mit \icode{hasType} anstelle des \icode{::}-Operators in Haskell:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (hasType x Int)
                                       Sexp-Haskell
 (hasType m (Maybe a))
@@ -3780,26 +3780,26 @@ mit \icode{hasType} anstelle des \icode{::}-Operators in Haskell:
 x :: Int
                                       Haskell
 m :: Maybe a
-\end{code}
+\end{code}\end{DIFnomarkup}
 Funktionstypen werden mit \icode{Fun}, Listentypen mit \icode{List}
 denotiert. Letzteres erwartet im Gegensatz zum gleichnamigen
 Konstruktor nur einen Parameter und verhält sich somit wie der
 \icode{[]}-Operator in Haskell:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (hasType map (Fun (Fun a b) (List a) (List b)))
 =>
 map :: (a -> b) -> [a] -> [b]                  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Typabhängigkeiten können mit \icode{dep} eingebunden werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (hasType print (dep (Show a)) (Fun a (IO Unit)))
 =>
 print :: (Show a) => a -> IO ()
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der Typ \icode{Unit} entspricht in Haskell \icode{()} und damit \icode{void}
 in anderen Sprachen. Typklassen und --instanzen sind ebenfalls direkt
 übernommen worden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (class 
   (MyClass a)
   (where
@@ -3811,7 +3811,7 @@ in anderen Sprachen. Typklassen und --instanzen sind ebenfalls direkt
   (where
     (= (printIt x)   ...)
     (= (isEqual x y) ...)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsubsection[sexphs:spec:modules]{Module}
 
@@ -3832,7 +3832,7 @@ mögliche Arten, ein Modul zu importieren:
 \end{itemize}
 Die folgende Moduldefinition zeigt alle diese Möglichkeiten in
 \sexp{}-Haskell und Haskell:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (module MyModule
   (export myFun MyClass MyDataType)
   Prelude
@@ -3847,7 +3847,7 @@ import Prelude
 import Control.Category (id)
 import Control.Monad hiding (liftM, forM)            Haskell
 import qualified Control.Exception as E
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 
 \lsection[sexphs:model]{Typisiertes Modell}
@@ -3859,13 +3859,13 @@ MagicL-Quelltext entnommen werden.
 
 Eine Haskell-Codedatei enthält eine optionale Modulbeschreibung sowie
 eine Liste von Toplevel-Definitionen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Haskell = Haskell (Maybe Module) [Toplevel]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Eine Modulbeschreibung besteht aus einem Namen, einer optionalen Liste
 exportierter Symbole sowie einer Liste von Imports, wobei hier obige
 vier Arten vorkommen können:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Module = Module String (Maybe Export) [Import]
 data Export = Export [String]
 data Import = Import String ImportArgs
@@ -3873,49 +3873,49 @@ data ImportArgs = Simple
                 | Qualified String
                 | Only [String]
                 | Hiding [String]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Auf Toplevel-Ebene können Typzuweisungen, Funktionen, Typaliase,
 Datentypen, Klassen und Instanzen definiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Toplevel = TopHasType HasType
               | TopDef Def
               | TopTypeAlias TypeAlias
               | TopData Data
               | TopClass Class
               | TopInstance Instance
-\end{code}
+\end{code}\end{DIFnomarkup}
 Hier wird lediglich auf Funktionen weiter eingegangen. Die linke Seite der
 Funktionszuweisung besteht aus einem Pattern, die rechte aus einem
 Ausdruck. Zusätzlich können mittels \icode{where} lokale Definitionen
 erfolgen.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Def = Def Pattern Expr (Maybe Where)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein Pattern kann eine Liste, ein Tupel, ein String oder ein
 Funktionsaufruf\footnote{Streng genommen dürfen in Patterns nur
   Konstruktoren (großgeschrieben) aufgerufen werden, in Ausdrücken
   hingegen Konstruktoren und Funktionen. Dies wird im Modell zur
   Vereinfachung nicht unterschieden, könnte allerdings beim Einlesen
   überprüft werden.} sein.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Pattern = ListPattern [Pattern]
              | TuplePattern [Pattern]
              | ConsPattern [Pattern]
              | StringPattern String
              | CallPattern Call
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein Ausdruck kann eine Lambda-Funktion definieren, ein
 \icode{do}-Ausdruck für Monaden\footnote{Die Umsetzung der
   \icode{do}-Notation in \sexp{}-Haskell wird in diesem Kapitel nicht
   näher erläutert -- auch diese ist allerdings sehr nah am
   Original.}, eine Typdeklaration oder ein Pattern sein. Die
 Parameterliste anonymer Funktionen benutzt ebenfalls Patterns.
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Expr = LambdaExpr  [Pattern] Expr
           | DoExpr      [DoCmd]
           | TypeExpr    HasType
           | PatternExpr Pattern
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 Als nächstes wird ein Parser benötigt, der die \sexp{}-Sprache in das
 Modell überführt.
@@ -3928,7 +3928,7 @@ Arrows) aufgeteilt werden, die jeweils nur für einen Datentyp zuständig
 sind. Diese können auf zwei Arten definiert werden: Zum einen können
 benannte Arrows verwendet und von Hand verknüpft werden, was für den
 Haskell-Parser wie folgt aussehen könnte:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 compHaskell = liftA2 Haskell (optional compModule) (many compToplevel)
 
 compModule = macro "module" (liftA3 Module
@@ -3942,7 +3942,7 @@ compToplevel = (liftA1 TopHasType   compHasType)   <+>
                (liftA1 TopData      compData)      <+>
                (liftA1 TopClass     compClass)     <+>
                (liftA1 TopInstance  compInstance)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Um optionale Ausdrücke und Listen einzulesen, werden die benutzten Parser
 mittels \icode{many} und \icode{optional} transformiert.
 
@@ -3958,7 +3958,7 @@ bedeuten die vielen Instanzdeklarationen einen erhöhten Schreibaufwand
 ist auf diese Art implementiert worden. Wie das Modell selbst wird
 dieser hier nur Ausschnittsweise vorgestellt -- konkret wird
 hauptsächlich das Parsen der Moduldefinition erläutert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (SexpParser Haskell) [Sexp] Haskell where
     comp = liftA2 Haskell comp comp
 
@@ -3984,7 +3984,7 @@ instance Compilable (SexpParser Toplevel) [Sexp] Toplevel where
            (liftA1 TopData comp)      <+>
            (liftA1 TopClass comp)     <+>
            (liftA1 TopInstance comp)
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der Import-Parser ist so konstruiert, dass als Import sowohl Symbole,
 welche automatisch in einen \icode{Simple}-Import übersetzt werden, als
 auch Listen übergeben werden können. Der Aufruf \icode{comp >>^ \ n ->
@@ -3995,12 +3995,12 @@ erzeugt wird.} und leitet dies an eine anonyme Funktion weiter, die den
 \icode{Import}-Aufruf erzeugt.
 
 Als Beispiel sei folgende Moduldefinition gegeben:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (module MyModule
   Data.List
   (Prelude (hiding id Functor))
   (Control.Exception (qualified E)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Hier wird ein Modul \icode{MyModule} definiert, welches keine Exports
 angibt und drei Module importiert: \icode{Data.List} wird komplett
 importiert, während aus \icode{Prelude} die Funktion \icode{id} und der
@@ -4011,13 +4011,13 @@ beispielsweise die Funktion \icode{throw} mittels \icode{E.throw}
 angesprochen werden kann.
 
 Der Parser erzeugt daraus nun ein typisiertes Haskell-Objekt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (Module "MyModule"
          Nothing
          [Import "Data.List" Simple,
           Import "Prelude" (Hiding ["id", "Functor"]),
           Import "Control.Exception" (Qualified "E")])
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dieses Objekt kann nun von weiterverarbeitet werden und schließlich in
 Haskell-Quelltext überführt werden.
 
@@ -4054,17 +4054,17 @@ Konkret wird ein Haskell-Objekt in eine Reihe von Absätzen formatiert
 zwischen seine Argumente einfügt. Der erste Absatz ist die kompilierte
 Modulbeschreibung, falls vorhanden. Anschließend kommen alle
 kompilierten Toplevel-Konstrukte:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (Haskell -> Code) Haskell Code where
   comp (Haskell mayMod tops) =
     paragraphs $ compMod mayMod ++ map comp tops
       where compMod Nothing  = []
             compMod (Just m) = [comp m]
-\end{code} %$
+\end{code}\end{DIFnomarkup} %$
 Um den Rahmen dieses Kapitels nicht zu sprengen, wird hier ebenfalls
 nur die Verarbeitung der Modulbeschreibung vertieft. Die
 Modulbeschreibung wird mit \icode{lines} auf mehrere Zeilen verteilt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (Module -> Code) Module Code where
   comp (Module name exports imports) = 
     (lines $
@@ -4072,7 +4072,7 @@ instance Compilable (Module -> Code) Module Code where
      ++ map comp imports)
     where compExports Nothing              = []
           compExports (Just (Export funs)) = [tuple $ map text funs]
-\end{code}%$
+\end{code}\end{DIFnomarkup}%$
 Das Schlüsselwort \icode{module}, der Modulname, die Exports (falls
 vorhanden) sowie das Schlüsselwort \icode{where} kommen in die erste
 Zeile -- jeweils durch Leerzeichen getrennt, was durch \icode{words}
@@ -4088,7 +4088,7 @@ Jede Import-Zeile besteht aus dem Schlüsselwort \icode{import} sowie
 dem Modulnamen. Je nach Import-Art gibt es dazwischen
 (\icode{betweenElts}) sowie am Ende (\icode{endElts}) noch
 weitere Elemente:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 instance Compilable (Import -> Code) Import Code where
   comp (Import modName impArgs) = 
     words $ [text "import"] ++ betweenElts ++ [text modName] ++ endElts
@@ -4097,7 +4097,7 @@ instance Compilable (Import -> Code) Import Code where
         Qualified abb -> ([text "qualified"], [text "as", text abb])
         Only onlys    -> ([], [tuple (map text onlys)])
         Hiding hides  -> ([], [text "hiding", tuple (map text hides)])  
-\end{code}%$
+\end{code}\end{DIFnomarkup}%$
 Beim einfachen Import sind beide Listen leer. Qualifizierte Imports
 beinhalten das Schlüsselwort \icode{qualified} sowie am Ende
 \icode{as} und die Modul-Abkürzung. Sollen nur bestimmte Symbole
@@ -4110,10 +4110,10 @@ Da MagicL bereits einen Standard-Compiler von \icode{Code} nach
 \sexp{}-Haskell nach Haskell durch Verkettung von Parser
 und Generator sowie Einbettung in einen Aufruf von \icode{compiler}
 bereitgestellt werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 compiler ((compile :: IOArrow [Sexp] Haskell) >>> 
           (compile :: IOArrow Haskell Code))  
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[sexphs:sum]{Zusammenfassung}
 
@@ -4187,35 +4187,35 @@ komfortabel geht, ist die Erzeugung von Instanzen des
 \icode{Sexp}-Datentyp zunächst umständlich. Soll beispielsweise eine
 Funktion \icode{genUser userName userEmail} mit den Parametern
 \icode{\"Harald\"} und \icode{\"Harry@baz.com\"} aufgerufen den Ausdruck
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (user (name Harald) (email Harry@baz.com))
-\end{code}
+\end{code}\end{DIFnomarkup}
 zurückliefern, wäre
 in \sexp{}-Haskell \seec{sexphs} folgende Funktionsdefinition
 nötig:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= (genUser userName userEmail)
    (Node (List (Symbol (Str user))
                (Node (List (Symbol (Str  name)) (Symbol userName)))
                (Node (List (Symbol (Str email)) (Symbol userEmail))))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Der entsprechende Haskell-Code liest sich aufgrund der syntaktischen
 Konstrukte \icode{\"\"} und \icode{[]} statt \icode{(Str)} und
 \icode{(List)} etwas leichter, ist aber davon abgesehen genauso komplex:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 genUser userName userEmail =
    Node [Symbol "user",
          Node [Symbol "name" , Symbol userName],
          Node [Symbol "email", Symbol userEmail]]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Um die Konstruktion von \sexp{}-Objekten zu vereinfachen, bieten
 Lisp-Dialekte die Quasiquote-Syntax mit \icode{`} und \icode{,} an
 \sees{template:lisp}. In Common Lisp beispielsweise ließe sich diese
 Funktion sehr elegant formulieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (defun gen-user (user-name user-email)
   `(user (name ,user-name) (email ,user-email)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein derartiger Operator soll nun konstruiert werden. Dieser sollte
 allerdings keine bloße Kopie bestehender Lisp-Quasiquotes, sondern
 vielmehr eine genau auf MagicL zugeschnittene Lösung sein. Im Folgenden
@@ -4227,31 +4227,31 @@ wird, müssen die Operatoren wie andere Ausdrücke geklammert
 werden. Zudem wird nicht zwischen Quote und Quasiquote unterschieden, so
 dass einheitlich der Quote-Operator \icode{'} benutzt wird. Die Funktion
 \icode{genUser} sollte sich letztlich wie folgt formulieren lassen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= (genUser userName userEmail)
    (' (user (name (, userName)) (email (, userEmail)))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dies muss von einem geeigneten Compiler in obige, umständlichere
 Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
 Haskell-Code erzeugt werden kann. Splicing einer Liste erfolgt
 entsprechend mit \icode{(,@)}:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (' (1 2 (,@ xs) 5))
 
 ergibt (1 2 3 4 5) bei xs = (List (Symbol (Str 3))
                                   (Symbol (Str 4)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Lisp-Makros sind gewöhnlich für die Verarbeitung eines einzelnen \sexp{}
 ausgelegt und können aus diesem Grund immer nur einen Ausdruck
 zurückliefern. Sollen beispielsweise in Common Lisp aus einem Makro
 zwei benannte Funktionen generiert werden, müssen die Definitionen in
 ein \icode{(progn)} geschachtelt werden, damit sich nur ein \sexp{}
 ergibt:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (defmacro define-arithmetic-functions ()
   `(progn (defun add (x y) (+ x y))
           (defun sub (x y) (- x y))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Hierbei weist \icode{progn} den Lisp-Interpreter\footnote{Es kann sich
   selbstverständlich auch um einen Compiler handeln.} lediglich an, alle
 enthaltenen Operationen nacheinander auszuführen. MagicL soll aber
@@ -4261,21 +4261,21 @@ Ausdrücke zu einem zusammenzufassen. Deswegen sollten MagicL-Makros
 beliebig viele \sexps{} zurückgeben können, so dass die Definition von
 \icode{define-arithmetic-functions} (zunächst als Funktion) wie folgt
 aussehen kann:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (= defineArithmeticFunctions
   '((= (add x y) (+ x y))
     (= (sub x y) (- x y))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dies passt auch gut zu einer Definition von Makros als Parser auf
 \sexps{}, da Parser immer Streams und damit Listen als Eingaben haben,
 so dass Ein- und Ausgabetyp übereinstimmen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 type LispMacro = SexpParser [Sexp]
 
 -- Typ eines kompilierten Makros
 myMac        :: LispMacro
 (toIO myMac) :: IOArrow [Sexp] [Sexp]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Damit sind Lisp-Makros, nachdem sie mittels \icode{toIO} aus der Typklasse
 \icode{Executable} umgewandelt wurden, IO-Arrows von \icode{[Sexp]} nach
 \icode{[Sexp]}, wodurch auch die Hintereinanderschaltung mehrerer
@@ -4283,18 +4283,18 @@ Makros reibungslos funktioniert. Um vernünftig mit diesen Makros
 verwendet werden zu können, muss der Quasiquote-Operator immer eine
 Liste von \sexps{} zurückgeben, wodurch mehrere Rückgaben ermöglicht
 werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (' 1 2 3)     =>   [Symbol "1", Symbol "2", Symbol "3"]
 (' (1 2 3))   =>   [Node [Symbol "1", Symbol "2", Symbol "3"]]
-\end{code}
+\end{code}\end{DIFnomarkup}
 Ein weiteres Problem aller Lisp-Dialekte ist der Umgang mit
 verschachtelten Quasiquotes, welche typischerweise entstehen, wenn
 Makros Makros generieren. Im Ausdruck
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (defmacro x ()
   `(defmacro y ()
      `(print ,a)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 ist zunächst nicht klar, auf welches der beiden Quasiquotes sich das Unquote
 bezieht und damit, ob \icode{a} im Kontext des äußeren oder des inneren
 Makros evaluiert werden soll. Common Lisp bezieht ein Unquote immer auf
@@ -4306,7 +4306,7 @@ normalen Quote-Operatoren \icode{' , ,@} benannte
 Operatoren \icode{'1 ,1 ,@1} etc. angeboten,
 so dass der Bezug immer klar ist. Beide Interpretationen des obigen
 Ausdrucks sind also darstellbar:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 Auswertung aussen:
 
 (defmacro x ()
@@ -4319,7 +4319,7 @@ Auswertung innen:
 (defmacro x ()
   (' (defmacro y ()
        ('1 (print (,1 a))))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Für den Vergleich mit Common Lisp wurde in diesem Beispiel ebenfalls
 \icode{defmacro} geschrieben -- in MagicL gibt es diesen Operator
 allerdings derzeit nicht\footnote{Es ist allerdings vorstellbar,
@@ -4333,23 +4333,23 @@ gemeinsam mit dem Quasiquote-Operator implementiert wird.
 
 Die Definition von Lisp-Makros (vom Typ \icode{LispMacro = SexpParser [Sexp]}) ist mit
 den bisherigen Mitteln bereits möglich:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (hasType compPredefine LispMacro)
 (= compPredefine (macro (Str predefine)
                      (liftA1 gen compSymbol)
                    (where (= (gen name)
                              (' (= (, name) undefined))))))
 
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dieses Beispielmakro ermöglicht es, \icode{(predefine myVar)} statt
 \icode{(= myVar undefined)} zu verwenden. Das Makro \icode{mac} bietet
 für die Definition von Lisp-Makros etwas ``semantischen Zucker'' und
 beinhaltet bereits die Typdefinition:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (mac compPredefine predefine
      (liftA1 ...)
    (where ...))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Dies soll in obigen Code übersetzt werden. Hier muss zwischen dem
 Compiler-Namen \icode{compPredefine} und dem Symbolnamen
 \icode{predefine} für den Makroaufruf unterschieden werden, da ersterer
@@ -4364,11 +4364,11 @@ Knotenname beibehalten und die Kinder rekursiv expandiert. Derartige
 Makros, die automatisch in einen rekursiv absteigenden Compiler
 integriert werden, sollen mittels \icode{autoMac} definiert werden
 können:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (autoMac compSomething something
     (compileSomething)
   (where ...))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Hier wird weiterhin ein Haskell-Name erwartet, obwohl dieser im
 Normalfall aufgrund der automatischen Anwendung nicht benötigt wird. Es
 gibt allerdings besondere Situationen, in denen ein direkter Aufruf
@@ -4384,17 +4384,17 @@ hinaus ist MagicL durch Makros einfach erweiterbar, so dass -- wenn
 gewünscht -- noch immer ein \icode{defmacro} definiert werden kann,
 welches den einfachsten Fall mit wenig Aufwand abdeckt. Dafür könnte
 beispielsweise der Ausdruck
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (defmacro (addThree x y z)
   (' (+ (,x) (,y) (,z))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 übersetzt werden in
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (autoMac generatedSymbol156 addThree
    (liftA3 gen take take take)
   (where (= (gen x y z)
             (' (+ (,x) (,y) (,z))))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Bisher wird \icode{defmacro} nicht bereitgestellt, da noch nicht klar
 ist, welches die beste Art für MagicL ist, kurz und prägnant Makros zu
 definieren. Es ist beispielsweise vorstellbar, dass sich ein Konstrukt
@@ -4403,13 +4403,13 @@ Ausdrucksmächtigkeit von \icode{autoMac} kombiniert. Diese Idee wird in
 \sref{end:disc} weiter diskutiert.
 
 Zuletzt sollte die Moduldefinition für Compiler vereinfacht werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (compiler Comp2Haskell (imports Data.Maybe Data.List)  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Diese muss in eine Haskell-Moduldefinition übersetzt werden, welche alle
 benötigten MagicL-Module sowie zusätzlich die angegebenen Imports
 einbindet:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (module
   Comp2Haskell
   (Prelude (hiding id lines words take))
@@ -4424,7 +4424,7 @@ einbindet:
   Model
   Data.Maybe
   Data.List)
-\end{code}
+\end{code}\end{DIFnomarkup}
 
 \lsection[sexpcomp:impl]{Compiler-Implementation}
 
@@ -4451,45 +4451,45 @@ Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
 vorhanden und könnte für die Implementation genutzt werden. Die
 Verarbeitung des Quote-Operators lässt sich dann durch ein komplexes
 Auto-Makro realisieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (autoMac compQuote ' inners
   (where
     ...
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{inners} muss beliebig viele \sexps{} verarbeiten und daraus einen
 Haskell-Ausdruck erzeugen, der eine Liste von \sexps{}
 repräsentiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
     (hasType inners LispMacro)
     (= inners
        (>>^ (many (<+> unquoteAll 
                        (>>^ inner quoteList)))
             (>>> concat quoteAppend)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{inners} erwartet jeweils entweder ein Unquote-All oder einen
 einzelnen Ausdruck, welcher mit \icode{inner} verarbeitet wird. Alle
 normalen Ausdrücke werden mit \icode{quoteList} in eine Liste
 eingebettet und anschließend durch \icode{quoteAppend} mit \icode{++}
 verknüpft, um die Semantik vom Unquote-All zu erreichen. Beispielsweise
 wird \icode{inners} die Ausdrücke 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 1 2 (,@ xs) 6  
-\end{code}
+\end{code}\end{DIFnomarkup}
 wie folgt nach \sexp{}-Haskell übersetzen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (++ (List (Symbol (Str 1)))
     (List (Symbol (Str 2)))
     xs    
     (List (Symbol (Str 6))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{inner} verarbeitet einen einzelnen Ausdruck und gibt als Ergebnis
 \sexp{}-Haskell-Code für einen \sexp{} zurück:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
     (hasType inner LispMacro)
     (= inner (<+> unquote    
                   (>>^ takeSymbol quoteSymbol)     
                   (>>^ (compNode inners) quoteNode)))
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{inner} erwartet entweder ein Unquote, ein Symbol oder einen
 Knoten. Symbole werden durch die Funktion \icode{quoteSymbol} quotiert,
 Knoten rekursiv mit \icode{inners} verarbeitet und anschließend als
@@ -4498,13 +4498,13 @@ verschiedenen Matcher-Symbole identisch und verarbeiten einen einzigen
 \sexp{}, den sie mit der Funktion \icode{single x = [x]} in eine Liste
 einbetten um dem Rückgabetyp \icode{[Sexp]} für Lisp-Macros zu
 entsprechen:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
     (mac unquote    ,  (>>^ take single))
     (mac unquoteAll ,@ (>>^ take single))
-\end{code}
+\end{code}\end{DIFnomarkup}
 Alle vier Funktionen zur Quotierung von \sexp{}-Haskell-Ausdrücken
 können selbst mit einem Quote implementiert werden:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
     (= (quoteSymbol sym)
        (' (Symbol (Str (, (Symbol sym))))))
     (= (quoteNode sexps)
@@ -4513,7 +4513,7 @@ können selbst mit einem Quote implementiert werden:
        (' (List (,@ sexps))))
     (= (quoteAppend sexps)
        (' (++ (,@ sexps))))))
-\end{code}
+\end{code}\end{DIFnomarkup}
 \icode{quoteSymbol} erzeugt die Repräsentation eines Symbols, indem es
 Aufrufe von \icode{Symbol} und \icode{Str} auf \sexp{}-Haskell-Ebene
 ineinander verschachtelt. Auf der Ebene der Metasprache wird ein
@@ -4532,26 +4532,26 @@ ebenfalls ein Makro, welches alle Operatoren \icode{'}
 bis \icode{'3} aus einem einzigen Template definiert.
 
 Der Operator \icode{mac} lässt sich einfach implementieren:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (autoMac compMac mac
   (liftA4 gen take take take (many take))
   (where (= (gen fun sym cmd cmds)
             (' (hasType (, fun) LispMacro)
                (= (, fun) (macro (Str (, sym)) (, cmd)) (,@ cmds))))))  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Damit wird beispielsweise 
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (mac compSomething macroName 
     (doSomething ...) 
   (where ..))
-\end{code}
+\end{code}\end{DIFnomarkup}
 nach
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (hasType compSomething LispMacro)
 (= compSomething (macro (Str macroName)
                    (do-something ...))
   (where ...))
-\end{code}
+\end{code}\end{DIFnomarkup}
 übersetzt. Die Implementation von \icode{autoMac} ist
 schwieriger. Zunächst muss dafür die Makroexpansion-Funktionsweise von
 Common Lisp nachgebildet werden, welche versucht, eine (in Lisp
@@ -4562,14 +4562,14 @@ Knoten angewendet werden, wird versucht, dessen Kinder zu
 expandieren. Symbole werden in diesem Fall unverändert
 zurückgegeben. Dieses Verhalten wurde in MagicL in der Haskell-Funktion
 \icode{lispTraverse} implementiert:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 lispTraverse :: [LispMacro] -> LispMacro
 lispTraverse macs = combinedMacs
   where combinedMacs = many (foldr (<+>) defaultMac recMacs) >>^ concat
         recMacs      = map (\ m -> applyParser m combinedMacs) macs
         defaultMac   = ((compSymbol >>^ single) <+> 
                         (compNode combinedMacs >>^ (Node >>> single)))  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Die Eingabeliste \icode{macs :: [LispMacro]} wird in das Ausgabemakro
 \icode{combinedMacs} umgewandelt, indem alle Makros aus \icode{recMacs}
 und zuletzt \icode{defaultMac} verodert werden. \icode{recMacs} entsteht
@@ -4607,14 +4607,14 @@ einen kleinen {Präprocessor} gegeben, welcher vor beliebige andere
 Compiler geschaltet werden kann.
 
 Das Modul \icode{Preprocessor} besteht aus vier Zeilen Code:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 (compiler Preprocessor)
 
 (autoMac compComment comment
          (>>> (many take) nilArrow))
 
 (= preprocess compAuto)  
-\end{code}
+\end{code}\end{DIFnomarkup}
 Da \icode{compComment} als Auto-Makro definiert ist, können Kommentare
 an jeder beliebigen Stelle im Quellcode auftreten. \icode{nilArrow} ist
 ein Arrow, der unabhängig von seiner Eingabe immer die leere Liste
@@ -4909,10 +4909,10 @@ noch universeller und mächtiger angelegt werden könnte.
 
 Ein Beispiel hierfür ist der Umstieg von \sexps{}, deren Blätter immer
 Strings sind, auf beliebige Bäume:
-\begin{code}
+\begin{DIFnomarkup}\begin{code}
 data Tree a = Node [Tree a]
             | Leaf a
-\end{code}
+\end{code}\end{DIFnomarkup}
 Damit könnten Parser, Makros etc. unabhängig von der Frage nach dem
 Blatttyp konstruiert werden. Die bisherigen \sexps{} entsprechen dann
 \icode{Tree String}, eventuell macht allerdings auch eine Repräsentation
