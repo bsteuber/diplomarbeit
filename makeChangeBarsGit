@@ -71,5 +71,5 @@ echo "           Marking changes against ${file} in cb/${file}"
 if ( "${debug}" =~ -[Gg] ) then
     echo '> latexdiff -V '"${visitFile}" "${file}"' > '"cb/${file}"
 endif
-latexdiff  -V "${visitFile}" "${file}" > "cb/${file}"
+latexdiff -t CHANGEBAR -V "${visitFile}" "${file}" > "cb/${file}"
 exit 0

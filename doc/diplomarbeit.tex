@@ -505,7 +505,7 @@ Für die einfachere Diskussion verschiedener Werkzeuge und Konzepte
 versucht diese Arbeit, möglichst eine einheitliche Domäne für
 Anwendungsbeispiele zu verwenden. Dabei geht es um eine fiktive, zu
 erstellende DSL für Präsentationen -- genannt Slide -- die Konzepte wie
-Folientitel, Aufzählungen, Bilder etc. in einer kurzen und eleganten
+Folientitel, Aufzählungen, Bilder etc. in einer kurzen
 Notation bereitstellt. Slide-Code wird vom Modellierer -- hier dem
 Ersteller einer Präsentation -- geschrieben und vom Slide-Compiler in
 Latex\cite{Latex}-Code mit der Beamer\cite{LatexBeamer}-Klasse übersetzt
@@ -563,7 +563,7 @@ verbunden ist.
 \lsubsection[model:crit:graphic]{Graphische Darstellung}
 
 Die Möglichkeit, ein Modell zu visualisieren oder gar mit einer
-graphischen Benutzeroberflächea zu bearbeiten, ist sehr praktisch für
+graphischen Benutzeroberfläche zu bearbeiten, ist sehr praktisch für
 Dokumentation, Übersichtlichkeit sowie Zusammenarbeit mit
 Domänenexperten, die das verwendete System nicht genau verstehen müssen.
 
@@ -843,13 +843,24 @@ geschrieben werden könnte.
 \lsection[model:json]{JSON}
 
 JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
-JavaScript\cite{JavaScript}, weshalb es direkt von einem JavaScript-Interpreter
-eingelesen werden kann. Dies macht JSON vor allem für Webanwendungen
-interessant. Mit JSON können anonyme Objekte mit Attributen (auch Listen)
-explizit repräsentiert werden. Als Blätter sind Strings und elementare
-Datentypen zugelassen, die beim Einlesen dynamisch typisiert werden.
+JavaScript\cite{JavaScript}, weshalb es direkt von einem
+JavaScript-Interpreter eingelesen werden kann. Dies macht JSON vor allem
+für Webanwendungen interessant. Mit JSON können anonyme Objekte mit
+Attributen -- auch listenwertige -- explizit repräsentiert werden. Als
+Blätter sind Strings und elementare Datentypen zugelassen, die beim
+Einlesen dynamisch typisiert werden.
 
 Das Folien-Beispiel kann in JSON wie folgt repräsentiert werden:
+\begin{code}
+{
+  "title" : "My Slide"
+  "image" : {
+    "source"  : "diagram.png"
+    "caption" : "This is a diagram"
+  }
+  "list"  : ["one", "two", "three"]
+}
+\end{code}
 \begin{code}
 {
   "title" : "My Slide"
@@ -970,8 +981,8 @@ Funktion müsste das Zieldokument mittels String-Operatoren
 zusammensetzen, was im Normalfall zu umständlich ist. Stattdessen bieten
 Templating-Sprachen eine ``schablonenartige'' Notation, die sich gut
 anhand der im Lisp-Umfeld üblichen Operatoren Quasiquote\footnote{Neben
-  Quasiquote ist auch der Begriff Backquote üblich. Neben dem Quasiquote
-  gibt es in Lisp-Sprachen auch ein einfaches Quote, welches einen
+  Quasiquote ist auch der Begriff Backquote üblich. Zudem
+  gibt es in Lisp-Sprachen oft auch ein einfaches Quote, welches einen
   komplett statischen Bereich erzeugt, ohne darin auf Unquotes zu
   achten.} und Unquote beschreiben lässt. Ein Quasiquote erzeugt ein
 Template, und das Innere eines Quasiquotes wird als statisch
@@ -1048,17 +1059,17 @@ verbundenen Schreibaufwand.
 \lsubsection[template:crit:contr]{Aufruf von Templates}
 
 Ein weiterer Unterschied zwischen Code-Generatoren liegt in der Art, ob
-und wie Templates selbst andere Templates aufrufen können.
-Kontrollfluss. Manche Systeme können nur ein einzelnes Template
-verarbeiten, so dass alles weitere in einer externen Programmiersprache
-festgelegt ist. Engines mit einer vollständigen Metaprogrammiersprache
-bieten hingegen oft die Möglichkeit, programmatisch die Template-Engine
-selbst und damit indirekt ein weiteres Template aufzurufen. Andere
-lassen den direkten Aufruf weiterer Templates zu. Eine Alternative zur
-aufrufbasierten Steuerung ist durch Makros gegeben. Makros sind
-Templates, die an einen Knotennamen oder ein Muster gebunden sind. Der
-Generator entscheidet dann anhand des Modells, welches Template für die
-Verarbeitung zuständig ist.
+und wie Templates selbst andere Templates aufrufen können. Manche
+Systeme können nur ein einzelnes Template verarbeiten, so dass alles
+weitere in einer externen Programmiersprache festgelegt ist. Engines mit
+einer vollständigen Metaprogrammiersprache bieten hingegen oft die
+Möglichkeit, programmatisch die Template-Engine selbst und damit
+indirekt ein weiteres Template aufzurufen. Andere lassen den direkten
+Aufruf weiterer Templates zu. Eine Alternative zur aufrufbasierten
+Steuerung ist durch Makros gegeben. Makros sind Templates, die an einen
+Knotennamen oder ein Muster gebunden sind. Der Generator entscheidet
+dann anhand des Modells, welches Template für die Verarbeitung zuständig
+ist.
 
 \lsubsection[template:crit:sep]{Komponententrennung}
 Die meisten Software-Systeme lassen sich durch eine
@@ -1112,7 +1123,7 @@ eingeordnet und diskutiert.
 
 Die Skriptsprache PHP ist von vornherein als Template-System
 konstruiert, womit Code beliebiger Sprachen generiert werden kann. Viele
-Web-Frameworks benutzen PHS oder eine PHP ähnelnde Syntax, um Templates
+Web-Frameworks benutzen PHP oder eine PHP ähnelnde Syntax, um Templates
 für HTML-Dateien zu beschreiben. Jeder Block PHP-Code muss mit \phpo{}
 und \phpc{} umgeben sein, was praktisch ein Unquote darstellt. PHP ist
 selbst die -- Touring-vollständige -- Metasprache in diesem
@@ -1256,7 +1267,7 @@ eines speziellen Datentyps, der Haskell-Code beschreibt. Templates sind
 selbst Haskell-Funktionen, so dass Metasprache und generierte Sprache
 identisch sind und Templates somit Turing-vollständig und typsicher
 sind. In Quelldateien kann Meta-Code mit normalen Code gemischt werden
--- zudem bietet Template Haskell Reification, d.h. in Templates können
+-- zudem bietet Template Haskell Reifikation, d.h. in Templates können
 Meta-Informationen wie Typen über Code in derselben Datei abgefragt
 werden, was enorme Möglichkeiten eröffnet.
 
@@ -1686,7 +1697,7 @@ sich bringen.
 Sprache um die Möglichkeit von Template-Aufrufen über eine spezielle
 Syntax. Während Metasprache und Einsatzmöglichkeiten in \cpp{} recht
 eingeschränkt sind, besitzt Template Haskell die komplette Sprachmächtigkeit
-von Haskell -- ergänzt um die Möglichkeit, über Reification
+von Haskell -- ergänzt um die Möglichkeit, über Reifikation
 Meta-Informationen über Quellcode derselben Datei abzufragen. Template
 Haskell erzeugt aufgrund der starken Typisierung garantiert Code, der
 frei von Syntaxfehlern ist -- dies hat allerdings zum Preis, dass nicht
@@ -1720,12 +1731,13 @@ integrierte DSLs konstruieren.
 Allgemein wächst der Aufwand für \cgen{} mit der Komplexität des
 Ausgabemodells. Soll die Generierung typsicher sein, ist das Modell
 desto umfangreicher, je aufwändiger die Syntax der zu generierenden
-Sprache ist. Obwohl Haskell im Vergleich zu Sprachen wie \cpp{} bereits
-eine sehr einfache Syntax besitzt, erweist sich diese im obigen Beispiel
-bereits als Problem. In einer String-basierten Generierung von
-Haskell-Code ist die Flexibilität größer, so dass hier ein
-entsprechendes Quasiquote möglich gewesen wäre -- zum Preis von möglichen
-Syntaxfehlern und verschleierter Struktur.
+Sprache ist. Obwohl beispielsweise Haskell im Vergleich zu Sprachen wie
+\cpp{} bereits eine sehr einfache Syntax besitzt, erweist sich diese für
+Template-Haskell bereits als Problem, da nicht alles auf den
+Quasiquote-Operator abgebildet werden kann. In einer String-basierten
+Generierung von Haskell-Code wäre die Flexibilität größer, so dass hier
+ein entsprechendes Quasiquote möglich gewesen wäre -- zum Preis von
+möglichen Syntaxfehlern und verschleierter Struktur.
 
 Ein Mittelweg wäre eine \sexp{}-Syntax für Haskell, die vom Framework
 zunächst in eine typisierte Repräsentation überführt und daraufhin zur
