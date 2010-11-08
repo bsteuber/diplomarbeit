@@ -279,20 +279,41 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 
 \pagenumbering{arabic}
 
-Modellgetriebene Softwareentwicklung ist in aller Munde: UML\cite{UML}
-feiert bald sein 15-jähriges Bestehen\footnote{Der
-  Standarisierungsprozess von UML begann 1994, als Gary Booch und Jim
-  Rumbaugh mit der Vereinheitlichung ihrer Modellierungstechniken
-  begannen. \cite[S. 17]{UML}}, IBM vermarktet seit Jahren das Produkt
-\textit{Rational Application Developer} (\cite{RAD}), das, wie auch das freie
-\textit{Eclipse Modelling Framework} sowie \textit{Enterprise
-  Architect}, Eclipse um modellbasierte \cgen{}
-bereichert. Seit neuestem zeigt auch Microsoft Interesse und
-verspricht mit \textit{Oslo} \cite{Oslo} einen ``Mainstream"=Ansatz
-für Modellierung''. \cgen{} fällt auch im World Wide Web eine
-immer größer werdende Rolle zu: Ob \textit{Ruby on Rails} oder
-\textit{Google Web Toolkit}, praktisch alle Web Frameworks generieren
-zumindest ihre HTML-Dateien oder SQL-Strings für den Datenbankzugriff.
+Unter \mprog{} versteht man das programmatische Manipulieren von
+Programmen - anders gesagt: ``Metaprogramming is writing code that
+writes code''\cite[S.16]{metaprog-ruby}. Man unterscheidet zwischen
+statischer und dynamischer
+\mprog{}\cite[S.17]{metaprog-ruby}. Dynamische \mprog{} behandelt die
+Manipulation von Programmen während der Laufzeit, weshalb man auch von
+Laufzeit-\mprog{} spricht. Dies funktioniert nur in Sprachen, die diese
+Möglichkeit explizit vorsehen, wie Ruby\cite{metaprog-ruby} oder auch
+Java\cite{JavaReflection}.
+
+Diese Arbeit beschäftigt sich stattdessen mit statischer
+\mprog{}, in der es um das Erzeugen von Quelltext geht, der anschließend
+an beliebige Compiler oder Interpreter gereicht werden kann, weshalb 
+auch die Bezeichnungen Kompilationszeit-\mprog{} und generative
+(Meta-)Programmierung\cite[S.17]{metaprog-sh} benutzt werden.
+
+Diese Art der \mprog{} ist in der Informatik allgegenwärtig,
+beispielsweise kann jeder Compiler als Meta-Programm gesehen werden. Die
+auf \cgen{} basierende ``modellgetriebene Softwareentwicklung'' erfreut
+sich immer größerer Popularität: Während UML\cite{UML} bald sein
+15-jähriges Bestehen\footnote{Der Standarisierungsprozess von UML begann
+  1994, als Gary Booch und Jim Rumbaugh mit der Vereinheitlichung ihrer
+  Modellierungstechniken anfingen. \cite[S. 17]{UML}} feiert, vermarktet
+IBM seit Jahren das Produkt \textit{Rational Application Developer}
+(\cite{RAD}), das, wie auch das freie \textit{Eclipse Modelling
+  Framework} sowie \textit{Enterprise Architect}, Eclipse um
+modellbasierte \cgen{} bereichert. Seit neuestem zeigt auch Microsoft
+Interesse und verspricht mit \textit{Oslo} \cite{Oslo} einen
+``Mainstream"=Ansatz für Modellierung''. Generativer Programmierung
+fällt auch im World Wide Web eine immer größer werdende Rolle zu: Ob
+\textit{Ruby on Rails} oder \textit{Google Web Toolkit}, praktisch alle
+Web Frameworks generieren zumindest ihre HTML-Dateien oder SQL-Abfragen
+für den Datenbankzugriff.
+
+\todo{mehr umschreiben?}
 
 \cgen{} aus Modellen\footnote{Auch Programmcode wird hier als Modell
   angesehen -- mit anderen Worten: "`Code is data and data is code."'}
