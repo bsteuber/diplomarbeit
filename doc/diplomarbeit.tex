@@ -1510,8 +1510,8 @@ werden kann\footnote{Ein C-Programm kann zwar auch ein anderes
 \sexps{} selbst machen Lisp für Metaprogrammierung sehr geeignet. Mit
 der \icode{eval}-Funktion unterstützt Lisp auch
 Laufzeit-Metaprogrammierung, auf die hier nicht näher eingegangen
-wird. Denn üblicher ist inzwischen die Benutzung von Makros für
-Metaprogrammierung zur Kompilationszeit. Im Folgenden beziehen sich alle
+wird. Denn üblicher ist inzwischen die Benutzung von Makros generative
+Metaprogrammierung. Im Folgenden beziehen sich alle
 Erklärungen auf die Sprache Common Lisp -- andere Dialekte haben aber
 meist ähnliche Konstrukte.
 
@@ -1548,10 +1548,10 @@ Zahlen\footnote{In Lisp ist der Operator \icode{+} nicht binär, sondern
   Verwendung von \sexp{}-Syntax anstelle von Infix-Operatoren -- auch
   wenn dies zunächst gewöhnungsbedürftig ist.} generieren.
 
-Mit diesen Operationen können beliebige \sexps{} erzeugt werden. Da das
-Template selbst aus Lisp-Code besteht und auch beliebigen anderen
-Lisp-Code aufrufen kann, ist die Metasprache mächtig, erweiterbar sowie
-modularisierbar und benötigt vergleichsweise kurze
+Mit diesen Operationen können beliebige einzelne \sexps{} erzeugt
+werden. Da das Template selbst aus Lisp-Code besteht und auch beliebigen
+anderen Lisp-Code aufrufen kann, ist die Metasprache mächtig,
+erweiterbar sowie modularisierbar und benötigt vergleichsweise kurze
 Metaprogramme.
 
 Lisp-Makros können nicht direkt aufgerufen werden, stattdessen wird ein
@@ -1560,7 +1560,11 @@ zugeordnet. Es wird also bei jedem Expansionsschritt global geprüft, ob
 ein Makro so benannt ist wie das erste Element des zu expandierenden
 \sexp{}. Ist dies der Fall, werden die restlichen Elemente als Parameter
 an das Makro übergeben, woraufhin der vom Makro zurückgegebene \sexp{}
-erneut expandiert wird. Lässt sich kein Makro zu einem Ausdruck
+erneut expandiert wird. Ein Makro kann immer nur genau einen Ausdrick
+zurückgeben, es ist also nicht möglich keinen oder mehrere \sexps{} zu
+erzeugen. Dies ist in der Praxis allerdings kein großes Problem, da in
+Lisp mit dem \icode{do}-Operator beliebig viele Ausdrücke zu einem
+zusammengefasst werden können. Lässt sich kein Makro zu einem Ausdruck
 zuordnen, werden alle Elemente davon einzeln expandiert und der
 resultierende \sexp{} als Funktionsaufruf interpretiert.
 
@@ -1693,7 +1697,7 @@ tabellarische Übersicht dieses Vergleichs.
 \bf Zielsprache             & Haskell                     &besliebig                   &Lisp                  \\\hline      
 \bf Quasiquote              & implizit /\icode{[| .. |]}  &\icode{<xsl:template> ..}   &\icode{`( .. )}       \\\hline   
 \bf Unquote                 & \icode{$( .. )}             &über \icode{xsl}-Namespace  &\icode{, .. }         \\\hline %$
-\bf vollständiges Quasiquote& nein                        &ja                          &ja                    \\\hline      
+\bf vollständiges Quasiquote& nein                        &ja                          &nur genau ein Ausdruck      \\\hline      
 \bf Code-Objekt verfügbar   & ja                          &nein                        &ja                    \\\hline      
 \bf Sprachmächtigkeit       & maximal                     &maximal                     &maximal               \\\hline      
 \bf Metaprogrammlänge       & relativ kurz                &sehr lang                   &kurz                  \\\hline
@@ -1780,25 +1784,27 @@ wird in \cref{sexphs} weiter verfolgt.
 \lchapter[reqs]{Anforderungen}
 
 Grundsätzlich soll mit MagicL ein sprachunabhängiges Framework für
-\cgen{} entwickelt werden, das eine an Lisp angelehnte, modulare und
-inkrementelle Compiler-Entwicklung durch kurzen und prägnanten Meta-Code
-unterstützt. Zudem sollten allgemein eine möglichst hohe Flexibilität
-und Einfachheit angestrebt werden. Die folgenden Abschnitte diskutieren
-die konkrete Umsetzung dieser Prinzipien in Hinblick auf
-Modellrepräsentationen und den Kompilationsprozess. Zunächst wird jedoch
-der allgemeine Arbeitsablauf anhand eines konkreten Beispiels
-diskutiert.
+generative \mprog{} entwickelt werden, das eine an Lisp angelehnte,
+modulare und inkrementelle Compiler-Entwicklung durch kurzen und
+prägnanten Meta-Code unterstützt. Zudem sollten allgemein eine möglichst
+hohe Flexibilität und Einfachheit angestrebt werden.
 
-\todo{auf Beiepiel bezug nehmen?}
+Diese Grundanforderungen werden nun in Hinblick auf die Kriterien aus
+\cref{template} konkretisiert.
 
-\lsection[reqs:model]{Modellrepräsentation}
+\lsection[reqs:model]{Modelle}
 
-Repräsentationen als pure Zeichenkette sollten nur ganz am Anfang sowie
-ganz am Ende der Verarbeitungskette liegen -- im Idealfall wird diese
-Ebene durch den vom Metaprogrammierer entworfenen Generator-Code
-überhaupt nicht berührt. Stattdessen sollten möglichst viele
-Verarbeitungsschritte strukturierte Modelle benutzen. Hier stellt
-sich die Frage nach dem Typisierungsgrad:
+Um sprachunabhängig zu sein, sollten beliebige Ein- und Ausgabesprachen
+wie XML oder Java unterstützt werden. Da diese nicht alle von vornherein
+Teil von MagicL selbst sein können, muss es dem Meta-Programmierer
+möglich sein, selbst entsprechende Parser oder Generatoren in MagicL zu
+definieren. Der Modelltyp String muss also in Form von Parser- und
+Generator-Bibliotheken hinreichend unterstützt werden. Andererseits
+sollten Zeichenketten nur ganz am Anfang oder Ende der
+Verarbeitungskette liegen und im Idealfall -- wenn sprachspezifische
+Backends bereits bestehen -- überhaupt nicht vom Meta-Programmierer
+berührt werden. Stattdessen sollten möglichst viele
+Verarbeitungsschritte strukturierte Modelle benutzen. 
 
 Für typisierte Objekte spricht das automatische Finden von Fehlern
 bereits während der Kompilation des Generators, wohingegen diese bei
@@ -1859,15 +1865,59 @@ weshalb die einfache Struktur bevorzugt wird: Ein \sexp{} ist entweder
 Die Konvention, das erste Element als Knotennamen anzusehen, ist dennoch
 sinnvoll und wird von MagicL vorausgesetzt.
 
-\lsection[reqs:proc]{Verarbeitungsprozess}
+\lsection[reqs:template]{Templates}
 
-Zunächst ist ein Parser für das Einlesen von \sexps{} aus Strings
-erforderlich. Um möglichst auch mit anderen bestehenden Datenformaten
-umgehen zu können wäre es wünschenswert, weitere Parser einfach
-konstruieren und einbinden zu können.
+Templating in MagicL soll ähnlich aussehen wie in Lisp, d.h. mittels
+Makros die auf \sexps{} arbeiten. Einige Veränderungen gegenüber dem
+Lisp-Makrosystem sind dennoch von Nöten: Zunächst müssen die Operatoren
+Quote und Unquote müssen aufgrund der vereinfachten Syntax etwas anders
+geschrieben werden, so dass statt \icode{`(1 2 ,x 3)} beispielsweise
+\icode{(' (1 2 (, x) 3))} verwendet wird. Darüber hinaus erfordert die
+Sprachunabhängigkeit, dass Makros statt Einem eine beliebige Anzahl
+\sexps{} zurückgeben können, für die automatisch ein Splicing
+erfolgt. Beispielsweise wäre es in Lisp nicht möglich, ein Makro
+\icode{defall} zu definieren, was von
+\begin{code}
+(def a 1)
+(defall b 2 c 3 d 4)
+(def e 5)
+\end{code}
+nach
+\begin{code}
+(def a 1)
+(def b 2)
+(def c 3)
+(def d 4)
+(def e 5)  
+\end{code}
+kompiliert. Stattdessen müsste man den Operator \icode{do} benutzen:
+\begin{code}
+(def a 1)
+(do
+  (def b 2)
+  (def c 3)
+  (def d 4))
+(def e 5)  
+\end{code}
+Um ein Makro wie \icode{defall} auch für Zielsprachen ohne \icode{do} zu
+ermöglichen, ist daher ein automatisches Splicing im Makrosystem
+nötig. Entsprechend sollte auch der Quasiquote-Operator eine beliebige
+Anzahl \sexps{} erzeugen können, wie \icode{(')} oder \icode{(' a b)}.
 
-Die weitere Verarbeitung von \sexps{} sollte ähnlich Lisp in kleinen
-Einheiten erfolgen. Auch die Möglichkeit, die für einen \sexp{}
+\lsection[reqs:metalang]{Meta-Programmiersprache}
+
+Die bereitgestellte Meta-Programmiersprache sollte einfach und mächtig
+sein. Da MagicL in Haskell geschrieben ist, ist eine Verwendung von
+Haskell als Meta-Sprache naheliegend. Allerdings ist Haskell nicht
+\sexp{}-basiert, so dass es ohne weiteres nicht in reinen
+\sexp{}-Templates verwendet werden kann. Aus diesem Grund muss mit
+\sexp{}-Haskell eine \sexp{}-Syntax für Haskell bereitgestellt werden,
+die automatisch nach Haskell kompiliert wird. Also muss MagicL selbst
+bereits generative Meta-Programmierung für Haskell benutzen.
+
+\lsection[reqs:call]{Aufruf von Templates}
+
+Wie in Lisp Auch die Möglichkeit, die für einen \sexp{}
 zuständige Verarbeitungseinheit über den Knotennamen zu bestimmen,
 sollte von Lisp übernommen werden, so dass diese Einheiten ebenfalls als
 Makros bezeichnet werden. Allerdings wäre es interessant, wenn nicht nur
@@ -1880,8 +1930,8 @@ Zudem ist der Kontrollfluss im Makrosystem von Lisp relativ unflexibel,
 da es lediglich eine globale Zuordnung von Namen zu Makros
 gibt\footnote{Es gibt in Lisp zwar die Möglichkeit, Makros mittels
   \icode{macrolet} nur für einen bestimmten lexikalischen Scope
-  verfügbar zu machen. Innerhalb dieses Bereichs ist das Makro dann
-  allerdings nur Teil der globalen Liste, so dass ohne weiteres keine
+  verfügbar zu machen, innerhalb dieses Bereichs ist das Makro dann
+  allerdings nur Teil der globalen Liste, so dass ohne Weiteres keine
   feinere Steuerung möglich ist.}. In konkreten Sprachen hingegen gibt
 es häufig Konstrukte, die nur im Kontext bestimmter Oberkonstrukte
 verwendet werden können. Lisp-Makros, die solche Oberkonstrukte
@@ -1902,6 +1952,12 @@ werden. Auch Funktionen, die von Objekt zu Objekt kompilieren, sollen
 über eine allgemeine Compiler-Schnittstelle neben Makros und Parsern
 angesprochen und so integriert werden können.
 
+\lsection[reqs:sep]{Komponententrennung}
+\lsection[reqs:gentemp]{Generierung von Templates}
+
+Wie in \sref{template:crit:gentemp} beschrieben
+
+
 Die Erzeugung von Quelltext aus Meta-Code sollte möglichst nicht durch
 direkte oder Template-basierte String-Manipulation geschehen. Vielmehr
 ist ein Modell für die allgemeine Repräsentation von Quelltext für die
@@ -1910,12 +1966,34 @@ und Framework-intern in einen String umgewandelt wird.
 
 \lsection[reqs:sum]{Zusammenfassung}
 
-Das zu entwickelnde \cgen{}sframework soll eine Makrobasierte,
+\begin{figure}[h]
+\begin{tabular}{|l|l|l|} \hline
+\bf Werkzeug                 & \bf MagicL                    & \bf Lisp               \\\hline\hline    
+\bf Eingabemodell            & \sexp{} / beliebig            & \sexp{}                \\\hline           
+\bf Eingabevalidierung       & beliebig                      & mittel                 \\\hline      
+\bf Ausgabemodell            & \sexp{} / beliebig            & \sexp{}                \\\hline      
+\bf Ausgabevalidierung       & beliebig                      & mittel                 \\\hline      
+\bf Zielsprache              & beliebig                      & Lisp                   \\\hline      
+\bf Quasiquote               & \icode{(' .. )}               & \icode{`( .. )}        \\\hline   
+\bf Unquote                  & \icode{(, .. )}               & \icode{, .. }          \\\hline
+\bf vollständiges Quasiquote & ja                            & nur genau ein Ausdruck \\\hline      
+\bf Code-Objekt verfügbar    & ja                            & ja                     \\\hline      
+\bf Sprachmächtigkeit        & maximal                       & maximal                \\\hline      
+\bf Metaprogrammlänge        & kurz                          & kurz                   \\\hline
+\bf Template-Aufruf          & Makro                         & Makro                  \\\hline      
+\bf Komponententrennung      & möglich                       & möglich                \\\hline      
+\bf Template-Generierung     & einfach durch \icode{'1} etc. & etwas kompliziert      \\\hline      
+\end{tabular}
+\caption{Anforderungen an MagicL im Vergleich zu Lisp}
+\label{magicl:fig:reqs_sum}
+\end{figure}
+
+Das zu entwickelnde \cgen{}sframework soll eine makrobasierte,
 baukastenartige Konstruktion von Compilern ähnlich Lisp ermöglichen,
 dabei allerdings beliebige Zielsprachen unterstützen. Das Level von
 Zeichenketten soll für die Metaprogrammierung möglichst keine Rolle
-spielen -- stattdessen sollen als Modellrepräsentationen sowohl \sexps{}
--- welche so einfach wie möglich definiert werden -- als auch getypte
+spielen. Stattdessen sollen als Modellrepräsentationen sowohl \sexps{},
+welche so einfach wie möglich definiert werden, als auch getypte
 Objekte verwendet werden können. Dies gilt auch für die Ausgabetypen von
 Makros, deren Pattern-Matching im Gegensatz zu Lisp nicht nur den
 Knotennamen, sondern beliebige \sexps{} unterstützen soll. Der
@@ -1927,10 +2005,10 @@ werden können sollen. Eine allgemeine Schnittstelle soll schließlich die
 Integration von Verarbeitungseinheiten wie Makros, Parsern und durch
 Funktionen implementierte Compiler ermöglichen.
 
-Darüber hinaus ist eine theoretische Fundierung für die Semantik der
-Kombination dieser Verarbeitungseinheiten. Diese wird in MagicL durch
-die Anwendung kategorientheoretischer Konzepte erreicht, welche im
-folgenden Kapitel beschrieben werden.
+Darüber hinaus wird eine theoretische Fundierung für die Semantik der
+Kombination dieser Verarbeitungseinheiten gefordert. Diese wird in
+MagicL durch die Anwendung kategorientheoretischer Konzepte erreicht,
+welche im folgenden Kapitel beschrieben werden.
 
 \lchapter[cats]{Kategorientheorie}
 
