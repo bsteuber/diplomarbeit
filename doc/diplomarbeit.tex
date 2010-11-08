@@ -281,32 +281,32 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 
 Unter \mprog{} versteht man das programmatische Manipulieren von
 Programmen - anders gesagt: ``Metaprogramming is writing code that
-writes code''\cite[S.16]{metaprog-ruby}. Man unterscheidet zwischen
+writes code'' \cite[S.16]{metaprog-ruby}. Man unterscheidet zwischen
 statischer und dynamischer
-\mprog{}\cite[S.17]{metaprog-ruby}. Dynamische \mprog{} behandelt die
+\mprog{} \cite[S.17]{metaprog-ruby}. Dynamische \mprog{} behandelt die
 Manipulation von Programmen während der Laufzeit, weshalb man auch von
 Laufzeit-\mprog{} spricht. Dies funktioniert nur in Sprachen, die diese
-Möglichkeit explizit vorsehen, wie Ruby\cite{metaprog-ruby} oder auch
-Java\cite{JavaReflection}.
+Möglichkeit explizit vorsehen, wie Ruby \cite{metaprog-ruby} oder auch
+Java \cite{JavaReflection}.
 
 Diese Arbeit beschäftigt sich stattdessen mit statischer
 \mprog{}, in der es um das Erzeugen von Quelltext geht, der anschließend
 an beliebige Compiler oder Interpreter gereicht werden kann, weshalb 
 auch die Bezeichnungen Kompilationszeit-\mprog{} und generative
-(Meta-)Programmierung\cite[S.17]{metaprog-sh} benutzt werden.
+(Meta-)Programmierung \cite[S.17]{metaprog-sh} benutzt werden.
 
 Diese Art der \mprog{} ist in der Informatik allgegenwärtig,
 beispielsweise kann jeder Compiler als Meta-Programm gesehen werden. Die
 auf \cgen{} basierende ``modellgetriebene Softwareentwicklung'' erfreut
-sich immer größerer Popularität: Während UML\cite{UML} bald sein
+sich immer größerer Popularität: Während UML \cite{UML} bald sein
 15-jähriges Bestehen\footnote{Der Standarisierungsprozess von UML begann
   1994, als Gary Booch und Jim Rumbaugh mit der Vereinheitlichung ihrer
-  Modellierungstechniken anfingen. \cite[S. 17]{UML}} feiert, vermarktet
+  Modellierungstechniken anfingen \cite[S. 17]{UML}.} feiert, vermarktet
 IBM seit Jahren das Produkt \textit{Rational Application Developer}
-(\cite{RAD}), das, wie auch das freie \textit{Eclipse Modelling
+\cite{RAD}, das, wie auch das freie \textit{Eclipse Modelling
   Framework} sowie \textit{Enterprise Architect}, Eclipse um
 modellbasierte \cgen{} bereichert. Seit neuestem zeigt auch Microsoft
-Interesse und verspricht mit \textit{Oslo} \cite{Oslo} einen
+Interesse und verspricht mit \textit{Oslo}  \cite{Oslo} einen
 ``Mainstream"=Ansatz für Modellierung''. Generativer Programmierung
 fällt auch im World Wide Web eine immer größer werdende Rolle zu: Ob
 \textit{Ruby on Rails} oder \textit{Google Web Toolkit}, praktisch alle
@@ -345,7 +345,7 @@ Modell erzeugt wurde. Darüber hinaus erfordern neue
 Modellierungssprachen immer eine Einarbeitung und müssen dokumentiert
 werden. Auch sollte es nicht zu viele konkurrierende DSLs für eine
 Domäne geben, so dass einheitliche Standards verloren
-gehen. Beispielsweise kommt es bei Lisp\cite{Lisp}-Dialekten aufgrund
+gehen. Beispielsweise kommt es bei Lisp \cite{Lisp}-Dialekten aufgrund
 der Leichtigkeit, mit der die Sprache erweitert werden kann, durchaus
 vor, dass jeder Programmierer in seiner eigenen Sprache programmiert, so
 dass die Wartung von fremden Code sehr aufwändig wird. Um dies zu
@@ -378,10 +378,10 @@ und eventuell ebenfalls in ihren Möglichkeiten eingeschränkt, so dass in
 einigen Fällen nochmals eine Vorverarbeitung der Daten erfolgen muss.
 
 Andererseits verfolgen Lisp-Programmierer bereits seit ca. 40
-Jahren\cite{EvolutionOfLisp} einen strukturellen Ansatz der \cgen{}, der den
+Jahren \cite{EvolutionOfLisp} einen strukturellen Ansatz der \cgen{}, der den
 mit Spracherweiterungen verbundenen Aufwand minimiert und Lisp
 Bezeichnungen wie "`The programmable programming
-language"'\cite{Federano} beschert hat. Hier werden Ein- und Ausgabecode
+language"' \cite{Federano} beschert hat. Hier werden Ein- und Ausgabecode
 ausschließlich durch \sexps{} \sees{model:sexp} in einer untypisierten
 Baumstruktur repräsentiert, so dass Zeichenketten weder eingelesen noch
 erzeugt werden müssen, wodurch ein großer Teil des Generators bereits
@@ -399,7 +399,7 @@ Generierung zu erzeugen.
 
 Leider ist das System ausschließlich auf die Erzeugung von Lisp-Code
 ausgerichtet und wird normalerweise nicht für andere Zielsprachen
-benutzt -- eine der wenigen Ausnahmen ist Parenscript\cite{Parenscript},
+benutzt -- eine der wenigen Ausnahmen ist Parenscript \cite{Parenscript},
 ein Werkzeug zur Erzeugung von JavaScript-Code aus Common Lisp. Generell
 wird die Generierung anderer Sprachen von Lisp-System selbst aber
 schlecht unterstützt, so dass die Bereitstellung derartiger Bibliotheken
@@ -531,7 +531,7 @@ erstellende DSL für Präsentationen -- genannt Slide -- die Konzepte wie
 Folientitel, Aufzählungen, Bilder etc. in einer kurzen
 Notation bereitstellt. Slide-Code wird vom Modellierer -- hier dem
 Ersteller einer Präsentation -- geschrieben und vom Slide-Compiler in
-Latex\cite{Latex}-Code mit der Beamer\cite{LatexBeamer}-Klasse übersetzt
+Latex \cite{Latex}-Code mit der Beamer \cite{LatexBeamer}-Klasse übersetzt
 \seea{flow_example_simple}, aus der anschließend eine PDF-Datei erzeugt
 werden kann.
 
@@ -599,7 +599,7 @@ Dies lässt sich durch die Konzepte Unterknoten oder Attribut ausdrücken.
 Modelle lassen sich oft als knotenbenannte Bäume beschreiben, in denen
 die Kinder eines Knotens als Untermodelle oder Komponenten aufgefasst
 werden. Dies entspricht dem Entwurfsmuster
-Komposition\cite[S.182f]{CompositePattern}. Unterknoten sind nicht
+Komposition \cite[S.182f]{CompositePattern}. Unterknoten sind nicht
 weiter gekennzeichnet und können somit nur durch ihre Reihenfolge oder
 ihren Inhalt (zu dem auch der Name gehört) unterschieden
 werden. \abb{model_tree} zeigt eine simple Aufzählung als
@@ -815,7 +815,7 @@ Es stellt sich also die Frage, ob XML-Attribute überhaupt notwendig sind
 oder vielmehr ein optionales Feature, was nur aufgrund der umständlichen
 Syntax für Knotendefinitionen genutzt wird. In diesem Fall
 sollten Attribute wohl zukünftig aus XML verschwinden, schließlich
-schreibt das W3C\cite{XmlSpec}: "`The number of optional features in XML
+schreibt das W3C \cite{XmlSpec}: "`The number of optional features in XML
 is to be kept to the absolute minimum, ideally zero"'.
 
 Ist also ein zweiter, limitierter Kantentyp für bestimmte Zwecke
@@ -866,7 +866,7 @@ geschrieben werden könnte.
 \lsection[model:json]{JSON}
 
 JSON ist sowohl eine Markupsprache als auch eine Teilmenge von
-JavaScript\cite{JavaScript}, weshalb es direkt von einem
+JavaScript \cite{JavaScript}, weshalb es direkt von einem
 JavaScript-Interpreter eingelesen werden kann. Dies macht JSON vor allem
 für Webanwendungen interessant. Mit JSON können anonyme Objekte mit
 Attributen -- auch listenwertige -- explizit repräsentiert werden. Als
@@ -1096,7 +1096,7 @@ ist.
 
 \lsubsection[template:crit:sep]{Komponententrennung}
 Die meisten Software-Systeme lassen sich durch eine
-Model-View-Controller-Architektur (MVC)\cite[S.5ff]{DesignPatterns} beschreiben. Daten und deren
+Model-View-Controller-Architektur (MVC) \cite[S.5ff]{DesignPatterns} beschreiben. Daten und deren
 Verarbeitung werden vom Modell verwaltet. Ablaufsteuerung und Behandlung
 von Benutzerinteraktionen gehören in den Controller. Views sind für die
 graphische oder textuelle Formatierung der Modelle zuständig.
@@ -1181,11 +1181,11 @@ unübersichtlich werden könnte.
 
 \lsection[template:stringtemplate]{StringTemplate}
 
-StringTemplate\cite{StringTemplate} ist eine string-basierte
+StringTemplate \cite{StringTemplate} ist eine string-basierte
 Template-Engine für Java. Auch hier ist eine Template-Datei implizit
 quotiert, ein Unquote erfolgt mittels \icode{$foo$} oder
 \icode{<foo>}. Im Gegensatz zu PHP und den meisten anderen Systemen --
-beispielsweise Velocity\cite{Velocity} für Java -- ist
+beispielsweise Velocity \cite{Velocity} für Java -- ist
 die Mächtigkeit der Unquote-Bereiche in StringTemplate stark reduziert,
 um eine Model-View-Trennung zu erzwingen -- alle Berechnungen sollen also
 im Modell, und nicht im Template selbst erfolgen.
@@ -1235,7 +1235,7 @@ benannt wurde, benutzt StringTemplate standardmäßig \icode{it}.
 \lsection[template:ctemp]{Templates in \cpp{}} \cpp{}-Templates bieten
 die Möglichkeit, Klassen oder Funktionen unter anderen durch Typnamen zu
 parametrisieren, um so generische Konstrukte wie Collection-Klassen
-definieren zu können. Die bekannten Java-Generics \cite{JavaGenerics}
+definieren zu können. Die bekannten Java-Generics  \cite{JavaGenerics}
 wurden Templates nachempfunden und haben eine ähnliche Syntax -- diese
 sind allerdings simpler und weniger mächtig. Templates werden direkt vom
 \cpp{}-Compiler ausgewertet, so dass es kein sichtbares oder verfügbares
@@ -1248,7 +1248,7 @@ als lediglich generische Collection-Klassen -- beispielsweise zeigt
 \abb{cpp-fibonacci} die Berechnung von Fibonacci-Zahlen zur
 Kompilationszeit (übernommen von \cite{CppFib}. Weitere kreative
 Verwendungsmöglichkeiten von Templates finden sich in der Bibliothek
-Boost\cite{Boost}.
+Boost \cite{Boost}.
 \begin{figure}
   \centering
   \begin{DIFnomarkup}\begin{code}
@@ -1360,7 +1360,7 @@ $(tupleNums 5) -- ergibt (1, 2, 3, 4, 5)
 \lsection[template:cprep]{C-Präprozessor}
 
 Der C-Präprozessor, welcher um das Jahr 1973 entwickelt
-wurde\cite{CPrep}, wird unter anderem verwendet, um Abhängigkeiten
+wurde \cite{CPrep}, wird unter anderem verwendet, um Abhängigkeiten
 zwischen Quellcode-Dateien über bedingte Include-Statements zu
 verwalten. Er läuft als eigenes Programm vor dem C-Compiler und kann
 deshalb auch in Kombination mit anderen Sprachen benutzt werden. Mit
@@ -1410,7 +1410,7 @@ unerwartete Fehler wie Namenskonflikte auftreten.
 
 \lsection[template:xsl]{XSL}
 
-Die Extensible Stylesheet Language (XSL)\cite{XSLT} ist eine
+Die Extensible Stylesheet Language (XSL) \cite{XSLT} ist eine
 Sprachfamilie, mit der XML-Dokumente unter anderem in graphische
 Repräsentationen überführt werden können. XSL besteht aus drei
 XML-basierten Sprachen:
@@ -1498,7 +1498,7 @@ Lisp ist eine der ältesten Programmiersprachfamilien der Welt, die unter
 anderem für ihre Möglichkeiten zur Metaprogrammierung bekannt ist. Neben
 alten, aber noch immer benutzten Sprachen wie Emacs Lisp, Scheme oder
 Common Lisp entstehen auch immer wieder neue Lisps wie
-Clojure\cite{Clojure}, welches auf der Java Virtual Machine (JVM)
+Clojure \cite{Clojure}, welches auf der Java Virtual Machine (JVM)
 aufsetzt. Alle Lisp-Sprachen basieren auf \sexps{} und verzichten auf
 die meiste Syntax wie Infix-Operatoren -- gleichzeitig sind \sexps{}
 selbst in jedem Lisp als Datenstrukturen verfügbar, so dass jedes
@@ -1608,7 +1608,7 @@ vermeiden. Beispielsweise kann mit dem \icode{gensym}-Befehl ein global
 eindeutiger Variablenname erzeugt werden. Manchmal ist die
 Erzeugung von nicht-eindeutigen Variablennamen allerdings auch erwünscht -- so
 zeigt \abb{lisp-aif} das "`anaphorische"' Makro
-\icode{aif}\cite{OnLisp}, welches ein \icode{if}-Konstrukt ermöglicht,
+\icode{aif} \cite{OnLisp}, welches ein \icode{if}-Konstrukt ermöglicht,
 das die Variable \icode{it} an die abgefragte Bedingung bindet. Dies ist
 praktisch, da \icode{if} nicht zwischen true und false, sondern zwischen
 \icode{nil} und nicht \icode{nil} unterscheidet, weshalb die Bedingung
@@ -1641,7 +1641,7 @@ Wird kompiliert nach:
 Makros können als kleine "`Compiler-Plugins"' aufgefasst werden, mit
 denen die Sprache direkt erweitert bzw. DSLs integriert werden
 können. Beispielsweise könnte damit ein nach Lisp kompilierendes
-Prolog\cite[S.388ff]{NorvigCL} -- selbstverständlich in \sexp{}-Syntax --
+Prolog \cite[S.388ff]{NorvigCL} -- selbstverständlich in \sexp{}-Syntax --
 konstruiert werden, welches beliebig mit Lisp-Code gemischt werden
 kann. Auch Makro-schreibende Makros sind in Lisp möglich -- hier ergibt
 sich allerdings wieder das Problem, ob sich ein Unquote auf das innere
@@ -1873,7 +1873,7 @@ sollte von Lisp übernommen werden, so dass diese Einheiten ebenfalls als
 Makros bezeichnet werden. Allerdings wäre es interessant, wenn nicht nur
 der Name, sondern der gesamte Knoten in einer Art Pattern-Matching
 ähnlich XPath berücksichtigt werden könnte. Alternativ wäre auch eine
-mit EBNF\cite[S.43f]{EBNF} vergleichbare Grammatik auf \sexps{}
+mit EBNF \cite[S.43f]{EBNF} vergleichbare Grammatik auf \sexps{}
 vorstellbar.
 
 Zudem ist der Kontrollfluss im Makrosystem von Lisp relativ unflexibel,
@@ -2803,7 +2803,7 @@ Programmierstil. Für die Definition eigener Datenstrukturen stehen
 algebraische Datentypen bereit, die in etwa die Rolle einer Klasse in
 objektorientierten Sprachen einnehmen. Es können auch Typvariablen
 verwendet werden, die deutlich mächtiger und präziser sind als
-beispielsweise Java-Generics\cite{JavaGenerics}. Die Rolle von
+beispielsweise Java-Generics \cite{JavaGenerics}. Die Rolle von
 Interfaces nehmen in Haskell Typklassen ein.
 
 In Haskell werden mit Arrows und Monaden auch einige
@@ -2833,7 +2833,7 @@ der entsprechende Code häufig selbst aus einer DSL wie JavaCC
 generiert wird, die eine EBNF-ähnliche Notation mit bestimmten
 Abschnitten kombiniert, die Code in der Zielsprache enthalten.
 
-Die Haskell-Bibliothek Parsec\cite{Parsec} hingegen beschreitet einen
+Die Haskell-Bibliothek Parsec \cite{Parsec} hingegen beschreitet einen
 anderen Weg: Hier werden Parser als monadische Funktionen konstruiert,
 so dass diese direkt in Haskell und ohne spezielle Syntax beschrieben
 werden können. Parser-Kombinatoren wie \icode{<|>} oder \icode{many}
@@ -3359,7 +3359,7 @@ generierter Quelltext wird eventuell gelesen werden. Ein Template für
 \icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
 da der Einrückungslevel immer relativ zur -- leider im Template
 unbekannten -- äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
-Code daher an einen Formatierer wie Jalopy\cite{Jalopy} übergeben werden --
+Code daher an einen Formatierer wie Jalopy \cite{Jalopy} übergeben werden --
 für ein sprachunabhängiges Framework ist diese Option aber nicht
 zufriedenstellend.
 
@@ -4465,8 +4465,8 @@ sein. Metarekursive Programme sind in der Lisp-Welt nicht unüblich --
 bereits der erste LISP\footnote{LISP ist der erste Dialekt der
   Sprachfamilie Lisp.}-Interpreter wurde als \icode{eval}-Funktion in
 LISP selbst implementiert und dann manuell in Maschinensprache
-übersetzt\cite{LispHistory}. Ein anderes prominentes Beispiel ist das
-Common Lisp Object System (CLOS)\cite{MetaobjectProtocol}, welches
+übersetzt \cite{LispHistory}. Ein anderes prominentes Beispiel ist das
+Common Lisp Object System (CLOS) \cite{MetaobjectProtocol}, welches
 selbst objektorientiert mit CLOS implementiert ist und über Makros in
 ein ``objektfreies Common Lisp'' übersetzt werden kann.
 
@@ -4873,7 +4873,7 @@ Parser-Funktoren, die vergleichsweise langsam laufen.
 Ein weiterer Aspekt der Realweltnutzung besteht in der Integrierbarkeit
 in bestehende Systeme. MagicL-Compiler können mit einem installierten
 Haskell-System interpretiert oder mit dem Glasgow Haskell Compiler
-(GHC)\cite{Ghc} in native Programme übersetzt werden, welche von
+(GHC) \cite{Ghc} in native Programme übersetzt werden, welche von
 beliebigen Build-Skripten aufgerufen werden können. Dennoch wären
 Interoperabilität und Portabilität bei einer Umsetzungssprache wie
 Java deutlich höher.
@@ -4947,10 +4947,10 @@ Erweiterungspotenzial gibt es ebenfalls bei der generischen
 Compiler-Schnittstelle, welche zwar das automatische Finden von
 Compilern über Typen, nicht aber die selbstständige Suche von Pfaden
 über mehrere Stationen ermöglicht. Dies würde nur funktionieren, wenn
-das Haskell-Typsystem eine Prolog-artige Tiefensuche\cite{Prolog}
+das Haskell-Typsystem eine Prolog-artige Tiefensuche \cite{Prolog}
 unterstützen würde oder eine künftige Implementation nicht über
 Haskell-Typen, sondern eigene Datenstrukturen erfolgt. Eine Umsetzung
-mit Clojure-Multimethods\cite[S. 246ff]{Clojure} könnte beispielsweise
+mit Clojure-Multimethods \cite[S. 246ff]{Clojure} könnte beispielsweise
 vielversprechend sein.
 
 Elemente von Prolog ergeben auch an anderen Stellen interessante
@@ -4958,7 +4958,7 @@ Möglichkeiten. Beispielsweise könnte versucht werden, Makros oder
 allgemein Parser als Relationen zu definieren, wodurch diese
 bidirektional verwendbar würden. Ein Parser könnte daher gleichzeitig
 als Generator dienen, und Sprach-Backends könnten ein gewisses Maß an
-Roundtrip-Engeneering\cite{Roundtrip} ermöglichen. Bei Mehrdeutigkeiten
+Roundtrip-Engeneering \cite{Roundtrip} ermöglichen. Bei Mehrdeutigkeiten
 oder überhaupt keinen Lösungen sollte ein solches System
 Benutzerinteraktionen zur Auflösung oder Fehlersuche ermöglichen.
 
@@ -4970,7 +4970,7 @@ Entwicklungsumgebungen profitieren. Es gibt keinen Grund, weshalb
 \sexps{} weiterhin altmodisch als Textdateien bearbeitet werden
 müssen. Vielmehr wäre ein struktureller Baumeditor zu bevorzugen --
 analog zur Präferenz von \sexp{}-Templates gegenüber Strings. Der
-ParEdit-Mode\cite{Paredit} für Emacs\cite{Emacs} ist ein Schritt in
+ParEdit-Mode \cite{Paredit} für Emacs \cite{Emacs} ist ein Schritt in
 diese Richtung, da dieser zwar die weiterhin Text anzeigt, seine
 Steuerung allerdings komplett Baum-basiert ist. Damit wird es
 beispielsweise unmöglich, unbalancierte Klammern zu erzeugen.
@@ -4992,13 +4992,13 @@ bessere Lesbarkeit vortäuschen.
 werden. Vielmehr können sie auch direkt persistent und effizient in
 geeigneten lokalen oder entfernten Datenbanken abgelegt werden. Als
 Backend hierfür könnten sowohl schemafreie Systeme wie
-CouchDB\cite{CouchDB} als auch klassische SQL-Datenbanken zum Einsatz
+CouchDB \cite{CouchDB} als auch klassische SQL-Datenbanken zum Einsatz
 kommen, wobei letztere mit einem allgemeinen \sexp{}-Schema oder
 modellspezifischen, generierten Schemas verwendet werden könnten.
 
 Auch für das Problem der Versionierung in verteilten
 Entwicklungsszenarios könnten \sexps{} Vorteile gegenüber textbasierten
-Versionierungssystemen wie Subversion\cite{Svn} oder Git\cite{Git} mit
+Versionierungssystemen wie Subversion \cite{Svn} oder Git \cite{Git} mit
 sich bringen, wenn man beispielsweise an die immer wieder auftretenden
 Probleme mit Whitespace denkt. Auch dies ist weiter untersuchenswert.
 
