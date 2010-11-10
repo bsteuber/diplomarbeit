@@ -1560,65 +1560,48 @@ zugeordnet. Es wird also bei jedem Expansionsschritt global geprüft, ob
 ein Makro so benannt ist wie das erste Element des zu expandierenden
 \sexp{}. Ist dies der Fall, werden die restlichen Elemente als Parameter
 an das Makro übergeben, woraufhin der vom Makro zurückgegebene \sexp{}
-erneut expandiert wird. Ein Makro kann immer nur genau einen Ausdrick
-zurückgeben, es ist also nicht möglich keinen oder mehrere \sexps{} zu
-erzeugen. Dies ist in der Praxis allerdings kein großes Problem, da in
-Lisp mit dem \icode{do}-Operator beliebig viele Ausdrücke zu einem
-zusammengefasst werden können. Lässt sich kein Makro zu einem Ausdruck
+erneut expandiert wird. Lässt sich kein Makro zu einem Ausdruck
 zuordnen, werden alle Elemente davon einzeln expandiert und der
-resultierende \sexp{} als Funktionsaufruf interpretiert.
-
-\begin{figure}[h]
-  \centering
-  \begin{DIFnomarkup}\begin{code}
-Makro:
-
-(defmacro aif (condition then-part else-part)
-
-  ;; Mit let werden Variablen an Werte gebunden.
-  `(let ((it condition,))             
-
-      ;; Beim if-Operator ist der erste Parameter eine Bedingung,
-      ;; der zweite die Anweisung, falls die Bedingung stimmt,
-      ;; der dritte die anderweitige Anweisung.
-      (if it ,then-part ,else-part)))
-
-
-Abfrage:
-
-(aif (find-matching-record "Schulz")
-  (print-address it)            ; Diese Zeile entspricht dem "then-Teil",
-  (error "No address found"))   ; diese dem "else-Teil".
-
-
-Wird kompiliert nach:
-
-(let ((it (find-matching-record "Schulz")))
-  (if it
-      (get-address it)
-      (error "No address found")))    
-  \end{code}\end{DIFnomarkup}
-  \caption{Das Makro \icode{aif} und seine Verwendung}
-  \label{magicl:fig:lisp-aif}
-\end{figure}
-
-Hier stellt sich wieder die Frage, ob die äußere Ununterscheidbarkeit
-von Makros und Funktionsaufrufen eher positiv oder negativ zu sehen
-ist. Positiv ist, dass die konkrete Implementation einer \sexp{}-Sprache
-so versteckt wird und nachträglich verändert werden kann. Negativ sind
-unerwünschtes Verhalten wie Mehrfachevaluation oder Namenskonflikte -- im
-Gegensatz zu C stellt Lisp allerdings Möglichkeiten bereit, um diese zu
+resultierende \sexp{} als Funktionsaufruf interpretiert. Hier stellt
+sich wieder die Frage, ob die äußere Ununterscheidbarkeit von Makros und
+Funktionsaufrufen eher positiv oder negativ zu sehen ist. Positiv ist,
+dass die konkrete Implementation einer \sexp{}-Sprache so versteckt wird
+und nachträglich verändert werden kann. Negativ sind unerwünschtes
+Verhalten wie Mehrfachevaluation oder Namenskonflikte -- im Gegensatz zu
+C stellt Lisp allerdings Möglichkeiten bereit, um diese zu
 vermeiden. Beispielsweise kann mit dem \icode{gensym}-Befehl ein global
-eindeutiger Variablenname erzeugt werden. Manchmal ist die
-Erzeugung von nicht-eindeutigen Variablennamen allerdings auch erwünscht -- so
-zeigt \abb{lisp-aif} das "`anaphorische"' Makro
-\icode{aif} \cite{OnLisp}, welches ein \icode{if}-Konstrukt ermöglicht,
-das die Variable \icode{it} an die abgefragte Bedingung bindet. Dies ist
-praktisch, da \icode{if} nicht zwischen true und false, sondern zwischen
-\icode{nil} und nicht \icode{nil} unterscheidet, weshalb die Bedingung
-selbst Information enthalten kann. Die Abbildung zeigt dies am Beispiel
-einer einfachen Datenbankabfrage, die sich mittels \icode{aif} kürzer
-schreiben lässt.
+eindeutiger Variablenname erzeugt werden.
+
+Als Beispiel soll ein Operator \icode{if-not} definiert werden, der
+genau andersherum funktioniert wie ein normales \icode{if}. In einer
+Sprache wie Java wäre dies überhaupt nicht möglich -- in Lisp reicht ein
+Zweizeiler:
+
+\begin{code}
+(defmacro if-not (condition false-part &optional true-part)
+  `(if ,condition ,true-part ,false-part))
+
+; Aufruf
+(if-not (= 4 5) "ungleich" "gleich")  ; ergibt "ungleich"  
+(if-not (= 1 1) "ungleich")           ; ergibt nil
+\end{code}
+
+Lisp-Makros können immer nur genau einen Ausdruck zurückliefern, weshalb
+auch das Quasiquote nur einen \sexp{} erzeugen kann. Sind mehrere
+Rückgaben erforderlich, müssen diese in ein \icode{progn} geschachtelt
+werden, welches den Lisp-Interpreter\footnote{Es kann sich
+  selbstverständlich auch um einen Compiler handeln.} anweist, beide
+Befehle nacheinander auszuführen. Beispielsweise definiert \\
+\icode{define-arithmetic-functions} zwei Funktionen auf einmal:
+\begin{DIFnomarkup}\begin{code}
+(defmacro define-arithmetic-functions ()
+  `(progn (defun add (x y) (+ x y))
+          (defun sub (x y) (- x y))))
+
+
+; Aufruf
+(define-arithmetic-functions)
+\end{code}\end{DIFnomarkup}
 
 \begin{figure}[h]
   \centering
@@ -1878,28 +1861,29 @@ Sprachunabhängigkeit, dass Makros statt Einem eine beliebige Anzahl
 erfolgt. Beispielsweise wäre es in Lisp nicht möglich, ein Makro
 \icode{defall} zu definieren, was von
 \begin{code}
-(def a 1)
+(defvar a 1)
 (defall b 2 c 3 d 4)
-(def e 5)
+(defvar e 5)
 \end{code}
 nach
 \begin{code}
-(def a 1)
-(def b 2)
-(def c 3)
-(def d 4)
-(def e 5)  
+(defvar a 1)
+(defvar b 2)
+(defvar c 3)
+(defvar d 4)
+(defvar e 5)  
 \end{code}
-kompiliert. Stattdessen müsste man den Operator \icode{do} benutzen:
+kompiliert \sees{template:lisp}. Stattdessen müsste man den Operator
+\icode{progn} benutzen:
 \begin{code}
-(def a 1)
-(do
-  (def b 2)
-  (def c 3)
-  (def d 4))
-(def e 5)  
+(defvar a 1)
+(progn
+  (defvar b 2)
+  (defvar c 3)
+  (defvar d 4))
+(defvar e 5)  
 \end{code}
-Um ein Makro wie \icode{defall} auch für Zielsprachen ohne \icode{do} zu
+Um ein Makro wie \icode{defall} auch für Zielsprachen ohne \icode{progn} zu
 ermöglichen, ist daher ein automatisches Splicing im Makrosystem
 nötig. Entsprechend sollte auch der Quasiquote-Operator eine beliebige
 Anzahl \sexps{} erzeugen können, wie \icode{(')} oder \icode{(' a b)}.
@@ -1907,29 +1891,27 @@ Anzahl \sexps{} erzeugen können, wie \icode{(')} oder \icode{(' a b)}.
 \lsection[reqs:metalang]{Meta-Programmiersprache}
 
 Die bereitgestellte Meta-Programmiersprache sollte einfach und mächtig
-sein. Da MagicL in Haskell geschrieben ist, ist eine Verwendung von
-Haskell als Meta-Sprache naheliegend. Allerdings ist Haskell nicht
+sein. Da MagicL in Haskell geschrieben wird, ist eine Verwendung von
+Haskell auch als Meta-Sprache naheliegend. Allerdings ist Haskell nicht
 \sexp{}-basiert, so dass es ohne weiteres nicht in reinen
 \sexp{}-Templates verwendet werden kann. Aus diesem Grund muss mit
 \sexp{}-Haskell eine \sexp{}-Syntax für Haskell bereitgestellt werden,
-die automatisch nach Haskell kompiliert wird. Also muss MagicL selbst
-bereits generative Meta-Programmierung für Haskell benutzen.
+die automatisch nach Haskell kompiliert wird. Daher muss MagicL selbst
+bereits generative Meta-Programmierung betreiben.
 
 \lsection[reqs:call]{Aufruf von Templates}
 
-Wie in Lisp Auch die Möglichkeit, die für einen \sexp{}
-zuständige Verarbeitungseinheit über den Knotennamen zu bestimmen,
-sollte von Lisp übernommen werden, so dass diese Einheiten ebenfalls als
-Makros bezeichnet werden. Allerdings wäre es interessant, wenn nicht nur
+Makros in MagicL sollen wie in Lisp implizit über den Knotennamen
+zugeordnet werden können. Allerdings wäre es interessant, wenn nicht nur
 der Name, sondern der gesamte Knoten in einer Art Pattern-Matching
-ähnlich XPath berücksichtigt werden könnte. Alternativ wäre auch eine
-mit EBNF \cite[S.43f]{EBNF} vergleichbare Grammatik auf \sexps{}
-vorstellbar.
+ähnlich XPath berücksichtigt werden könnte. Auch eine mit EBNF
+\cite[S.43f]{EBNF} vergleichbare Grammatik auf \sexps{} wäre
+wünschenswert. 
 
-Zudem ist der Kontrollfluss im Makrosystem von Lisp relativ unflexibel,
-da es lediglich eine globale Zuordnung von Namen zu Makros
-gibt\footnote{Es gibt in Lisp zwar die Möglichkeit, Makros mittels
-  \icode{macrolet} nur für einen bestimmten lexikalischen Scope
+Der Kontrollfluss im Lisp-Makrosystem ist relativ unflexibel,
+da lediglich eine globale Zuordnung von Namen zu Makros
+besteht\footnote{Es gibt in Lisp zwar die Möglichkeit, Makros mittels
+  \icode{macrolet} nur für einen bestimmten lexikalischen Skopus
   verfügbar zu machen, innerhalb dieses Bereichs ist das Makro dann
   allerdings nur Teil der globalen Liste, so dass ohne Weiteres keine
   feinere Steuerung möglich ist.}. In konkreten Sprachen hingegen gibt
@@ -1944,25 +1926,51 @@ zu diesen sollte aber auch ein lokal aufgerufenes Makro seine
 Anwendbarkeit durch Pattern-Matching überprüfen und im Falle eines
 Scheiterns den Kontrollfluss an das nächste Lokalmakro weiterreichen.
 
-Aufgrund der im vorigen Abschnitt geforderten Integration verschiedener
-Modellrepräsentationsformen sollten Makros neben \sexps{} auch beliebige
-andere Objekte zurückliefern können. Die Erzeugung von \sexps{} sollte
-dennoch mit einem Lisp-ähnlichen Template-System besonders unterstützt
-werden. Auch Funktionen, die von Objekt zu Objekt kompilieren, sollen
-über eine allgemeine Compiler-Schnittstelle neben Makros und Parsern
-angesprochen und so integriert werden können.
+Damit dies alles möglich wird, muss der Begriff ``Makro'' gegenüber Lisp
+sinnvoll und theoretisch fundiert verallgemeinert werden, wofür einige
+Grundlagenarbeit benötigt wird.
 
 \lsection[reqs:sep]{Komponententrennung}
+
+MagicL soll einen minimalen und modularen Entwurf von Compilern
+unterstützen, um maximale Wiederverwendbarkeit von Komponenten und
+minimalen Entwicklungsaufwand für neue DSLs zu ermöglichen.
+Beispielsweise könnte ein Compiler von Slide-Quelltext nach PDF aus
+folgenden Komponenten bestehen:
+\begin{itemize}
+\item Da die Slide-DSL als \sexp{}-Sprache definiert ist, kann MagicL's
+  \sexp{}-Parser zum Einlesen der Slide-Quelldateien verwendet werden.
+\item Mittels Makros wird die Slide-DSL in eine Latex-DSL -- auch
+  \sexp{}-basiert -- übersetzt. Dieser Compiler ist die einzige
+  Slide-spezifische Komponente. 
+\item Ein Latex-Generator erzeugt aus der Latex-DSL
+  Latex-Quelltext. Idealerweise gibt es schon ein MagicL-Plugin für
+  diesen Zweck. Ansonsten müsste dies einmalig selbst mit Hilfe der
+  String-Generator-Bibliothek implementiert werden.
+\item Ein externer Latex-Prozessor erzeugt die PDF-Datei.
+\end{itemize}
+Später kann der bestehende Latex-Generator benutzt werden, um
+beispielsweise eine DSL für wissenschaftliche Arbeiten anzubieten. Auch
+können später Slide-Übersetzer für andere Backends wie z.B. HTML
+eingebunden werden.
+
+Damit dies funktioniert, muss MagicL eine allgemeine Schnittstelle
+definieren, mit der Parser, Makros, Generatoren und beliebige Funktionen
+einfach hintereinandergeschaltet werden können.  
+
 \lsection[reqs:gentemp]{Generierung von Templates}
 
-Wie in \sref{template:crit:gentemp} beschrieben
+Das Hauptproblem bei der Generierung von Templates aus Templates ist die
+Uneindeutigkeit bei der Zuordnung eines inneren Unquote. In Common Lisp
+müssen in diesem Fall daher komplizierte Konstrukte wie \icode{,',}
+verwendet werden \sees{template:lisp}. 
 
-
-Die Erzeugung von Quelltext aus Meta-Code sollte möglichst nicht durch
-direkte oder Template-basierte String-Manipulation geschehen. Vielmehr
-ist ein Modell für die allgemeine Repräsentation von Quelltext für die
-Ausgabe von Metaprogrammen zu bevorzugen, welches zuletzt automatisch
-und Framework-intern in einen String umgewandelt wird.
+Eine einfache Alternative hierzu ist die Bereitstellung verschiedener
+Quote-Unquote-Paare, die dann beispielsweise \icode{'1} und \icode{,1}
+etc. benannt sind. Für verschachtelte Templates können dann einfach
+verschiedene Paare verwendet werden, so dass die Zuordnung eindeutig
+bleibt\footnote{Eine ähnliche Erweiterung hat Drew McDermott für
+Common Lisp implementiert \cite[S.21ff]{YTools}.}. 
 
 \lsection[reqs:sum]{Zusammenfassung}
 
@@ -1980,8 +1988,8 @@ und Framework-intern in einen String umgewandelt wird.
 \bf Code-Objekt verfügbar    & ja                            & ja                     \\\hline      
 \bf Sprachmächtigkeit        & maximal                       & maximal                \\\hline      
 \bf Metaprogrammlänge        & kurz                          & kurz                   \\\hline
-\bf Template-Aufruf          & Makro                         & Makro                  \\\hline      
-\bf Komponententrennung      & möglich                       & möglich                \\\hline      
+\bf Template-Aufruf          & verallgemeinertes Makro       & Makro                  \\\hline      
+\bf Komponententrennung      & unterstützt                   & möglich                \\\hline      
 \bf Template-Generierung     & einfach durch \icode{'1} etc. & etwas kompliziert      \\\hline      
 \end{tabular}
 \caption{Anforderungen an MagicL im Vergleich zu Lisp}
@@ -1990,25 +1998,34 @@ und Framework-intern in einen String umgewandelt wird.
 
 Das zu entwickelnde \cgen{}sframework soll eine makrobasierte,
 baukastenartige Konstruktion von Compilern ähnlich Lisp ermöglichen,
-dabei allerdings beliebige Zielsprachen unterstützen. Das Level von
-Zeichenketten soll für die Metaprogrammierung möglichst keine Rolle
-spielen. Stattdessen sollen als Modellrepräsentationen sowohl \sexps{},
-welche so einfach wie möglich definiert werden, als auch getypte
-Objekte verwendet werden können. Dies gilt auch für die Ausgabetypen von
-Makros, deren Pattern-Matching im Gegensatz zu Lisp nicht nur den
-Knotennamen, sondern beliebige \sexps{} unterstützen soll. Der
-Kontrollfluss von Makroaufrufen soll feiner als in Lisp gesteuert werden
-können, um "`lokale Makros"' zu ermöglichen. Neben der textuellen
-Repräsentation von \sexps{} sollen prinzipiell auch andere Datenformate
-unterstützt werden, weshalb eigene Parser erstellt und eingebunden
-werden können sollen. Eine allgemeine Schnittstelle soll schließlich die
-Integration von Verarbeitungseinheiten wie Makros, Parsern und durch
-Funktionen implementierte Compiler ermöglichen.
+dabei allerdings beliebige Zielsprachen unterstützen. Alle drei
+erwähnten Modelltypen müssen in MagicL unterstützt werden: Interne DSLs
+und Templating sollten ausschließlich auf \sexps{} basieren. Externer
+Formate müssen dank integrierter Parser- und Generatorbibliotheken für
+Zeichenketten einfach eingelesen und erzeugt werden können. Für komplexe
+Algorithmen sollten typisierte Objekte verwendet werden können. Diese
+verschiedenen Komponenten müssen durch eine allgemeine Schnittstelle
+einfach hintereinandergeschaltet werden können.
 
-Darüber hinaus wird eine theoretische Fundierung für die Semantik der
-Kombination dieser Verarbeitungseinheiten gefordert. Diese wird in
-MagicL durch die Anwendung kategorientheoretischer Konzepte erreicht,
-welche im folgenden Kapitel beschrieben werden.
+Damit keine zusätzliche Syntax zu reinen \sexps{} erforderlich wird,
+muss die Syntax von Quasiquote und Unquote gegenüber Lisp leicht
+verändert werde. Zudem soll es möglich sein, eine beliebige Anzahl
+\sexp{} zu quotieren, für die das Makrosystem automatisch ein Splicing
+vornimmt. Darüber hinaus sollten mehrere verschieden benannte
+Quote-Unquote-Paare bereitgestellt werden, um Template-generierende
+Templates zu vereinfachen. Als Meta-Sprache soll eine \sexp{}-Version
+von Haskell und damit eine vollständige Programmiersprache
+angeboten werden.
+
+Dazu soll der Makro-Begriff gegenüber Lisp verallgemeinert werden, so
+dass die Zuordnung zu einem Makro nicht nur über den Knotennamen,
+sondern durch beliebiges Pattern-Matching oder gar eine EBNF-ähnliche
+Grammatik erfolgen kann. Auch soll es möglich sein, lokale Makros zu
+definieren, die nur im Kontext eines anderen Makros aktiv sind.  
+
+Die verallgemeinerten Makros sollten hinreichend theoretisch fundiert
+werden. Dies wird durch eine Einbettung in die Kategorientheorie
+erreicht, welche im folgenden Kapitel zunächst vorgestellt wird.
 
 \lchapter[cats]{Kategorientheorie}
 
@@ -2016,18 +2033,19 @@ Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik --
 aber auch ein universeller, denn fast alle wichtigen mathematischen
 Strukturen sind Kategorien. Kategorientheorie findet dank seiner
 Allgemeinheit und Anwendbarkeit für Berechnungen auch in der Informatik
-eine immer größer werdende Rolle -- unter anderem da sie als generische
-Schnittstelle für beliebige Verarbeitungsprozesse gesehen werden. Diese
-Schnittstelle verallgemeinern den Kompositionsoperator von Funktionen
-auf beliebige Datentypen, welche Prozesse beschreiben. In Haskell wird
-diese benutzt, um Nebeneffekte elegant in eine ansonsten pur funktionale
-Sprache zu integrieren.
+eine immer größer werdende Rolle -- unter anderem da sie eine generische
+Schnittstelle für die Verschaltung beliebiger Verarbeitungsprozesse
+liefert. Hierfür wird der Kompositionsoperator von Funktionen auf
+beliebige Datentypen, welche Prozesse beschreiben, verallgemeinert.
 
-Die Architektur von MagicL ist vollständig mit der Haskell-Umsetzung
-kategorientheoretischer Konzepte beschrieben -- beispielsweise werden
-Parser als zusammengesetzte Funktoren konstruiert. Auf diese Weise wird
-eine hohe Flexibilität, Eleganz, Modularität und Wiederverwendbarkeit
-von Komponenten wie Parsern, Compilern oder Makros erreicht.
+Die Sprache Haskell benutzt kategorientheoretische Konzepte, um
+Nebeneffekte elegant in eine ansonsten pur funktionale Sprache zu
+integrieren. Die Architektur von MagicL basiert komplett auf der
+Haskell-Umsetzung kategorientheoretischer Konstrukte -- beispielsweise
+werden Parser als zusammengesetzte Funktoren konstruiert. Auf diese
+Weise wird eine hohe Flexibilität, Eleganz, Modularität und
+Wiederverwendbarkeit von Komponenten wie Parsern, Compilern oder Makros
+erreicht.
 
 Dieser Abschnitt führt in die Kategorientheorie ein und
 stellt alle später verwendeten Konzepte vor. Die Definitionen sind
@@ -2173,7 +2191,7 @@ hier die Funktion, die $x$ auf das Tupel $(f(x), g(x))$ abbildet.
 Dreht man im Diagramm alle Pfeile um\footnote{Formal wird durch das
   ``Umdrehen'' aller Morphismen in $\mathbf{C}$ die duale Kategorie
   $\mathbf{C}^{\mathrm{op}}$ erzeugt. Entsprechend ist das Coprodukt der
-  zum Produkt dualer Operator.}, erhält man die Definition für das
+  zum Produkt duale Operator.}, erhält man die Definition für das
 Coprodukt:
 
 \defi{Coprodukt}{ Ein Objekt $A + B$ mit zwei Injektionsmorphismen
@@ -2274,8 +2292,8 @@ wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
 \end{itemize}
 } $\mathrm{id}_\mathbf{C}:\mathbf{C} \ato \mathbf{C}$ bezeichnet hier
 den Identitätsfunktor, $\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den
-Identitätsmorphismus. Auch diese Gleichungen ließen sich als kommutative
-Diagramme darstellen.
+Identitätsmorphismus. Auch diese Gleichungen lassen sich als kommutative
+Diagramme darstellen. \todo{Diagramm?}
 
 Das erste Axiom beschreibt zwei verschiedene Arten, einen Morphismus von
 $T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
@@ -2408,13 +2426,16 @@ addFiveToList = map (add 5)
 Infixoperatoren wie \icode{+} können ebenfalls vom Programmierer selbst
 definiert werden -- auch die Operatorpräzedenz kann angepasst werden,
 wobei Infixoperatoren grundsätzlich eine niedrigere Präzedenz als
-Präfixfunktionen haben. Mittels Klammerung kann ein Infixoperator in eine
-Präfixfunktion umgewandelt werden, so dass z.B. \icode{(+) 2 3}
+Präfixfunktionen haben. Mittels Klammerung kann ein Infixoperator in
+eine Präfixfunktion umgewandelt werden, so dass z.B. \icode{(+) 2 3}
 geschrieben werden kann. Auch Infixoperatoren unterstützen direkt
 Currying, so dass beispielsweise mit \icode{(-2)} eine Funktion erzeugt
 wird, die vom Argument 2 subtrahiert. Für die obige, sogenannte
-punktfreie Art der Funktionsdefinition mittels Currying ist auch der
-Kompositionsoperator \icode{.} nützlich:
+punktfreie\footnote{Punktfrei bedeutet, dass für Zwischenergebnisse
+  keine benannten Variablen oder Parameter benötigt werden, sondern
+  diese -- beispielsweise durch Currying -- implizit bleiben.} Art der
+Funktionsdefinition ist auch der Kompositionsoperator \icode{.}
+nützlich:
 \begin{DIFnomarkup}\begin{code}
 (.) :: (b -> c) -> (a -> b) -> (a -> c)
 (g . f) x = g (f x)
@@ -2435,8 +2456,8 @@ sumSquare x y = square (x + y)
 
 Es gibt in Haskell vier Arten von Typen: Zunächst gibt es primitive
 Typen wie \icode{Char}, \icode{Int} oder \icode{Float} sowie
-zusammengesetzte Typen wie Listen und Tupel (Schreibweise \icode{(a,
-  b)}. Eine Sonderrolle hat hier das leere Tupel \icode{()} -- auch
+zusammengesetzte Typen wie Listen (Schweibweise \icode{[a, b, c]}) und Tupel (Schreibweise \icode{(a,
+  b)}). Eine Sonderrolle hat hier das leere Tupel \icode{()} -- auch
 "`Unit"' genannt, welches dem Typ \icode{void} in C entspricht und in
 eine der beiden obigen Kategorien einzuordnen ist.
 
@@ -2536,8 +2557,15 @@ formatList xs = "{" ++ concat listWithSeparators ++ "}"
 showList [1, 2, 3] -- ergibt "{1 - 2 - 3}"
 \end{code}\end{DIFnomarkup}
 
-\todo{Klassen (Vorbedingungen, Multi, Variablen als Konstruktoren, Abhängigkeiten)
- Hier: (...) => als Auslassung}
+Derartige Typabhängigkeiten werden in dieser Arbeit in
+Beispielprogrammen der Einfachheit halber oft ausgelassen - an deren
+Stelle wird dann \icode{(...) =>} geschrieben.
+
+Darüber hinaus besitzt Haskell ``Multi Type Classes'', di durch eine
+Kombination von Typem implementiert werden. Auch können die Typvariablen
+selbst parametrisiert sein. Letzteres ist unter anderem für einige
+kategorientheoretische Begriffe nützlich, die in Haskell durch
+Typklassen ausgedrückt werden.
 
 \lsection[haskell:cats]{Kategorien in Haskell}
 
@@ -2571,7 +2599,7 @@ Die Typklasse \icode{Arrow} beschreibt (die Morphismen von) Kategorien,
 für die ein Funktor aus der Kategorie $\mathbf{Hask}$ existiert, wo man
 also jeder Haskell-Funktion vom Typ \icode{a -> b} einen Morphismus vom
 Typ \icode{cat a b} zuordnen kann. Dies ist deshalb sinnvoll, da viele
-(Haskell-)Kategorien "`mehr"' können als die Funktionen, formal eine zu
+(Haskell-)Kategorien "`mehr"' können als normale Funktionen, formal eine zu
 $\mathbf{Hask}$ isomorphe Unterkategorie besitzen. Beispielsweise
 benutzt MagicL "`Funktionen, die fehlschlagen können"' oder "`Funktionen
 mit Nebeneffekten"' als Kategorien, die jeweils auch normale Funktionen
@@ -2681,7 +2709,7 @@ auf Funktionen von \icode{f a} nach \icode{f b} abbildet. Der
 mathematische Funktor besteht hier also aus \icode{(f,fmap)}.
 
 Diese Arbeit benutzt stattdessen eine eigene \icode{Functor}-Klasse,
-die Verschiedene Kategorien zulässt:
+die verschiedene Kategorien zulässt:
 \begin{DIFnomarkup}\begin{code}
 class Functor f ar | f -> ar where
   lift :: ar a b -> f a b
@@ -2689,8 +2717,8 @@ class Functor f ar | f -> ar where
 Die Arrows \icode{f} und \icode{ar} bilden eine Instanz von
 \icode{Functor}, wenn eine \icode{lift}-Operation \icode{ar}-Arrows auf
 \icode{f}-Arrows zwischen den gleichen Typen abbildet -- wobei der Typ
-\icode{f} den Typ \icode{ar} determiniert. Der mathematische Funktor
-hier ist also \icode{(id,lift)}. Im Vergleicht zu Haskells
+\icode{f} den Typ \icode{ar} bestimmt. Der mathematische Funktor
+hier ist also \icode{(id,lift)}. Im Vergleich zu Haskells
 Standard-\icode{Functor} ist diese Version also in den Kategorien
 allgemeiner, aber dafür spezieller in der Abbildung der Objekte, da hier
 die Identität vorgeschrieben ist. Man könnte auch dies allgemein
@@ -2793,8 +2821,9 @@ foo >>= (\ x ->
     return y))
 \end{code}\end{DIFnomarkup} % <<
 und ermöglicht eine Schreibweise, die imperativen Programmen ähnelt --
-dies ist kein Zufall, da die \icode{IO}-Monade genau für Nebeneffekte
-zuständig ist (siehe \sref{haskell:cats:monads:examples:io}). Diese
+dies ist kein Zufall, denn Nebeneffekte werden in Haskell ebenfalls mit
+einer Monade beschrieben (siehe \sref{haskell:cats:monads:examples:io}),
+so dass auch dort die \icode{do}-Notation benutzt werden kann. Diese
 Verwendung erklärt auch nachträglich den Namen \icode{return}, wobei es
 sich noch immer um die $\eta$-Transformation handelt und nicht etwa ein
 syntaktisches \icode{return}-Statement wie in imperativen Sprachen
@@ -2825,24 +2854,24 @@ instance Monad Maybe
         (Nothing >>= _) = Nothing
         (Just x  >>= f) = f x
 \end{code}\end{DIFnomarkup} % <<
-Obiges Code-Beispiel
+Obiges Code-Beispiel, mit einer Typanschrift auf die Maybe-Monade
+festgelegt 
 \begin{DIFnomarkup}\begin{code}
-do x <- foo
-   y <- bar x
-   return (x, y)
+(do x <- foo
+    y <- bar x
+    return (x, y)) :: Maybe (Integer, Integer)
 \end{code}\end{DIFnomarkup}
-würde in der Maybe-Monade so interpretiert werden: Wenn \icode{foo}
-erfolgreich ist, wird das Ergebnis (lokal) in \icode{x}
-gespeichert. Ist daraufhin \icode{bar x} ebenfalls erfolgreich, wird
-dieses in \icode{y} gespeichert und schließlich der Wert \icode{Just
-  (x, y)} zurückgegeben. Schlägt eine der Funktionen fehl, ist das
-Ergebnis \icode{Nothing}.
+wird wie folgt interpretiert: Wenn \icode{foo} erfolgreich ist, wird das
+Ergebnis (lokal) in \icode{x} gespeichert. Ist daraufhin \icode{bar x}
+ebenfalls erfolgreich, wird dieses in \icode{y} gespeichert und
+schließlich der Wert \icode{Just (x, y)} zurückgegeben. Schlägt eine der
+Funktionen fehl, ist das Ergebnis \icode{Nothing}.
 
 \lparagraph[haskell:cats:monads:examples:io]{\icode{IO}}
 
 Jede Programmiersprache benötigt für die reale Welt Möglichkeiten,
-Operationen mit Nebeneffekten wie das Schreiben oder solche, die von
-externen Nebeneffekten abhängen, wie das Lesen von Dateien,
+Operationen mit Nebeneffekten wie das Schreiben von Dateien oder solche,
+die von externen Nebeneffekten abhängen, wie das Lesen von Dateien,
 auszuführen. Dies lässt sich zunächst schwer in eine puren Sprache wie
 Haskell integrieren. Die \icode{IO}-Monade bietet hier eine Lösung: Man
 stelle sich einen fiktiven Datentyp \icode{World} vor, der den gesamten
@@ -2885,7 +2914,7 @@ beispielsweise Java-Generics \cite{JavaGenerics}. Die Rolle von
 Interfaces nehmen in Haskell Typklassen ein.
 
 In Haskell werden mit Arrows und Monaden auch einige
-kategorientheoretischen Konzepte umgesetzt und in Form von Typklassen
+kategorientheoretische Konzepte umgesetzt und in Form von Typklassen
 bereitgestellt. Während Arrows allgemeiner und konzeptionell einfacher
 sind und optimal für eine punktfreie Formulierung von Algorithmen sind,
 können Monaden teilweise einfacher implementiert werden und ermöglichen
@@ -2925,15 +2954,15 @@ kontextsensitive Sprachen wie XML ausnahmslos verarbeitet werden (siehe
 \cite[S. 3]{Parsec}), was mit anderen Bibliotheken nicht möglich ist.
 
 Es wäre möglich gewesen, Parser in MagicL mittels Parsec zu
-konstruieren. Dennoch wurde für diese Arbeit entschieden, ein eigenes
-Framework, allgemeineres Framework für die Parser-Konstruktion zu
+konstruieren. Dennoch wurde für diese Arbeit entschieden, ein eigenes,
+allgemeineres Framework für die Parser-Konstruktion zu
 entwickeln. Dadurch wird neben der freien Auswahl des
 Token-Typs\footnote{Auch Parsec lässt es allerdings zu, dass statt
   Zeichenketten auch Listen beliebiger Token eingelesen werden können.}
-auch eine freie Auswahl der Kategorie ermöglicht, in der Parser ausgeführt
-werden. Beispielsweise kann \icode{IOArrow} benutzt werden, um
-Debug-Ausgaben oder andere Nebeneffekte in Parser einzubauen. Dies ist
-in Parsec nicht möglich.
+auch eine freie Auswahl der Kategorie ermöglicht, in der Parser
+ausgeführt werden. Beispielsweise kann \icode{IOArrow} benutzt werden,
+um Debug-Ausgaben oder andere Nebeneffekte in Parser einzubauen. Dies
+ist in Parsec nicht möglich.
 
 MagicL benutzt Arrows und Funktoren, um möglichst allgemein zu
 sein. Alles, was im Rahmen dieser Arbeit implementiert wurde, hätte zwar
@@ -4342,34 +4371,15 @@ entsprechend mit \icode{(,@)}:
 ergibt (1 2 3 4 5) bei xs = (List (Symbol (Str 3))
                                   (Symbol (Str 4)))
 \end{code}\end{DIFnomarkup}
-Lisp-Makros sind gewöhnlich für die Verarbeitung eines einzelnen \sexp{}
-ausgelegt und können aus diesem Grund immer nur einen Ausdruck
-zurückliefern. Sollen beispielsweise in Common Lisp aus einem Makro
-zwei benannte Funktionen generiert werden, müssen die Definitionen in
-ein \icode{(progn)} geschachtelt werden, damit sich nur ein \sexp{}
-ergibt:
-\begin{DIFnomarkup}\begin{code}
-(defmacro define-arithmetic-functions ()
-  `(progn (defun add (x y) (+ x y))
-          (defun sub (x y) (- x y))))
-\end{code}\end{DIFnomarkup}
-Hierbei weist \icode{progn} den Lisp-Interpreter\footnote{Es kann sich
-  selbstverständlich auch um einen Compiler handeln.} lediglich an, alle
-enthaltenen Operationen nacheinander auszuführen. MagicL soll aber
-beliebige Zielsprachen unterstützen und damit auch solche, die keinen
-Operator zur Zusammenfassung mehrerer Ausdrücke aufweisen, mehrere
-Ausdrücke zu einem zusammenzufassen. Deswegen sollten MagicL-Makros
-beliebig viele \sexps{} zurückgeben können, so dass die Definition von
-\icode{define-arithmetic-functions} (zunächst als Funktion) wie folgt
-aussehen kann:
-\begin{DIFnomarkup}\begin{code}
-(= defineArithmeticFunctions
-  '((= (add x y) (+ x y))
-    (= (sub x y) (- x y))))
-\end{code}\end{DIFnomarkup}
-Dies passt auch gut zu einer Definition von Makros als Parser auf
-\sexps{}, da Parser immer Streams und damit Listen als Eingaben haben,
-so dass Ein- und Ausgabetyp übereinstimmen:
+
+
+\todo{Glätten, Bezug auf reqs}
+
+Wie \sref{reqs:template} erläutert, sollen MagicL-Makros beliebig viele
+\sexps{} zurückgeben können, die per Splicing an die Stelle des
+Makro-Aufrufs gesetzt werden. Dies passt auch gut zu einer Definition
+von Makros als Parser auf \sexps{}, da Parser immer Streams und damit
+Listen als Eingaben haben, so dass Ein- und Ausgabetyp übereinstimmen:
 \begin{DIFnomarkup}\begin{code}
 type LispMacro = SexpParser [Sexp]
 
