@@ -2930,6 +2930,13 @@ Funktion zu Funktion veranschaulichen.
 MagicL legt den Schwerpunkt auf Arrows und beschreibt so allgemein
 Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 
+\todo{anonyme Fns}
+
+\lchapter[arch]{Grundlegende Architektur}
+
+\todo{Parser, Makros etc. als Arrows}
+\todo{Komponenten, Schichtenmodell}
+
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
 Parser sind für die Umwandlung von Zeichenketten in Objekte
@@ -2939,6 +2946,8 @@ ist die direkte Implementation von Parsern relativ aufwändig, weshalb
 der entsprechende Code häufig selbst aus einer DSL wie JavaCC
 generiert wird, die eine EBNF-ähnliche Notation mit bestimmten
 Abschnitten kombiniert, die Code in der Zielsprache enthalten.
+
+\todo{Parser in MagicL erklären (kleine Bausteine, gesamter Parser)}
 
 Die Haskell-Bibliothek Parsec \cite{Parsec} hingegen beschreitet einen
 anderen Weg: Hier werden Parser als monadische Funktionen konstruiert,
@@ -3000,7 +3009,7 @@ aus $B$ geliefert, während im Falle eines Scheiterns eine Fehlermeldung
 als String zurückgegeben wird -- im Gegensatz zur \icode{Maybe}-Monade,
 die im Fehlerfall nur ein \icode{Nothing} liefert. Der Rückgabetyp ist
 deshalb das Coprodukt $\mathrm{String}+B$. Statt Morphismen von $A$ nach
-$B$ wollen wir also nun Morphismen von $A$ nach $\mathrm{String}+B$. Um
+$B$ werden nun Morphismen von $A$ nach $\mathrm{String}+B$ benutzt. Um
 den aufrufenden Code nicht komplizierter zu machen, empfiehlt es sich,
 diese Änderung in einer neuen Kategorie $\mathbf{C}_f$ zu
 verstecken. $f_{f} : A \rightarrow B$ aus der neuen Kategorie wird
@@ -3094,6 +3103,8 @@ auf $f$ abbildet, kann nicht Teil eines Funktors sein. Ein solcher
 müsste nämlich das Objekt $B$ sowohl auf $\mathrm{String}+B$ (bei der
 Transformation von $f$ als auch auf $B$ selbst (bei $g$) abbilden.
 
+\todo{Beispiel Fehlermeldung}
+
 \lsection[arrowparser:state]{Arrows mit Zuständen}
 
 Zustände lassen sich ähnlich zu einem Arrow hinzufügen. Über Produkte
@@ -3104,7 +3115,8 @@ wird. Ein Morphismus $f_{s} : A \rightarrow B$ der neuen Kategorie
 wird entsprechend abgebildet auf $f = A \times S \rightarrow B \times
 S$. Da hier im Gegensatz zum Fail-Funktor Domäne und Codomäne gleich
 abgebildet werden, ist diese Abbildung Teil eines Funktors $F_s: C_{s}
-\ato C$. \abb{cat_state} zeigt d
+\ato C$. \abb{cat_state} zeigt die Komposition in $\mathbf{C}_s$ und die
+Rückführung auf die ursprüngliche Kategorie.
 
 \fig{cat_state}{Komposition in $\mathbf{C}_s$ und Rückführung auf
   $\mathbf{C}$ durch $F_s$}
@@ -3142,6 +3154,8 @@ instance (Arrow ar) => ArrowState s (StateFunctor s ar)
 Zustand zurück, während \icode{put} den übergebenen Zustand
 "`abspeichert"' und (bis auf diesen) nichts zurückgibt.
 
+\todo{Verwendungsbeispiel}
+
 \lsection[arrowparser:parse]{Der Parse-Funktor}
 
 Nun lassen sich obige Kategorie-Erweiterungen zu einer Parser-Kategorie
@@ -3157,31 +3171,32 @@ ermöglichen.
 
 Backtracking wird allerdings zu einem Problem, wenn man sinnvolle
 Fehlermeldungen produzieren will. Man stelle sich einen Parser für die
-(in einer fiktiven Sprache beschriebene) Grammatik \texttt{\{.*\}
-  $\bigvee$ [.*]} vor, die eine beliebige Zeichenkette in geschweiften
-oder eckigen Klammern beschreibt. Beim Eingabewort \texttt{\{ABC}
-scheitert zunächst aufgrund der fehlenden schließenden Klammer die erste
-Alternative, woraufhin die zweite probiert wird. Das Wort beginnt aber
-nicht mit \texttt{[}, so dass der Parser beispielsweise mit der Meldung
-\texttt{"'Expected [, got \{"'} scheitert. Diese Meldung beschreibt den
-Fehler schlecht -- stattdessen möchte man nach dem Lesen von \texttt{\{}
-das Backtracking deaktivieren, denn bereits hier ist klar, dass die
-andere Alternative nicht mehr in Betracht kommt. Dies führt zu einer
-sinnvolleren Fehlermeldung wie \texttt{"'Expected \}, got end of
-  stream"'}.
+(als regulärer Ausdruck beschriebene\footnote{Hierbei sollen eckige und
+  geschweifte Klammern keine besondere Bedeutung besitzen, der Punkt für
+  ein beliebiges Zeichen und der Stern für beliebige Wiederholungen
+  stehen.}) Grammatik \texttt{\{.*\}|[.*]} vor, die eine beliebige
+Zeichenkette in geschweiften oder eckigen Klammern beschreibt. Beim
+Eingabewort \texttt{\{ABC} scheitert zunächst aufgrund der fehlenden
+schließenden Klammer die erste Alternative, woraufhin die zweite
+probiert wird. Das Wort beginnt aber nicht mit \texttt{[}, so dass der
+  Parser beispielsweise mit der Meldung \texttt{"'Expected [, got \{"'}
+    scheitert. Diese Meldung beschreibt den Fehler schlecht --
+    stattdessen möchte man nach dem Lesen von \texttt{\{} das
+    Backtracking deaktivieren, denn bereits hier ist klar, dass die
+    andere Alternative nicht mehr in Betracht kommt. Dies führt zu einer
+    sinnvolleren Fehlermeldung wie \texttt{"'Expected \}, got end of
+      stream"'}.
 
 Ein derartiger "`nicht-auffangbarer"' Fehler lässt sich durch das
 Einbauen einer weiteren Möglichkeit des Scheiterns ermöglichen, wir
 definieren also $\mathbf{C}_p = \mathbf{C}_{ffs}$ und bieten eine
 Funktion \icode{forceParser} an, die einen (Sub-)Parser derart
-modifiziert, dass, falls dieser Scheitert, der Fehler in die "`inneren"'
-und damit nicht-recover-fähigen Fail-Kategorie übernommen wird. Hiervon
+modifiziert, dass, falls dieser scheitert, der Fehler in die "`innere"'
+und damit nicht-recover-fähige Fail-Kategorie übernommen wird. Hiervon
 wird beispielsweise bei der Funktion \icode{macro}
 \sees{arrowparser:sexpparser} Gebrauch gemacht.
 
-Die Haskell-Definition vom \icode{FailFunctor} benutzt als Zustandstyp
-einen Stream (als Liste repräsentiert) vom Token-Typ \icode{t}:
-
+Der \icode{ParseFunctor} ist in MagicL wie folgt definiert::
 \begin{DIFnomarkup}\begin{code}
 newtype ParseFunctor t ar a b =
   P (StateFunctor
@@ -3190,13 +3205,14 @@ newtype ParseFunctor t ar a b =
      a
      b)
 \end{code}\end{DIFnomarkup}
-
-Dank der Implementation als Funktor ist die Kategorie, in der der Parser
-ausgeführt wird, frei wählbar. So können rein funktionale Parser in
-$Hask_p$ konstruiert werden. Benötigt man aber Debug Outputs (z.B. bei
-der Suche einer Endlosschleife) oder andere Seiteneffekte, kann
-$\mathbf{IO}_p$ benutzt werden. In MagicL werden diese Kategorien durch
-die Typaliase \icode{FunParser} wowie \icode{IOParser} bereitgestellt:
+Als Zustandstyp wird ein Stream (als Liste repräsentiert) vom Token-Typ
+\icode{t} benutzt.  Dank der Implementation als Funktor ist die
+Kategorie, in der der Parser ausgeführt wird, frei wählbar. So können
+rein funktionale Parser in $Hask_p$ konstruiert werden. Benötigt man
+aber Debug Outputs (z.B. bei der Suche einer Endlosschleife) oder andere
+Seiteneffekte, kann $\mathbf{IO}_p$ benutzt werden. In MagicL werden
+diese Kategorien durch die Typaliase \icode{FunParser} sowie
+\icode{IOParser} bereitgestellt:
 \begin{DIFnomarkup}\begin{code}
 type FunParser t a b = ParseFunctor t (->) a b
 type IOParser  t a b = ParseFunctor t IOArrow a b
@@ -3206,6 +3222,8 @@ sogar interaktive Debugger, Netzwerktransparenz oder sonstige Features
 anbieten. Auch der variable Token-Typ erzeugt viele Möglichkeiten:
 Textdateien können mit \icode{Char}, Bit-Streams mit \icode{Bool} oder
 \sexp{}-Streams mit \icode{Sexp} verarbeitet werden.
+
+\todo{Mehr Top-Down-Argumente}
 
 \lsection[arrowparser:lib]{Parser-Library}
 
@@ -3294,7 +3312,7 @@ data Sexp = Symbol String
           | Node [Sexp]
 \end{code}\end{DIFnomarkup}
 
-Aufgrund der Einfachheit diese Struktur und der praktischen
+Aufgrund der Einfachheit dieser Struktur und der praktischen
 Parser-Library ist es möglich, in vier kurzen Zeilen einen Parser zu
 entwerfen, der als Text repräsentierte \sexps{} in die typisierte
 Repräsentation überführt:
@@ -3321,11 +3339,26 @@ parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
 Ein \sexp{} ist nun entweder ein Symbol oder ein Knoten, wobei davor und
 danach Whitespace auftreten darf.
 
-Tritt bei Lesen ein Fehler auf, wird automatisch eine brauchbare Fehlermeldung
-ausgegeben, z.B.
-
+\begin{figure}[h]
 \begin{DIFnomarkup}\begin{code}
-"(test) )"  ==>  Empty stream expected: ")"
+whitespace  = skip (many (member " \t\n"))
+parseSymbol = many1 (notMember " \t\n()") >>^ Symbol
+parseNode   = skip (eq '(') >>> (many parseSexp >>^ Node) >>> skip (eq ')')
+parseSexp   = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace    
+  \end{code}\end{DIFnomarkup}
+  \caption{Ein kompletter \sexp{}-Parser in vier Zeilen}
+  \label{magicl:fig:sexp_parser}
+\end{figure}
+
+\abb{sexp_parser} zeigt noch einmal den gesamten Parser. Ein
+Beispielaufruf könnte wie folgt aussehen:
+\begin{code}
+runParser parseSexp "(this is (an s-expr))"  ==> Node [Symbol "this", ...]
+\end{code}
+Tritt bei Lesen ein Fehler auf, wird automatisch eine brauchbare
+Fehlermeldung ausgegeben, z.B.
+\begin{DIFnomarkup}\begin{code}
+runParser parseSexp "(test) )"  ==>  Empty stream expected: ")"
 \end{code}\end{DIFnomarkup}
 
 \lsection[arrowparser:sexpparser]{Parser auf \sexps}
@@ -3363,10 +3396,12 @@ produzieren soll, würde mit der bisherigen Bibliothek so aussehen:
 parsePerson :: SexpParser String
 parsePerson = take >>^ proc >>> (fail ||| id)
   where proc (Node [Symbol "person", Symbol x]) = Right x
-        proc _ = Left ("Not a person: " ++ show x)
+        proc y = Left ("Not a person: " ++ show y)
 parsePersons :: SexpParser [String]
 parsePersons = many parsePerson
 \end{code}\end{DIFnomarkup} % <<
+Hierbei liest der Befehl \icode{take} den nächsten Token bedingungslos
+ein.
 
 Die Verarbeitung von Hand mittels \icode{Node} und \icode{Symbol} im
 Pattern-Matching ist relativ umständlich. Deswegen gibt es eine Reihe
@@ -3427,10 +3462,10 @@ erweitern. Der \icode{FailFunctor} realisiert die Möglichkeit, mit einer
 Fehlermeldung zu Scheitern und per Backtracking Alternativen zu
 probieren. Der \icode{StateFunctor} setzt das Durchreichen von Zuständen
 um und wird benutzt, um den noch zu lesenden Stream als Liste zu
-verwalten. Das \icode{ParseFunctor} kombiniert beides, wobei der
+verwalten. Der \icode{ParseFunctor} kombiniert beides, wobei der
 \icode{FailFunctor} doppelt verwendet wird, um auch Fehler zu
 ermöglichen, die nicht durch Backtracking zu beheben sind. Dies ist
-hilfreich, um teilweise sinnvollere Fehlermeldung zu erhalten.
+hilfreich, um teilweise sinnvollere Fehlermeldungen zu erhalten.
 
 Eine Parser-Bibliothek stellt neben Konstruktoren wie \icode{member}
 auch Kombinatoren wie \icode{many} bereit, die eine EBNF-artige
@@ -3440,6 +3475,9 @@ Strings eingelesen werden können. Makros werden in MagicL als Parser auf
 \sexps{} definiert, die auch Subausdrücke rekursiv mit Parsern
 verarbeiten können.
 
+\todo{Diskussion: Welche Anforderungen erfüllt, wie nah an kontextfreien
+Grammatiken?}
+
 \lchapter[magicl]{Weitere Komponenten von MagicL}
 
 Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
@@ -3447,6 +3485,8 @@ sowie die damit in \cref{sexphs} und \cref{sexpcomp} implementierten
 Sprachen sind das Herzstück von MagicL. Darüber hinaus gibt es
 allerdings noch weitere Komponenten, die in den folgenden Abschnitten
 vorgestellt werden.
+
+\todo{auf Anforderungen beziehen}
 
 \lsection[magicl:code]{Repräsentation von Quelltext}
 
