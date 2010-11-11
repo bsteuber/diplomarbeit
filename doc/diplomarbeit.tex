@@ -279,6 +279,8 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 
 \pagenumbering{arabic}
 
+\todo{noch mehr für auf metaprog umschreiben}
+
 Unter \mprog{} versteht man das programmatische Manipulieren von
 Programmen - anders gesagt: ``Metaprogramming is writing code that
 writes code'' \cite[S.16]{metaprog-ruby}. Man unterscheidet zwischen
@@ -438,6 +440,8 @@ selbst kompiliert"' benötigt, welcher durch ein geeignetes Bootstrapping
 zu implementieren ist.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
+
+\todo{neue Struktur}
 
 Zunächst stellt \sref{intro:example} ein einführendes Beispiel für die
 Verwendung von \cgen{} vor, das im weiteren Verlauf dieser Arbeit immer
@@ -1590,7 +1594,7 @@ Lisp-Makros können immer nur genau einen Ausdruck zurückliefern, weshalb
 auch das Quasiquote nur einen \sexp{} erzeugen kann. Sind mehrere
 Rückgaben erforderlich, müssen diese in ein \icode{progn} geschachtelt
 werden, welches den Lisp-Interpreter\footnote{Es kann sich
-  selbstverständlich auch um einen Compiler handeln.} anweist, beide
+  selbstverständlich auch um einen Compiler handeln.} anweist, mehrere
 Befehle nacheinander auszuführen. Beispielsweise definiert \\
 \icode{define-arithmetic-functions} zwei Funktionen auf einmal:
 \begin{DIFnomarkup}\begin{code}
@@ -2930,12 +2934,30 @@ Funktion zu Funktion veranschaulichen.
 MagicL legt den Schwerpunkt auf Arrows und beschreibt so allgemein
 Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 
-\todo{anonyme Fns}
+\todo{anonyme Fns, \icode{$}} %$
 
-\lchapter[arch]{Grundlegende Architektur}
+\lchapter[arch]{Das Framework MagicL}
 
-\todo{Parser, Makros etc. als Arrows}
-\todo{Komponenten, Schichtenmodell}
+Komponenten
+\begin{itemize}
+\item Arrow-Bibliothek
+\item Parser-Bibliothek
+\item Generator-Bibliothek
+\end{itemize}
+
+enthaltene Compiler
+\begin{itemize}
+\item String nach Sexp
+\item Sexp nach String
+\item Sexp-HS nach Haskell
+\item Sexp-Comp nach Sexp-HS
+\end{itemize}
+
+\todo{Architektur: Komponenten, Schichtenmodell}
+\todo{Mikroarchitektur: Parser, Makros etc. als Arrows}
+\todo{weitere Komponenten hierher verschieben, exectutable etc. vereinfachen}
+\todo{sexphs-spezifikation hierher verschieben}
+\todo{sexpcomp-spec teilweise hierher}
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
@@ -2946,8 +2968,6 @@ ist die direkte Implementation von Parsern relativ aufwändig, weshalb
 der entsprechende Code häufig selbst aus einer DSL wie JavaCC
 generiert wird, die eine EBNF-ähnliche Notation mit bestimmten
 Abschnitten kombiniert, die Code in der Zielsprache enthalten.
-
-\todo{Parser in MagicL erklären (kleine Bausteine, gesamter Parser)}
 
 Die Haskell-Bibliothek Parsec \cite{Parsec} hingegen beschreitet einen
 anderen Weg: Hier werden Parser als monadische Funktionen konstruiert,
@@ -3579,12 +3599,21 @@ Dies lässt sich mit dieser rekursiven Funktion erreichen:
 layoutSexp :: Sexp -> Code
 layoutSexp (Symbol sym)    = text sym
 layoutSexp (Node children) = format (map layoutSexp children)
-  where format = parens . group . indent2 . lines
+  where format = group . parens . indent2 . lines
 \end{code}\end{DIFnomarkup} %<<
-Alternativ könnte \icode{layoutSexp} auch als \sexp{}-Parser
-spezifiziert werden.
+
+Um einen Knoten zu formatieren, werden zunächst die Unterknoten
+formatiert \\ (\icode{map layoutSexp children}) und jeweils auf eine eigene
+Zeile (\icode{lines}) gesetzt, wobei nach Zeilenumbrüchen um zwei
+Zeichen eingerückt werden soll (\icode{indent2}). Anschließend wird
+der Ausdruck geklammert (\icode{parens}) und zuletzt überprüft
+\icode{group}, ob der ganze Ausdruck nach Ersetzen der Zeilenumbrüche
+durch Leerzeichen noch auf die aktuelle Zeile passt - ansonsten werden
+die Zeilenumbrüche beibehalten.
 
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
+
+\todo{mehr Top-Down argumente}
 
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
 Interface für die Beschreibung von Compilern entstehen, so dass
@@ -3598,8 +3627,8 @@ Ein Compiler von \icode{a} nach \icode{b} ist in MagicL etwas, was sich
 in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
 überführen lässt. Diese Operation kann im allgemeinen Nebeneffekte
 enthalten, weshalb IOArrow verwendet wird. Typen, mit denen sich
-Compiler repräsentieren lassen, implementieren die Typklasse
-\icode{Executable}:
+Compiler repräsentieren lassen, implementieren die von MagicL definierte
+Typklasse \icode{Executable}:
 \begin{DIFnomarkup}\begin{code}
 class Executable x a b | x -> a b where
   toIO :: x -> IOArrow a b
@@ -3615,6 +3644,11 @@ instance Executable (IOArrow a b) a b where
 instance Executable (a -> b) a b where
   toIO f = Kleisli (return . f)
 \end{code}\end{DIFnomarkup}
+Um hier einen \icode{IOArrow} in einen \icode{IOArrow} zu überführen,
+reicht die Identitätsfunktion. Eine pure Funktion hingegen wird zunächst
+mit \icode{return} in die \icode{IO}-Monade überführt und dann durch die
+Kleisli-Transformation in einen Arrow umgewandelt.
+
 Auch Parser sind ausführbar, sofern der zugrundeliegende Arrow-Typ es
 ist:
 \begin{DIFnomarkup}\begin{code}
@@ -3638,10 +3672,11 @@ class (Executable x a b) => Compilable x a b | a b -> x where
   comp :: x
 \end{code}\end{DIFnomarkup}
 Da es nur einen ausgezeichneten Compiler von \icode{a} nach \icode{b}
-geben kann, determinieren \icode{a} und \icode{b} gemeinsam \icode{x},
-wobei die umgekehrte Abhängigkeit ebenfalls -- von \icode{Executable}
-geerbt -- besteht. Es handelt sich also um eine 1:1-Beziehung. Die
-Spezifikation eines simplen funktionalen Compilers würde so aussehen:
+geben kann, legen \icode{a} und \icode{b} gemeinsam \icode{x} fest --
+gleichzeitig bestimmt \icode{x} auch \icode{a} und \icode{b}, da dies in
+der Oberklasse \icode{Executable} festgelegt ist. Es handelt sich also
+um eine 1:1-Beziehung. Die Spezifikation eines simplen funktionalen
+Compilers würde so aussehen:
 \begin{DIFnomarkup}\begin{code}
 instance Compilable (A -> B) A B where
   comp x = ...
@@ -3669,7 +3704,7 @@ instance (Compilable (ParseFunctor t ar () a) [t] a. ...) =>
     comp = optional comp
 \end{code}\end{DIFnomarkup}
 Nun können beispielsweise auch Streams von \sexps{} durch den Aufruf von
-\icode{comp :: FunParser Char () [Sexp]} geparst werden, ohne dass dieser
+\\ \icode{comp :: FunParser Char () [Sexp]} geparst werden, ohne dass dieser
   Parser manuell spezifiziert wurde.
 
 Zuletzt "`vergisst"' die Typklasse \icode{Compiler} den zur Definition
@@ -3692,14 +3727,26 @@ zumindest derzeit noch nicht der Fall ist.
 Um die Kompilation von Textdateien zu vereinfachen, wird die Funktion
 \icode{compileStr} definiert, welche ein \icode{Executable} von
 \icode{a} nach \icode{b} in eine imperative Haskell-Funktion von
-\icode{String} nach \icode{String} umwandelt. Dies funktioniert
-allerdings nur, wenn bereits Standardcompiler von \icode{String} nach
-\icode{a} und von \icode{b} nach \icode{String} bekannt sind.
+\icode{String} nach \icode{String} umwandelt, falls bereits
+Standardcompiler von \icode{String} nach \icode{a} und von \icode{b}
+nach \icode{String} bekannt sind.   
 \begin{DIFnomarkup}\begin{code}
 compileStr :: (Compiler String a, Executable x a b, Compiler b String) =>
                x -> String -> IO String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile
 \end{code}\end{DIFnomarkup} % $
+Beispielsweise kann \icode{a} für
+\icode{Sexp} und \icode{b} für \icode{Code} stehen, da bereits
+Standard-Compiler von \icode{String} nach \icode{Sexp} (der normale
+\sexp{}-Parser) sowie von \icode{Code} nach \icode{String} (der Layouter
+für eine Zeilenlänge von 70 Zeichen) existieren. Mit \icode{compileStr
+  layoutSexp} könnte daher der Pretty-Printer aus dem vorigen
+Abschnitt in eine (imperative) Funktion umgewandelt werden, die zunächst
+aus einem String einen \sexp{} parst, anschließend \icode{layoutSexp} aufruft
+und das Ergebnis für 70 Zeichen layoutet. Man beachte, dass Parser und
+Generator automatisch durch die Typinferenz gefunden werden und nicht
+beim Aufruf angegeben werden müssen.
+
 Für die Erzeugung selbstständiger Compiler benutzt \icode{compiler}
 stdin als Eingabe- und stdout als Ausgabe-Stream:
 \begin{DIFnomarkup}\begin{code}
@@ -3710,21 +3757,21 @@ compiler f = do
   putStr output  
 \end{code}\end{DIFnomarkup}
 Damit kann ein Compiler als Stand-Alone-Programm erzeugt und mit Hilfe
-von Ein- und Ausgabeumleitungen auf Dateien angewendet werden:
+von Ein- und Ausgabeumleitungen auf Dateien angewendet werden. Um
+beispielsweise aus dem \sexp{}-Pretty-Printer ein Kommandozeilenprogramm
+zu erstellen, muss lediglich ein Modul mit einem Compiler als
+\icode{main}-Funktion erstellt werden: 
 \begin{DIFnomarkup}\begin{code}
-module MyFileCompiler where
+module SexpFormatter where
 -- einige Import-Anweisungen
 
-main = compiler myCompiler
-
-==== Erzeugung des Programms ====
-
-ghc MyFileCompiler.hs  -- einige Parameter ausgelassen
-=> MyFileCompiler
-
-==== Aufruf ====
-
-./MyFileCompiler <inFile >outFile
+main = compiler layoutSexp
+\end{code}\end{DIFnomarkup}
+Dieses Modul kann dann kompiliert und von der Kommandozeile
+aufgerufen werden:
+\begin{DIFnomarkup}\begin{code}
+bash$ ghc SexpFormatter.hs
+bash$ ./SexpFormatter <inFile >outFile
 \end{code}\end{DIFnomarkup}
 
 \lsection[magicl:test]{Test-Framework}
@@ -3753,7 +3800,8 @@ exprCases = [ ( "(Str 42)"                    -- Sexp-Haskell
 Dieses Beispiel spezifiziert, wie einige Ausdrücke der im nächsten
 Kapitel vorgestellten Sprache \sexp{}-Haskell nach Haskell übersetzt
 werden sollen. Durchgeführt wird ein Testlauf mit der Funktion
-\icode{testCompiler}:
+\icode{testCompiler} (deren Implementierung für die Übersichtlichkeit
+ausgelassen wird):
 \begin{DIFnomarkup}\begin{code} 
 testCompiler :: 
   (Compiler String a, Executable x a b, Compiler b String) => 
@@ -3783,6 +3831,8 @@ Das zu testende Makro wird hier durch einen typisierten Aufruf von
 verwendet werden.
 
 \lsection[magicl:sum]{Zusammenfassung}
+
+\todo{Fortschritt für anforderungen}
 
 Für die Repräsentation von Quelltext benutzt MagicL das typisierte
 Modell \icode{Code}. Dadurch ist es möglich, mit Einrückung, Klammerung
@@ -3816,7 +3866,7 @@ eine minimale, funktionale \sexp{}-Sprache vorgestellt, die in legalen
 Haskell-Quellcode kompiliert wird.
 
 Bei dem Entwurf eines neuen Compilers muss zunächst entschieden
-werden, ob die Verarbeitung mittels typisierter Modell oder direkt
+werden, ob die Verarbeitung mittels typisierter Modelle oder direkt
 untypisiert auf den \sexps{} erfolgen soll. Typisierte Modelle erhöhen
 den Entwicklungsaufwand\footnote{Die zukünftige Entwicklung einer
   geeigneten DSL zur Modellbeschreibung, aus der sowohl das typisierte
@@ -3846,8 +3896,9 @@ werden:
 =>
 (myFun 1 4 52)              Haskell
 \end{code}\end{DIFnomarkup}
-Haskell-Infixoperatoren werden in Präfixnotation überführt und können
-in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
+Die Pseudo-Syntax \icode{=>} steht hier für ``soll übersetzt werden
+nach''.  Haskell-Infixoperatoren werden in Präfixnotation überführt und
+können in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
 \begin{DIFnomarkup}\begin{code}
 (+ 1 4 (- 52 10 4))         Sexp-Haskell
 =>
@@ -3862,7 +3913,7 @@ entspricht:
 \begin{DIFnomarkup}\begin{code}
 (foldr1 * xs)               Sexp-Haskell
 =>
-(foldr1 (*) xs))            Haskell
+(foldr1 (*) xs)             Haskell
 
 ergibt 24 mit xs = [1, 2, 3, 4]
 \end{code}\end{DIFnomarkup}
@@ -4032,6 +4083,10 @@ eine Liste von Toplevel-Definitionen:
 \begin{DIFnomarkup}\begin{code}
 data Haskell = Haskell (Maybe Module) [Toplevel]
 \end{code}\end{DIFnomarkup}
+Man beachte, dass hier sowohl der Typ als auch der Konstruktor
+\icode{Haskell} heißen -- ein übliches Vorgehen, falls ein Datentyp nur
+einen Konstrukter besitzt.
+
 Eine Modulbeschreibung besteht aus einem Namen, einer optionalen Liste
 exportierter Symbole sowie einer Liste von Imports, wobei hier obige
 vier Arten vorkommen können:
@@ -4044,8 +4099,8 @@ data ImportArgs = Simple
                 | Only [String]
                 | Hiding [String]
 \end{code}\end{DIFnomarkup}
-Auf Toplevel-Ebene können Typzuweisungen, Funktionen, Typaliase,
-Datentypen, Klassen und Instanzen definiert werden:
+Auf Toplevel-Ebene können Typzuweisungen, Funktionsdefinitionen,
+Typaliase sowie Deklarationen von Datentypen, Klassen und Instanzen stehen:
 \begin{DIFnomarkup}\begin{code}
 data Toplevel = TopHasType HasType
               | TopDef Def
@@ -4198,7 +4253,7 @@ Datentyp \icode{Code} aus \sref{magicl:code} umgewandelt. Dieser
 Kompilationsschritt kann ebenfalls auf verschiedene Arten durchgeführt
 werden. Am simpelsten und pragmatischsten wäre wohl eine direkte
 Verwendung in Haskell-Funktionen, die sich gegenseitig
-Referenzieren. Stattdessen wurde der Compiler allerdings wieder
+referenzieren. Stattdessen wurde der Compiler allerdings wieder
 anhand der Typklasse \icode{Compilable} konstruiert, um zu
 demonstrieren, wie neben Parsern auch Funktionen in diesem Rahmen
 verwendet werden können -- generell können alle Typen verwendet werden,
@@ -4290,8 +4345,12 @@ compiler ((compile :: IOArrow [Sexp] Haskell) >>>
 Für die \sexp{}-basierte Erzeugung von Haskell-Code stellt MagicL die
 Sprache \sexp{}-Haskell bereit, welche im Wesentlichen eine geklammerte
 Haskell-Teilmenge darstellt und nur wenige Umbenennungen und andere
-Anpassungen beinhaltet, wie beispielsweise die Erweiterung vorher
-binärer Operatoren auf beliebig viele Argumente.
+Anpassungen beinhaltet, wie beispielsweise die Erweiterung aller binärer
+Operatoren auf beliebig viele Argumente\footnote{Als Operator werden
+  Symbole interpretiert, die keine Buchstaben oder Zahlen
+  enthalten. Beispielsweise würde \icode{(<+> a b c)} nach \icode{(a <+> b <+>
+    c)} übersetzt werden. Die Entscheidung über Links- oder
+  Rechtsassoziativität eines Operators trifft anschließend Haskell.}.
 
 \fig{flow_sexphs}{Kompilationsprozess von \sexp{}-Haskell}
 
@@ -4348,6 +4407,8 @@ sich selbst am besten in \sexp{}-Compiler formulieren, so dass die
 Implementation metarekursiv erfolgt.
 
 \lsection[sexpcomp:spec]{Spezifikation}
+
+\todo{text}
 
 \lsubsection[sexpcomp:spec:gen]{Templates für \sexps}
 
@@ -4507,24 +4568,27 @@ Compiler-Namen \icode{compPredefine} und dem Symbolnamen
 eine Haskell-Variable erzeugt und damit Sonderzeichen wie \icode{-}
 ausschließt.
 
-Diese Makros unterscheiden sich allerdings von anderen Lisp-Makros, da
-der Kontrollfluss hier explizit gesteuert wird. Lisp-Makrosysteme
-hingegen besitzen eine globale Liste von Makros, die auf jeden zu
-expandierenden Ausdruck angewendet wird. Trifft kein Makro zu, wird der
-Knotenname beibehalten und die Kinder rekursiv expandiert. Derartige
-Makros, die automatisch in einen rekursiv absteigenden Compiler
-integriert werden, sollen mittels \icode{autoMac} definiert werden
-können:
+Diese Makros müssen immer explizit aufgerufen werden und unterscheiden
+sich damit von Lisp-Makros, die in einer globalen Liste verwaltet und
+automatisch gegen jeden zu expandierenden Ausdruck geprüft und bei
+Namensgleichheit angewendet wird \sees{template:lisp}. Beide Ansätze
+haben Vor- und Nachteile: Der direkte Aufruf bringt eine höhere
+Flexibilität und ermöglicht die in \sref{reqs:template} geforderderten
+lokalen Makros. Lisp-Makros sparen dafür in Fällen, wo globale Makros
+unproblematisch sind, unnötige Schreibarbeit. Aus diesem Grund stellt
+MagicL zusätzlich den Operator \icode{autoMac} bereit, mit dem (für
+einen Compiler) globale und automatisch expandierte Makros definiert
+werden können:
 \begin{DIFnomarkup}\begin{code}
 (autoMac compSomething something
     (compileSomething)
   (where ...))
 \end{code}\end{DIFnomarkup}
-Hier wird weiterhin ein Haskell-Name erwartet, obwohl dieser im
-Normalfall aufgrund der automatischen Anwendung nicht benötigt wird. Es
-gibt allerdings besondere Situationen, in denen ein direkter Aufruf
-dennoch erforderlich ist. Allgemein ist die Definition
-mittels \icode{mac} sowie \icode{autoMac}, verglichen mit
+\icode{autoMac} erwartet an erster Stelle weiterhin einen Haskell-Namen
+erwartet, obwohl dieser im Normalfall aufgrund der automatischen
+Anwendung nicht benötigt wird. Es gibt allerdings besondere Situationen,
+in denen ein direkter Aufruf dennoch erforderlich ist. Allgemein ist die
+Definition mittels \icode{mac} sowie \icode{autoMac}, verglichen mit
 \icode{defmacro} in Common Lisp, etwas umständlicher, da neben dem
 Haskell-Namen der Parser explizit aufgeschrieben werden muss, selbst
 wenn nur eine feste Anzahl von Ausdrücken mittels \icode{take}
@@ -4579,24 +4643,24 @@ einbindet:
 
 \lsection[sexpcomp:impl]{Compiler-Implementation}
 
-Dieser Compiler sollte selbst möglichst einfach formuliert werden. Da
-\sexps{} verarbeitet werden, macht eine Implementation als
-\icode{SexpParser} Sinn. Darüber hinaus werden aber auch \sexps{}
-erzeugt, so dass hier auch Quasiquote-Notation und Lisp-Makros selbst
-bereits benutzt werden sollten. Es wird sich daher um einen
-metarekursiven Compiler handeln, d.h. einen Compiler, der sich selbst
-übersetzt. Um hier das Henne-Ei-Problem zu lösen, wird wie im
+Der Compiler für die Compiler-DSL sollte selbst möglichst einfach
+formuliert werden. Da \sexps{} verarbeitet werden, macht eine
+Implementation als \icode{SexpParser} Sinn. Darüber hinaus werden aber
+auch \sexps{} erzeugt, so dass hier auch Quasiquote-Notation und
+Lisp-Makros selbst bereits benutzt werden sollten. Es wird sich daher um
+einen metarekursiven Compiler handeln, d.h. einen Compiler, der sich
+selbst übersetzt. Um hier das Henne-Ei-Problem zu lösen, wird wie im
 Compilerbau üblich später ein Bootstrapping\footnote{Der Begriff
   Bootstrapping ist eine Anspielung auf Baron Münchhausen, der sich an
   seinen Schnürsenkeln aus dem Sumpf gezogen haben will.} erforderlich
 sein. Metarekursive Programme sind in der Lisp-Welt nicht unüblich --
 bereits der erste LISP\footnote{LISP ist der erste Dialekt der
   Sprachfamilie Lisp.}-Interpreter wurde als \icode{eval}-Funktion in
-LISP selbst implementiert und dann manuell in Maschinensprache
-übersetzt \cite{LispHistory}. Ein anderes prominentes Beispiel ist das
-Common Lisp Object System (CLOS) \cite{MetaobjectProtocol}, welches
-selbst objektorientiert mit CLOS implementiert ist und über Makros in
-ein ``objektfreies Common Lisp'' übersetzt werden kann.
+LISP selbst implementiert und dann manuell in Maschinensprache übersetzt
+\cite{LispHistory}. Ein anderes prominentes Beispiel ist das Common Lisp
+Object System (CLOS) \cite{MetaobjectProtocol}, welches selbst
+objektorientiert mit CLOS implementiert ist und über Makros in ein
+``objektfreies Common Lisp'' übersetzt werden kann.
 
 Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
 vorhanden und könnte für die Implementation genutzt werden. Die
@@ -4745,17 +4809,19 @@ Auf die konkrete Implementation des Toplevel-Compiler-Compilers wird an
 dieser Stelle nicht weiter eingegangen -- sie kann dem MagicL-Code
 für das Modul \icode{Comp2Haskell} entnommen werden.
 
-\lsubsection[sexpcomp:impl:example]{Beispiel: Ignorieren von Kommentaren}
+\lsection[sexpcomp:example]{Beispiel: Ignorieren von Kommentaren}
 
-Praktisch alle Programmiersprachen benötigen die Möglichkeit von
-Kommentaren, welche bei der Verarbeitung ignoriert werden. Meistens
-gibt es eine besondere Kommentar-Syntax -- Lisp-Dialekte verwenden
-beispielsweise Semikolons. Da MagicL allerdings auf jede weitere
-Syntax verzichtet, sollen Kommentare hier ebenfalls in \sexps{}
-codiert werden. Dafür sollen Ausdrücke der Form \icode{(comment ...)}
-einfach ignoriert werden. Diese Funktionalität ist in MagicL durch
-einen kleinen {Präprocessor} gegeben, welcher vor beliebige andere
-Compiler geschaltet werden kann.
+\todo{Lieber Slide-Beispiel}
+
+Praktisch alle Programmiersprachen bieten eine Syntax für Kommentare,
+welche bei der Verarbeitung ignoriert werden. Meistens gibt es eine
+besondere Kommentar-Syntax -- Lisp-Dialekte verwenden beispielsweise
+Semikolons. Da MagicL allerdings auf jede weitere Syntax verzichtet,
+sollen Kommentare hier ebenfalls in \sexps{} codiert werden. Dafür
+sollen Ausdrücke der Form \icode{(comment ...)}  einfach ignoriert
+werden. Diese Funktionalität ist in MagicL durch einen kleinen
+{Präprocessor} gegeben, welcher vor beliebige andere Compiler geschaltet
+werden kann.
 
 Das Modul \icode{Preprocessor} besteht aus vier Zeilen Code:
 \begin{DIFnomarkup}\begin{code}
@@ -4802,11 +4868,41 @@ erlauben Auto-Makros die für Lisp typische automatische Auswertung an
 beliebiger Tiefe sowie die wiederholte Makroexpansion von
 Rückgabeausdrücken anderer Makros.
 
+\lchapter[disc]{Diskussion}
+
+\todo{vergleich mit anderen frameworks, ebnf}
+
+\begin{figure}[h]
+\begin{tabular}{|l|l|l|} \hline
+\bf Werkzeug                 & \bf MagicL                    & \bf erfüllt?  \\\hline\hline    
+\bf Eingabemodell            & \sexp{} / beliebig            &     ja        \\\hline           
+\bf Eingabevalidierung       & beliebig                      &     ja        \\\hline      
+\bf Ausgabemodell            & \sexp{} / beliebig            &     ja        \\\hline      
+\bf Ausgabevalidierung       & beliebig                      &     ja        \\\hline      
+\bf Zielsprache              & beliebig                      &     ja        \\\hline      
+\bf Quasiquote               & \icode{(' .. )}               &     ja        \\\hline   
+\bf Unquote                  & \icode{(, .. )}               &     ja        \\\hline
+\bf vollständiges Quasiquote & ja                            &     ja        \\\hline      
+\bf Code-Objekt verfügbar    & ja                            &     ja        \\\hline      
+\bf Sprachmächtigkeit        & maximal                       &     ja        \\\hline      
+\bf Metaprogrammlänge        & kurz                          & teilweise     \\\hline
+\bf Template-Aufruf          & verallgemeinertes Makro       &     ja        \\\hline      
+\bf Komponententrennung      & unterstützt                   &     ja        \\\hline      
+\bf Template-Generierung     & einfach durch \icode{'1} etc. &     ja        \\\hline      
+\end{tabular}
+\caption{Erfüllung der Anforderungen an MagicL}
+\label{magicl:fig:disc_reqs}
+\end{figure}
+
 \lchapter[end]{Schluss}
+
+\todo{Text}
 
 \lsection[end:sum]{Zusammenfassung}
 
-Ziel dieser Diplomarbeit war die prototypische Entwicklung eines
+\todo{neue Struktur}
+
+Ziel dieser Diplomarbeit ist die prototypische Entwicklung eines
 universellen Frameworks namens MagicL zur \cgen{}, welches möglichst
 viele Vorteile bestehender Technologien im Rahmen eines klaren,
 einheitlichen Formalismus in sich vereint. Insbesondere die mächtigen
@@ -4836,7 +4932,7 @@ Template-Konzepts, ansonsten sind die strukturellen Unterschiede
 allerdings groß. Manche Frameworks können Code in beliebigen Sprachen
 generieren, andere beschränken sich auf eine einzelne Sprache oder
 Sprachfamilie. Alle drei Modelltypen aus \cref{model} werden in
-verschiedenen Systemen verwendet, allerdings keines bietet diese
+verschiedenen Systemen verwendet, allerdings bietet keines diese
 gleichzeitig an. Die Bandbreite der einzelnen Metasprachen reicht von
 kaum mehr als dem bloßen Template-Formalismus aus Quasiquote und Unquote
 bis hin zu vollständigen Programmiersprachen. Werkzeugen, in denen Meta- und
@@ -4896,7 +4992,7 @@ verwendet häufig Monaden, mit denen die Verarbeitung bestimmter
 parametrisierter Typen einheitlich beschrieben werden kann. Beispiele
 hierfür sind Listen sowie Variablen, die Null-Pointer enthalten dürfen
 sowie das Weiterreichen von Zuständen. Die \icode{IO}-Monade lässt sich
-als versteckter, hypothetischer Welt-Zustandes verstehen und wird in
+als versteckter, hypothetischer Welt-Zustand verstehen und wird in
 Haskell verwendet, um Operationen mit Seiteneffekten in die ansonsten
 pur funktionale Sprache integrieren zu können.
 
@@ -4905,7 +5001,7 @@ möglichst allgemein zu bleiben. In \cref{arrowparser} wurde gezeigt, wie
 Parser-Arrows durch eine Verschachtelung der einfachen Typen
 \icode{FailFunctor} und \icode{StateFunctor} konstruiert werden
 können. \icode{FailFunctor} kapselt hierbei die Möglichkeit, mit der
-Rückgabe einer Fehlermeldung zu Scheitern, während \icode{StateFunctor}
+Rückgabe einer Fehlermeldung zu scheitern, während \icode{StateFunctor}
 die Weitergabe eines Zustandes analog zur \icode{IO}-Monade beschreibt
 und für den Eingabe-Stream verwendet wird. Darüber hinaus wurde eine mit
 EBNF vergleichbare, jedoch allgemeinere und erweiterbare
@@ -4953,7 +5049,9 @@ hinaus wurden sogenannte Auto-Makros bereitgestellt, welche die
 Lisp-Semantik einer globalen Makro-Liste, die automatisch rekursiv von
 außen nach innen auf eines Syntaxbaum angewendet wird, wiederspiegelt.
 
-\lsection[end:disc]{Diskussion und Ausblick}
+\lsection[end:disc]{Ausblick}
+
+\todo{Diskussionsteile vorziehen}
 
 MagicL erfüllt alle in \cref{reqs} gestellten Anforderungen. Es ist ein
 \cgen{}sframework, in dem einfache Compiler nach dem Baukastenprinzip
@@ -4962,7 +5060,7 @@ können. Obwohl der Schwerpunkt auf der Verarbeitung von \sexps{} liegt,
 können beliebige Datentypen für Modelle verwendet werden. Auch können
 beliebige Programmier- und Auszeichnungssprachen eingelesen oder
 generiert werden, weshalb es sich um ein universelles Framework handelt.
-Die gegenüber List verallgemeinerte Definition von Makros als Parsern
+Die gegenüber Lisp verallgemeinerte Definition von Makros als Parser
 auf \sexp{}-Streams ermöglicht einen sehr flexiblen Kontrollfluss sowie
 die Verwendung einer Arrow-basierten, erweiterbaren
 Kombinatorbibliothek, die mächtiger ist als EBNF oder XPath-Patterns
@@ -5040,7 +5138,7 @@ Kompromisses aus Universalität und Lisp-Komfort, bieten allerdings mit
 Sicherheit nicht das Optimum in beiden Hinsichten. Eine interessante
 Erweiterung wären eventuell ``lokale Auto-Makros'', die zwar in jeder
 Verschachtelungstiefe, dennoch nur innerhalb eines oder mehrerer
-speziellen Makros ausgewertet wird. 
+spezieller Makros ausgewertet werden. 
 
 Es könnte auch sinnvoll sein, statt \sexp{}-Haskell und \sexp{}-Compiler
 eine allgemeine, Arrow-basierte Compiler-DSL mit ``Plugin-Subsprachen''
@@ -5066,10 +5164,12 @@ data Tree a = Node [Tree a]
 \end{code}\end{DIFnomarkup}
 Damit könnten Parser, Makros etc. unabhängig von der Frage nach dem
 Blatttyp konstruiert werden. Die bisherigen \sexps{} entsprechen dann
-\icode{Tree String}, eventuell macht allerdings auch eine Repräsentation
-als \icode{Tree Char} Sinn, bei der Symbole selbst als Stream von
-Buchstaben aufgefasst werden und daher direkt mit denselben Parsern
-verarbeitet werden können. 
+\icode{Tree String}, eventuell ist allerdings auch eine Repräsentation
+als \icode{Tree Char} sinnvoll, bei der Symbole selbst als Stream von
+Buchstaben aufgefasst werden und daher ohne zusätzlichen Aufwand auch
+mit String-Parsern gelesen werden könnten. Dies würde allerdings nicht
+zur Konvention passen, das erste Element einer Liste immer als
+Knotennamen zu verstehen.
 
 Erweiterungspotenzial gibt es ebenfalls bei der generischen
 Compiler-Schnittstelle, welche zwar das automatische Finden von
@@ -5099,9 +5199,9 @@ Entwicklungsumgebungen profitieren. Es gibt keinen Grund, weshalb
 müssen. Vielmehr wäre ein struktureller Baumeditor zu bevorzugen --
 analog zur Präferenz von \sexp{}-Templates gegenüber Strings. Der
 ParEdit-Mode \cite{Paredit} für Emacs \cite{Emacs} ist ein Schritt in
-diese Richtung, da dieser zwar die weiterhin Text anzeigt, seine
-Steuerung allerdings komplett Baum-basiert ist. Damit wird es
-beispielsweise unmöglich, unbalancierte Klammern zu erzeugen.
+diese Richtung, da dieser zwar weiterhin Text anzeigt, seine Steuerung
+allerdings fast komplett Baum-basiert ist. Damit wird es beispielsweise
+unmöglich, unbalancierte Klammern zu erzeugen.
 
 Noch besser wäre allerdings der komplette Umstieg auf Bäume im Editor,
 womit beispielsweise gezieltes Ausblenden von Sub-Ausdrücken erleichtert
@@ -5112,7 +5212,7 @@ nahezu unbegrenzte Möglichkeiten nach sich zieht. Beispielsweise könnten
 Wurzeln, Brüche etc. in mathematischen Programmen graphisch ansprechend
 visualisiert oder programmiererspezifische Themes angeboten werden,
 welche die syntaktischen Strukturen gewohnter Programmiersprachen für
-bessere Lesbarkeit vortäuschen.
+bessere Lesbarkeit simulieren.
 
 \lsubsection[end:disc:db]{Datenbanken und Vernetzung}
 
@@ -5134,6 +5234,12 @@ Ein weiteres Arbeitsgebiet könnte die Möglichkeit von
 Echtzeitkollaboration durch Netzwerktransparenz von \sexps{}
 oder kommunizierende Datenbanken darstellen, vor allem im Zusammenhang
 mit der skizzierten Entwicklungsumgebung.
+
+\medskip{} 
+\todo{Schlusssatz}
+\todo{Literatur: Verlag/Ort bei Büchern, bei Web zuletzt zugegriffen}
+\todo{12Pt, auf Bindungsseite 1cm extra rand}
+
 
 \cleardoublepage
 
