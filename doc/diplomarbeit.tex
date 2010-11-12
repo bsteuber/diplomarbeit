@@ -2938,6 +2938,15 @@ Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 
 \lchapter[arch]{Das Framework MagicL}
 
+Arrow-Typen:
+\begin{itemize}
+\item Compiler: $*\ato *$
+\item Parser: $[*]\ato *$
+\item String-Parser: $[Char]\ato *$
+\item \sexp{}-Parser: $[Sexp]\ato *$
+\item Makro: $[Sexp]\ato [Sexp]$
+\end{itemize}
+
 Komponenten
 \begin{itemize}
 \item Arrow-Bibliothek
@@ -2952,6 +2961,8 @@ enthaltene Compiler
 \item Sexp-HS nach Haskell
 \item Sexp-Comp nach Sexp-HS
 \end{itemize}
+
+\fig{magicl_compilers}{Übersicht über in MagicL enthaltene Compiler}
 
 \todo{Architektur: Komponenten, Schichtenmodell}
 \todo{Mikroarchitektur: Parser, Makros etc. als Arrows}
