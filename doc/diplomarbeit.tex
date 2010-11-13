@@ -2927,28 +2927,23 @@ und Verwendung von MagicL.
 \lsection[arch:foo]{Aufbau von Compilern}
 
 Der Begriff Compiler wird im Folgenden als Oberbegriff für jegliche Art
-von Übersetzungfunktion, Dies schließt sowohl große, zusammengesetzte
-Compiler -- wie beispielsweise ein Übersetzer von Slide-DSL-Quelltext
-nach Latex-Quelltest -- ein als auch im kleine, atomare
-Übersetzungseinheiten, wie ein Makro was lediglich eine Aufzählungsliste
-verarbeitet. Dasselbe gilt für Parser und Generatoren.
+von Übersetzungfunktion verwendet. Dies schließt sowohl große, zusammengesetzte
+Compiler -- wie beispielsweise einen Übersetzer von Slide-DSL-Quelltext
+nach Latex-Quelltest -- als auch im kleine, atomare
+Übersetzungseinheiten -- wie ein Makro was lediglich eine Aufzählungsliste
+verarbeitet -- ein. Selbiges gilt für Parser und Generatoren.
 
 MagicL bietet 
 
-\fig{magicl_string_support}{Unterstützung der Zeichenketten-Ebene}
-\fig{magicl_sexp_support}{Unterstützung für \sexps{}}
+\lsubsubsection[magicl:model:string]{Werkzeuge für Zeichenketten}
+\lsubsubsection[magicl:model:sexp]{Werkzeuge für \sexps}
+\lsubsubsection[magicl:model:object]{Werkzeuge für Objekte}
 
 \fig{magicl_model_support}{Hilfsmittel für Compilerdefinitionen nach
   Ein- und Ausgabemodellen}
 
-Gewöhnlich besteht ein Übersetzungsprozess aus folgenden Einzelschritten:
-\begin{itemize}
-\item Ein Parser überführt den Eingabequelltext in ein strukturiertes
-  Modell.
-\item Das Modell ist die Eingabe für die eigentliche, beliebig komplexe
-  Übersetzungsfunktion, die ein anderes Modell zurückliefern.
-\item Ein Generator erzeugt daraus den Ausgabequelltext.
-\end{itemize}
+
+
 
 Da MagicL-DSLs gewöhnlich als \sexps{} repräsentiert werden, können
 sie alle denselben Parser wiederverwenden -- eigene Parser
