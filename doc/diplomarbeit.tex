@@ -2933,8 +2933,13 @@ nach Latex-Quelltest -- ein als auch im kleine, atomare
 Übersetzungseinheiten, wie ein Makro was lediglich eine Aufzählungsliste
 verarbeitet. Dasselbe gilt für Parser und Generatoren.
 
-\fig{magicl_basic_compilers}{Wiederverwendeter Parser und Generator
-für Zeichenketten}
+MagicL bietet 
+
+\fig{magicl_string_support}{Unterstützung der Zeichenketten-Ebene}
+\fig{magicl_sexp_support}{Unterstützung für \sexps{}}
+
+\fig{magicl_model_support}{Hilfsmittel für Compilerdefinitionen nach
+  Ein- und Ausgabemodellen}
 
 Gewöhnlich besteht ein Übersetzungsprozess aus folgenden Einzelschritten:
 \begin{itemize}
@@ -2966,7 +2971,7 @@ die Slide-DSL in die Latex-DSL. Da beides aus \sexps{} besteht, können
 hierfür Makros und \sexp{}-Templating verwendet werden, was gewöhnlich
 zu sehr kurzem und lesbarem Code führt.
 
-\lsection[arch:model]{Hilfsmittel für Compiler-Erstellung}
+\lsection[arch:model]{Modellspezifische Komponenten}
 
 \lsubsection[arch:lang:hask]{Haskell}
 
@@ -2976,9 +2981,6 @@ zu sehr kurzem und lesbarem Code führt.
 \item Generator-Bibliothek
 \item Test-Framework
 \end{itemize}
-
-\fig{magicl_string_support}{Unterstützung der Zeichenketten-Ebene}
-\fig{magicl_sexp_support}{Unterstützung für \sexps{}}
 
 
 \lsubsection[arch:lang:hask-dsl]{Haskell-DSL}
