@@ -1815,7 +1815,7 @@ redundanzfreier notieren als in einer typisierten Form.
 Da sowohl Objekte als auch \sexps{} in bestimmten Anwendungsfällen von
 Vorteil sind, sollte MagicL beide Formen unterstützen. Auch die
 einfache Umwandlung von einer Repräsentation in die andere sollte
-möglich sein. Eingabesprachen werden dann üblicherweise in \sexps{}
+möglich sein. DSLs werden dann üblicherweise in \sexps{}
 repräsentiert, Modelltypen für die weitere Verarbeitung können variiert
 werden.
 
@@ -1938,29 +1938,10 @@ Grundlagenarbeit benötigt wird.
 
 MagicL soll einen minimalen und modularen Entwurf von Compilern
 unterstützen, um maximale Wiederverwendbarkeit von Komponenten und
-minimalen Entwicklungsaufwand für neue DSLs zu ermöglichen.
-Beispielsweise könnte ein Compiler von Slide-Quelltext nach PDF aus
-folgenden Komponenten bestehen:
-\begin{itemize}
-\item Da die Slide-DSL als \sexp{}-Sprache definiert ist, kann MagicL's
-  \sexp{}-Parser zum Einlesen der Slide-Quelldateien verwendet werden.
-\item Mittels Makros wird die Slide-DSL in eine Latex-DSL -- auch
-  \sexp{}-basiert -- übersetzt. Dieser Compiler ist die einzige
-  Slide-spezifische Komponente. 
-\item Ein Latex-Generator erzeugt aus der Latex-DSL
-  Latex-Quelltext. Idealerweise gibt es schon ein MagicL-Plugin für
-  diesen Zweck. Ansonsten müsste dies einmalig selbst mit Hilfe der
-  String-Generator-Bibliothek implementiert werden.
-\item Ein externer Latex-Prozessor erzeugt die PDF-Datei.
-\end{itemize}
-Später kann der bestehende Latex-Generator benutzt werden, um
-beispielsweise eine DSL für wissenschaftliche Arbeiten anzubieten. Auch
-können später Slide-Übersetzer für andere Backends wie z.B. HTML
-eingebunden werden.
-
-Damit dies funktioniert, muss MagicL eine allgemeine Schnittstelle
-definieren, mit der Parser, Makros, Generatoren und beliebige Funktionen
-einfach hintereinandergeschaltet werden können.  
+minimalen Entwicklungsaufwand für neue DSLs zu ermöglichen. Daher müssen
+verschiedene Parser, Compiler oder Generatoren einfach
+hintereinandergeschaltet werden können, wofür eine allgemeine
+Schnittstelle benötigt wird.
 
 \lsection[reqs:gentemp]{Generierung von Templates}
 
@@ -2936,39 +2917,81 @@ Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 
 \todo{anonyme Fns, \icode{$}} %$
 
-\lchapter[arch]{Das Framework MagicL}
+\lchapter[arch]{Architektur von MagicL}
 
-Arrow-Typen:
+Dieses Kapitel gibt einen grundlegenden Überblick über die Architektur
+und Verwendung von MagicL.
+
+\todo{statt Code-Modell von Generator-Bibliothek sprechen}
+
+\lsection[arch:foo]{Aufbau von Compilern}
+
+Der Begriff Compiler wird im Folgenden als Oberbegriff für jegliche Art
+von Übersetzungfunktion, Dies schließt sowohl große, zusammengesetzte
+Compiler -- wie beispielsweise ein Übersetzer von Slide-DSL-Quelltext
+nach Latex-Quelltest -- ein als auch im kleine, atomare
+Übersetzungseinheiten, wie ein Makro was lediglich eine Aufzählungsliste
+verarbeitet. Dasselbe gilt für Parser und Generatoren.
+
+\fig{magicl_basic_compilers}{Wiederverwendeter Parser und Generator
+für Zeichenketten}
+
+Gewöhnlich besteht ein Übersetzungsprozess aus folgenden Einzelschritten:
 \begin{itemize}
-\item Compiler: $*\ato *$
-\item Parser: $[*]\ato *$
-\item String-Parser: $[Char]\ato *$
-\item \sexp{}-Parser: $[Sexp]\ato *$
-\item Makro: $[Sexp]\ato [Sexp]$
+\item Ein Parser überführt den Eingabequelltext in ein strukturiertes
+  Modell.
+\item Das Modell ist die Eingabe für die eigentliche, beliebig komplexe
+  Übersetzungsfunktion, die ein anderes Modell zurückliefern.
+\item Ein Generator erzeugt daraus den Ausgabequelltext.
 \end{itemize}
 
-Komponenten
+Da MagicL-DSLs gewöhnlich als \sexps{} repräsentiert werden, können
+sie alle denselben Parser wiederverwenden -- eigene Parser
+müssen nur im Falle externer Eingabeformate geschrieben werden. Die
+Generierung erfolgt über ein enthaltenes Code-Modell \sees{todo}, mit dem
+formatierter Quelltext funktional beschrieben wird. Aus diesem Modell
+erzeugt MagicL die Ausgabe-Strings. \abb{magicl_basic_compilers} zeigt
+Parser und Generator als Pfeile zwischen den Modelltypen.
+
+\fig{magicl_latex_compiler}{Mögliche Übersetzung der Slide-DSL}
+
+Um nun beispielsweise einen Compiler von einer Slide-DSL nach Latex zu
+definieren, könnte ein Meta-Programmierer wie folgt vorgehen (siehe
+\abb{magicl_latex_compiler}): Zunächst ist es sinnvoll, für Latex eine
+eigene DSL bereitzustellen. Diese DSL ist praktisch eine ``geklammerte
+Version'' von Latex und muss nach Latex-Quelltext übersetzt
+werden. Hierfür muss einmalig ein Compiler von der Latex-DSL ins
+Code-Modell definiert werden. Der eigentliche Slide-Compiler übersetzt
+die Slide-DSL in die Latex-DSL. Da beides aus \sexps{} besteht, können
+hierfür Makros und \sexp{}-Templating verwendet werden, was gewöhnlich
+zu sehr kurzem und lesbarem Code führt.
+
+\lsection[arch:model]{Hilfsmittel für Compiler-Erstellung}
+
+\lsubsection[arch:lang:hask]{Haskell}
+
 \begin{itemize}
-\item Arrow-Bibliothek
+\item Generische Schnittstelle
 \item Parser-Bibliothek
 \item Generator-Bibliothek
+\item Test-Framework
 \end{itemize}
 
-enthaltene Compiler
-\begin{itemize}
-\item String nach Sexp
-\item Sexp nach String
-\item Sexp-HS nach Haskell
-\item Sexp-Comp nach Sexp-HS
-\end{itemize}
+\fig{magicl_string_support}{Unterstützung der Zeichenketten-Ebene}
+\fig{magicl_sexp_support}{Unterstützung für \sexps{}}
 
-\fig{magicl_compilers}{Übersicht über in MagicL enthaltene Compiler}
 
-\todo{Architektur: Komponenten, Schichtenmodell}
-\todo{Mikroarchitektur: Parser, Makros etc. als Arrows}
-\todo{weitere Komponenten hierher verschieben, exectutable etc. vereinfachen}
+\lsubsection[arch:lang:hask-dsl]{Haskell-DSL}
+
+\fig{magicl_hask_compiler}{Übersetzung der Haskell-DSL}
 \todo{sexphs-spezifikation hierher verschieben}
+
+\lsubsection[arch:lang:comp-dsl]{Compiler-DSL}
+
+\fig{magicl_comp_compiler}{Übersetzung der Compiler-DSL}
+
 \todo{sexpcomp-spec teilweise hierher}
+
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
@@ -3509,7 +3532,7 @@ verarbeiten können.
 \todo{Diskussion: Welche Anforderungen erfüllt, wie nah an kontextfreien
 Grammatiken?}
 
-\lchapter[magicl]{Weitere Komponenten von MagicL}
+\lchapter[magicl]{Weitere Komponenten}
 
 Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
 sowie die damit in \cref{sexphs} und \cref{sexpcomp} implementierten
