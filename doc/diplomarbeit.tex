@@ -1,4 +1,4 @@
-\documentclass[11pt, a4paper, bibgerm]{scrbook}
+\documentclass[12pt, a4paper, bibgerm]{scrbook}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -1139,7 +1139,7 @@ als Unquote der Metasprache interpretiert werden, was zu einem Fehler
 führt. Stattdessen muss dieses Unquote auf eine umständliche Weise,
 z.B. durch Escape-Sequenzen, erzeugt werden.
 
-\medskip
+\medskip{}
 
 Im Folgenden werden nun die Template-Prozessoren -- oder mit Templates
 verwandten Systeme -- PHP, StringTemplate, \cpp{}, Template Haskell, C, XSL
@@ -2924,39 +2924,65 @@ und Verwendung von MagicL.
 
 \todo{statt Code-Modell von Generator-Bibliothek sprechen}
 
-\lsection[arch:foo]{Aufbau von Compilern}
+\lsection[arch:comp]{Aufbau von Compilern}
 
-Der Begriff Compiler wird im Folgenden als Oberbegriff für jegliche Art
-von Übersetzungfunktion verwendet. Dies schließt sowohl große, zusammengesetzte
-Compiler -- wie beispielsweise einen Übersetzer von Slide-DSL-Quelltext
-nach Latex-Quelltest -- als auch im kleine, atomare
-Übersetzungseinheiten -- wie ein Makro was lediglich eine Aufzählungsliste
-verarbeitet -- ein. Selbiges gilt für Parser und Generatoren.
+Compiler sind in MagicL allgemein Übersetzungsprozesse (und damit
+Morphismen). Es kann sich dabei um elementare Teilschritte handeln wie
+ein Makro, das lediglich eine Aufzählungsliste verarbeitet, als auch um
+große, komplexe Übersetzer wie den kompletten Compiler von
+Slide-DSL-Quelltext nach Latex. Compiler können Baukastenartig mit
+Kombinatoren wie dem Kompositionsoperator zusammengesetzt werden.
 
-MagicL bietet 
+\fig{magicl_model_poss}{Mögliche Ein- und Ausgabemodelle von Compilern}
 
-\lsubsubsection[magicl:model:string]{Werkzeuge für Zeichenketten}
-\lsubsubsection[magicl:model:sexp]{Werkzeuge für \sexps}
-\lsubsubsection[magicl:model:object]{Werkzeuge für Objekte}
+Ein- und Ausgaben von Compilern können jeweils die drei Modelltypen
+Zeichenketten, \sexps{} und Objekte sein, so dass sich insgesamt neun
+mögliche Compilertypen ergeben, welche in \abb{magicl_model_poss} als
+Pfeile eingezeichnet sind. MagcicL bietet in Abhängigkeit der
+Modelltypen verschiedene Hilfsmittel für die Erstellung von Compilern
+an:
+
+\lsubsubsection[magicl:comp:string]{Zeichenketten}
+
+Für das Einlesen von Zeichenketten steht eine Parser-Bibliothek zur
+Verfügung. Parser sind wie Compiler spezielle Morphismen und lassen sich
+ebenfalls durch Komposition und andere Kombinatoren aus kleinen,
+atomaren Bausteinen zusammensetzen. Die Erzeugung von Quelltext
+geschieht mit Hilfe einer funktionalen Generator-Bibliothek.
+
+\lsubsubsection[magicl:comp:sexp]{\sexps}
+
+\sexps{} werden in MagicL ebenfalls durch Parser verarbeitet, da diese
+genau wie Strings als Listen von Token gesehen werden können -- auch
+wenn die Token hier nicht immer atomar sind. Eine
+\sexp{}-Parser-Bibliothek erweitert daher die allgemeine
+Parser-Bibliothek um \sexp{}-spezifische Funktionalität. Die Anforderung
+``verallgemeinerter Makros'' erfüllt MagicL genau durch das Konzept der
+\sexp{}-Parser. Das Erzeugen von \sexps{} erfolgt durch den
+Quasiquote-Operator. Für den häufigen Fall einer Übersetzung von
+\sexps{} nach \sexps{} stehen zudem gewohnte Lisp-Makros bereit, die
+automatisch an jeder Stelle des Syntaxbaumes expandiert werden.
+
+\lsubsubsection[magicl:comp:object]{Objekte}
+
+Die Verarbeitung von Objekten erfolgt durch gewöhnliche
+Haskell-Funktionen, so dass MagicL hier keine eigene Funktionalität
+bereitstellen muss. 
+
+\medskip{}
 
 \fig{magicl_model_support}{Hilfsmittel für Compilerdefinitionen nach
   Ein- und Ausgabemodellen}
 
+\abb{magicl_model_support} zeigt, welche Hilfsmittel für
+welche der neun Compiler-Typen benutzt werden können.
 
-
-
-Da MagicL-DSLs gewöhnlich als \sexps{} repräsentiert werden, können
-sie alle denselben Parser wiederverwenden -- eigene Parser
-müssen nur im Falle externer Eingabeformate geschrieben werden. Die
-Generierung erfolgt über ein enthaltenes Code-Modell \sees{todo}, mit dem
-formatierter Quelltext funktional beschrieben wird. Aus diesem Modell
-erzeugt MagicL die Ausgabe-Strings. \abb{magicl_basic_compilers} zeigt
-Parser und Generator als Pfeile zwischen den Modelltypen.
+\lsubsubsection[magicl:comp:example]{Beispiel: Übersetzung der Slide-DSL}
 
 \fig{magicl_latex_compiler}{Mögliche Übersetzung der Slide-DSL}
 
-Um nun beispielsweise einen Compiler von einer Slide-DSL nach Latex zu
-definieren, könnte ein Meta-Programmierer wie folgt vorgehen (siehe
+Um einen Compiler von einer Slide-DSL nach Latex zu definieren, könnte
+ein Meta-Programmierer wie folgt vorgehen (siehe
 \abb{magicl_latex_compiler}): Zunächst ist es sinnvoll, für Latex eine
 eigene DSL bereitzustellen. Diese DSL ist praktisch eine ``geklammerte
 Version'' von Latex und muss nach Latex-Quelltext übersetzt
@@ -2966,7 +2992,7 @@ die Slide-DSL in die Latex-DSL. Da beides aus \sexps{} besteht, können
 hierfür Makros und \sexp{}-Templating verwendet werden, was gewöhnlich
 zu sehr kurzem und lesbarem Code führt.
 
-\lsection[arch:model]{Modellspezifische Komponenten}
+\lsection[arch:lang]{Verwendete Sprachen}
 
 \lsubsection[arch:lang:hask]{Haskell}
 
