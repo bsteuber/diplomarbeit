@@ -68,7 +68,7 @@
         <dia:point val="17.7952,11.8725"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="17.7952,10.9375;24.8102,12.11"/>
+        <dia:rectangle val="17.7952,10.9375;25.7302,12.11"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -76,7 +76,7 @@
             <dia:string>#S-Expressions#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
-            <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
+            <dia:font family="sans" style="88" name="Helvetica-BoldOblique"/>
           </dia:attribute>
           <dia:attribute name="height">
             <dia:real val="1.258711073435679"/>
@@ -125,7 +125,7 @@
         <dia:point val="6.275,-0.61875"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="6.275,-1.55375;13.5625,-0.38125"/>
+        <dia:rectangle val="6.275,-1.55375;14.43,-0.38125"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -133,7 +133,7 @@
             <dia:string>#Zeichenketten#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
-            <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
+            <dia:font family="sans" style="88" name="Helvetica-BoldOblique"/>
           </dia:attribute>
           <dia:attribute name="height">
             <dia:real val="1.258711073435679"/>
@@ -269,15 +269,15 @@
     </dia:object>
     <dia:object type="Standard - Text" version="1" id="O7">
       <dia:attribute name="obj_pos">
-        <dia:point val="18.375,15.85"/>
+        <dia:point val="14.575,15.7"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="18.375,14.915;24.3675,16.0875"/>
+        <dia:rectangle val="14.575,14.765;27.7525,15.9375"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#Lisp-Makros#</dia:string>
+            <dia:string>#Lisp-Makros &amp; Quasiquote#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
@@ -286,7 +286,7 @@
             <dia:real val="1.258711073435679"/>
           </dia:attribute>
           <dia:attribute name="pos">
-            <dia:point val="18.375,15.85"/>
+            <dia:point val="14.575,15.7"/>
           </dia:attribute>
           <dia:attribute name="color">
             <dia:color val="#000000"/>
@@ -305,7 +305,7 @@
         <dia:point val="30.225,-0.61875"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="30.225,-1.55375;34.155,-0.38125"/>
+        <dia:rectangle val="30.225,-1.55375;34.6625,-0.38125"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -313,7 +313,7 @@
             <dia:string>#Objekte#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
-            <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
+            <dia:font family="sans" style="88" name="Helvetica-BoldOblique"/>
           </dia:attribute>
           <dia:attribute name="height">
             <dia:real val="1.258711073435679"/>
@@ -452,12 +452,12 @@
         <dia:point val="30.375,8.3"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="30.375,7.365;40.475,8.5375"/>
+        <dia:rectangle val="30.375,7.33569;36.5093,8.59613"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#S-Expression-Parser#</dia:string>
+            <dia:string>#Sexp-Parser#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
@@ -616,6 +616,63 @@
       </dia:attribute>
       <dia:attribute name="end_arrow_width">
         <dia:real val="0.5"/>
+      </dia:attribute>
+    </dia:object>
+    <dia:object type="Standard - Arc" version="0" id="O19">
+      <dia:attribute name="obj_pos">
+        <dia:point val="6.82477,-2.01674"/>
+      </dia:attribute>
+      <dia:attribute name="obj_bb">
+        <dia:rectangle val="4.25,-3.7525;6.93589,-0.765142"/>
+      </dia:attribute>
+      <dia:attribute name="conn_endpoints">
+        <dia:point val="6.82477,-2.01674"/>
+        <dia:point val="5.57477,-1.11674"/>
+      </dia:attribute>
+      <dia:attribute name="curve_distance">
+        <dia:real val="2.3314913188582764"/>
+      </dia:attribute>
+      <dia:attribute name="end_arrow">
+        <dia:enum val="22"/>
+      </dia:attribute>
+      <dia:attribute name="end_arrow_length">
+        <dia:real val="0.5"/>
+      </dia:attribute>
+      <dia:attribute name="end_arrow_width">
+        <dia:real val="0.5"/>
+      </dia:attribute>
+    </dia:object>
+    <dia:object type="Standard - Text" version="1" id="O20">
+      <dia:attribute name="obj_pos">
+        <dia:point val="-3.6,-4.0175"/>
+      </dia:attribute>
+      <dia:attribute name="obj_bb">
+        <dia:rectangle val="-3.6,-4.98181;12.0568,-3.72137"/>
+      </dia:attribute>
+      <dia:attribute name="text">
+        <dia:composite type="text">
+          <dia:attribute name="string">
+            <dia:string>#String-Parser &amp; Generator-Bibl.#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="font">
+            <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
+          </dia:attribute>
+          <dia:attribute name="height">
+            <dia:real val="1.258711073435679"/>
+          </dia:attribute>
+          <dia:attribute name="pos">
+            <dia:point val="-3.6,-4.0175"/>
+          </dia:attribute>
+          <dia:attribute name="color">
+            <dia:color val="#000000"/>
+          </dia:attribute>
+          <dia:attribute name="alignment">
+            <dia:enum val="0"/>
+          </dia:attribute>
+        </dia:composite>
+      </dia:attribute>
+      <dia:attribute name="valign">
+        <dia:enum val="3"/>
       </dia:attribute>
     </dia:object>
   </dia:layer>

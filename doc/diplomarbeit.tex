@@ -2930,7 +2930,7 @@ Compiler sind in MagicL allgemein Übersetzungsprozesse (und damit
 Morphismen). Es kann sich dabei um elementare Teilschritte handeln wie
 ein Makro, das lediglich eine Aufzählungsliste verarbeitet, als auch um
 große, komplexe Übersetzer wie den kompletten Compiler von
-Slide-DSL-Quelltext nach Latex. Compiler können Baukastenartig mit
+Slide-DSL-Quelltext nach Latex. Compiler können baukastenartig mit
 Kombinatoren wie dem Kompositionsoperator zusammengesetzt werden.
 
 \fig{magicl_model_poss}{Mögliche Ein- und Ausgabemodelle von Compilern}
@@ -2942,7 +2942,7 @@ Pfeile eingezeichnet sind. MagcicL bietet in Abhängigkeit der
 Modelltypen verschiedene Hilfsmittel für die Erstellung von Compilern
 an:
 
-\lsubsubsection[magicl:comp:string]{Zeichenketten}
+\lsubsubsection[arch:comp:string]{Zeichenketten}
 
 Für das Einlesen von Zeichenketten steht eine Parser-Bibliothek zur
 Verfügung. Parser sind wie Compiler spezielle Morphismen und lassen sich
@@ -2950,7 +2950,7 @@ ebenfalls durch Komposition und andere Kombinatoren aus kleinen,
 atomaren Bausteinen zusammensetzen. Die Erzeugung von Quelltext
 geschieht mit Hilfe einer funktionalen Generator-Bibliothek.
 
-\lsubsubsection[magicl:comp:sexp]{\sexps}
+\lsubsubsection[arch:comp:sexp]{\sexps}
 
 \sexps{} werden in MagicL ebenfalls durch Parser verarbeitet, da diese
 genau wie Strings als Listen von Token gesehen werden können -- auch
@@ -2958,12 +2958,15 @@ wenn die Token hier nicht immer atomar sind. Eine
 \sexp{}-Parser-Bibliothek erweitert daher die allgemeine
 Parser-Bibliothek um \sexp{}-spezifische Funktionalität. Die Anforderung
 ``verallgemeinerter Makros'' erfüllt MagicL genau durch das Konzept der
-\sexp{}-Parser. Das Erzeugen von \sexps{} erfolgt durch den
-Quasiquote-Operator. Für den häufigen Fall einer Übersetzung von
-\sexps{} nach \sexps{} stehen zudem gewohnte Lisp-Makros bereit, die
-automatisch an jeder Stelle des Syntaxbaumes expandiert werden.
+\sexp{}-Parser. \sexp{}-Parser, die selbst \sexps{} generieren, werden
+als Lisp-Makros\footnote{Es handelt sich hierbei nicht exakt um eine
+  Nachbildung von Makros in Lisp -- sie sind aber bereits deutlich näher
+  an Lisp-Makros als allgemeine \sexp{}-Parser.} bezeichnet und werden
+durch einige Hilfsfunktionen und eine spezielle Syntax besonders
+unterstützt. Das Erzeugen von \sexps{} erfolgt durch einen
+Quasiquote-Operator.
 
-\lsubsubsection[magicl:comp:object]{Objekte}
+\lsubsubsection[arch:comp:object]{Objekte}
 
 Die Verarbeitung von Objekten erfolgt durch gewöhnliche
 Haskell-Funktionen, so dass MagicL hier keine eigene Funktionalität
@@ -2971,28 +2974,49 @@ bereitstellen muss.
 
 \medskip{}
 
+\abb{magicl_model_support} zeigt, welche Hilfsmittel für die Erstellung
+der neun verschiedenen Compiler-Typen verwendet werden können.
+
 \fig{magicl_model_support}{Hilfsmittel für Compilerdefinitionen nach
   Ein- und Ausgabemodellen}
 
-\abb{magicl_model_support} zeigt, welche Hilfsmittel für
-welche der neun Compiler-Typen benutzt werden können.
-
-\lsubsubsection[magicl:comp:example]{Beispiel: Übersetzung der Slide-DSL}
+\lsubsubsection[arch:comp:example]{Beispiel: Übersetzung der Slide-DSL}
 
 \fig{magicl_latex_compiler}{Mögliche Übersetzung der Slide-DSL}
 
-Um einen Compiler von einer Slide-DSL nach Latex zu definieren, könnte
-ein Meta-Programmierer wie folgt vorgehen (siehe
-\abb{magicl_latex_compiler}): Zunächst ist es sinnvoll, für Latex eine
-eigene DSL bereitzustellen. Diese DSL ist praktisch eine ``geklammerte
-Version'' von Latex und muss nach Latex-Quelltext übersetzt
-werden. Hierfür muss einmalig ein Compiler von der Latex-DSL ins
-Code-Modell definiert werden. Der eigentliche Slide-Compiler übersetzt
-die Slide-DSL in die Latex-DSL. Da beides aus \sexps{} besteht, können
-hierfür Makros und \sexp{}-Templating verwendet werden, was gewöhnlich
-zu sehr kurzem und lesbarem Code führt.
+Ein Compiler von der Slide-DSL nach Latex wird in Hinblick auf
+Wiederverwendbarkeit sinnvollerweise aus zwei Komponenten
+zusammengesetzt: Eine eigene Latex-DSL -- praktisch eine ``geklammerte
+Version'' von Latex -- muss nach Latex-Quelltext übersetzt werden.
+Dieser Compiler wird mittels \sexp{}-Parser und Generator-Bibliothek
+implementiert. Der eigentliche Slide-Compiler übersetzt die Slide-DSL in
+die Latex-DSL und wird mit Lisp-Makros und Quasiquote-Notation
+realisiert, wodurch ein relativ kurzes und lesbares Programm zu erwarten
+ist. Aufgrund der Modularisierung können weitere Latex-basierte DSLs --
+beispielsweise eine Book-DSL für das Schreiben von Büchern -- mit sehr
+geringem Aufwand eingefügt werden \seea{magicl_latex_compiler}. Hierfür
+ist lediglich ein weiterer, mit Lisp-Makros und Quasiquote realisierter
+Compiler von Book-DSL nach Latex-DSL nötig. Da alle DSLs auf \sexps{}
+basieren, wird kein eigener String-Parser benötigt -- stattdessen wird
+der Standardparser für \sexp{}-Syntax wiederverwendet. Weiterhin ist es
+auch möglich, die Slide-DSL mit einer anderen Backend-Sprache wie HTML
+zu verbinden, so dass derselbe derselbe Folien-Quelltext für mehrere
+Zwecke benutzt werden kann. Typisierte Objekte wurden in diesem Beispiel
+nicht verwendet -- es wäre aber auch möglich, ein typisiertes
+Latex-Modell zu definieren, wodurch einerseits die Suche nach möglichen Fehlern
+vereinfacht wird, andererseits aber auch der Entwicklungsaufwand für den
+Latex-Compiler steigt. Dieser Ansatz wird in MagicL's Implementierung
+einer Haskell-DSL verfolgt.
 
-\lsection[arch:lang]{Verwendete Sprachen}
+\lsection[arch:comp-dsl]{DSL für Compiler-Definition}
+
+MagicL-Nutzer definieren neue Compiler ausschließlich in einer
+bereitgestellten Compiler-DSL. Diese enthält den Quasiquote-Operator und
+Konstrukte zur einfachen Makro-Definition, ist aber gleichzeitig integriert
+
+MagicL selbst ist hauptsächlich in Haskell
+geschrieben. Meta-Programmierer, die eigene Compiler hinzufügen,
+benutzen hingegen ausschließlich eine bereitgestellte Compiler-DSL, 
 
 \lsubsection[arch:lang:hask]{Haskell}
 
@@ -4612,7 +4636,7 @@ den bisherigen Mitteln bereits möglich:
 \end{code}\end{DIFnomarkup}
 Dieses Beispielmakro ermöglicht es, \icode{(predefine myVar)} statt
 \icode{(= myVar undefined)} zu verwenden. Das Makro \icode{mac} bietet
-für die Definition von Lisp-Makros etwas ``semantischen Zucker'' und
+für die Definition von Lisp-Makros etwas ``syntaktischen Zucker'' und
 beinhaltet bereits die Typdefinition:
 \begin{DIFnomarkup}\begin{code}
 (mac compPredefine predefine
