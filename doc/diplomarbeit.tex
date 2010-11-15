@@ -149,6 +149,24 @@
   }
 }
 
+\makeatletter
+\newbox\sf@box
+\newenvironment{SubFloat}[2][]%
+{\def\sf@one{#1}%
+\def\sf@two{#2}%
+\setbox\sf@box\hbox
+\bgroup}%
+{ \egroup
+\ifx\@empty\sf@two\@empty\relax
+\def\sf@two{\@empty}
+\fi
+\ifx\@empty\sf@one\@empty\relax
+\subfloat[\sf@two]{\box\sf@box}%
+\else
+\subfloat[\sf@one][\sf@two]{\box\sf@box}%
+\fi}
+\makeatother
+
 \project{magicl}
 
 \newcommand\ato{\rightarrow} %Morphismen
@@ -1854,43 +1872,14 @@ sinnvoll und wird von MagicL vorausgesetzt.
 
 \lsection[reqs:template]{Templates}
 
-Templating in MagicL soll ähnlich aussehen wie in Lisp, d.h. mittels
-Makros die auf \sexps{} arbeiten. Einige Veränderungen gegenüber dem
-Lisp-Makrosystem sind dennoch von Nöten: Zunächst müssen die Operatoren
-Quote und Unquote müssen aufgrund der vereinfachten Syntax etwas anders
-geschrieben werden, so dass statt \icode{`(1 2 ,x 3)} beispielsweise
-\icode{(' (1 2 (, x) 3))} verwendet wird. Darüber hinaus erfordert die
-Sprachunabhängigkeit, dass Makros statt Einem eine beliebige Anzahl
-\sexps{} zurückgeben können, für die automatisch ein Splicing
-erfolgt. Beispielsweise wäre es in Lisp nicht möglich, ein Makro
-\icode{defall} zu definieren, was von
-\begin{code}
-(defvar a 1)
-(defall b 2 c 3 d 4)
-(defvar e 5)
-\end{code}
-nach
-\begin{code}
-(defvar a 1)
-(defvar b 2)
-(defvar c 3)
-(defvar d 4)
-(defvar e 5)  
-\end{code}
-kompiliert \sees{template:lisp}. Stattdessen müsste man den Operator
-\icode{progn} benutzen:
-\begin{code}
-(defvar a 1)
-(progn
-  (defvar b 2)
-  (defvar c 3)
-  (defvar d 4))
-(defvar e 5)  
-\end{code}
-Um ein Makro wie \icode{defall} auch für Zielsprachen ohne \icode{progn} zu
-ermöglichen, ist daher ein automatisches Splicing im Makrosystem
-nötig. Entsprechend sollte auch der Quasiquote-Operator eine beliebige
-Anzahl \sexps{} erzeugen können, wie \icode{(')} oder \icode{(' a b)}.
+Templating in MagicL soll ähnlich aussehen wie in Lisp,
+d.h. \sexp{}-basiert mittels Makros und Quasiquotierung. Wie in
+\sref{template:lisp} diskutiert wurde, kann ein Lisp-Makro aber nur
+mehrere Ausdrücke gleichzeitig zurückgeben, indem es diese in ein
+\icode{progn} schachtelt. Dies funktioniert aber nicht für Zielsprachen
+ohne einen Konstrukt wie \icode{progn}. Daher sollten MagicL-Makros und
+der Quasiquote-Operator direkt mehrere Rückgaben ermöglichen,
+welche vom Makrosystem durch Splicing eingefügt werden.
 
 \lsection[reqs:metalang]{Meta-Programmiersprache}
 
@@ -1950,12 +1939,11 @@ Uneindeutigkeit bei der Zuordnung eines inneren Unquote. In Common Lisp
 müssen in diesem Fall daher komplizierte Konstrukte wie \icode{,',}
 verwendet werden \sees{template:lisp}. 
 
-Eine einfache Alternative hierzu ist die Bereitstellung verschiedener
-Quote-Unquote-Paare, die dann beispielsweise \icode{'1} und \icode{,1}
-etc. benannt sind. Für verschachtelte Templates können dann einfach
-verschiedene Paare verwendet werden, so dass die Zuordnung eindeutig
-bleibt\footnote{Eine ähnliche Erweiterung hat Drew McDermott für
-Common Lisp implementiert \cite[S.21ff]{YTools}.}. 
+Eine einfache Alternative hierzu ist die Bereitstellung verschieden
+benannter Quote-Unquote-Paare, so dass sich nur noch eine
+Zuordnungsmöglichkeit innerer Unquotes ergibt\footnote{Eine ähnliche
+  Erweiterung hat Drew McDermott für Common Lisp implementiert
+  \cite[S.21ff]{YTools}.}. Dies soll MagicL realisieren.
 
 \lsection[reqs:sum]{Zusammenfassung}
 
@@ -1967,15 +1955,13 @@ Common Lisp implementiert \cite[S.21ff]{YTools}.}.
 \bf Ausgabemodell            & \sexp{} / beliebig            & \sexp{}                \\\hline      
 \bf Ausgabevalidierung       & beliebig                      & mittel                 \\\hline      
 \bf Zielsprache              & beliebig                      & Lisp                   \\\hline      
-\bf Quasiquote               & \icode{(' .. )}               & \icode{`( .. )}        \\\hline   
-\bf Unquote                  & \icode{(, .. )}               & \icode{, .. }          \\\hline
 \bf vollständiges Quasiquote & ja                            & nur genau ein Ausdruck \\\hline      
 \bf Code-Objekt verfügbar    & ja                            & ja                     \\\hline      
 \bf Sprachmächtigkeit        & maximal                       & maximal                \\\hline      
 \bf Metaprogrammlänge        & kurz                          & kurz                   \\\hline
 \bf Template-Aufruf          & verallgemeinertes Makro       & Makro                  \\\hline      
 \bf Komponententrennung      & unterstützt                   & möglich                \\\hline      
-\bf Template-Generierung     & einfach durch \icode{'1} etc. & etwas kompliziert      \\\hline      
+\bf Template-Generierung     & einfach                       & etwas kompliziert      \\\hline      
 \end{tabular}
 \caption{Anforderungen an MagicL im Vergleich zu Lisp}
 \label{magicl:fig:reqs_sum}
@@ -3005,40 +2991,90 @@ Zwecke benutzt werden kann. Typisierte Objekte wurden in diesem Beispiel
 nicht verwendet -- es wäre aber auch möglich, ein typisiertes
 Latex-Modell zu definieren, wodurch einerseits die Suche nach möglichen Fehlern
 vereinfacht wird, andererseits aber auch der Entwicklungsaufwand für den
-Latex-Compiler steigt. Dieser Ansatz wird in MagicL's Implementierung
-einer Haskell-DSL verfolgt.
+Latex-Compiler steigt. Dieser Ansatz wird in der Implementierung
+einer Haskell-DSL verwendet.
 
-\lsection[arch:comp-dsl]{DSL für Compiler-Definition}
+\lsection[arch:lang]{Bereitgestellte DSLs}
 
 MagicL-Nutzer definieren neue Compiler ausschließlich in einer
 bereitgestellten Compiler-DSL. Diese enthält den Quasiquote-Operator und
-Konstrukte zur einfachen Makro-Definition, ist aber gleichzeitig integriert
-
-MagicL selbst ist hauptsächlich in Haskell
-geschrieben. Meta-Programmierer, die eigene Compiler hinzufügen,
-benutzen hingegen ausschließlich eine bereitgestellte Compiler-DSL, 
-
-\lsubsection[arch:lang:hask]{Haskell}
-
-\begin{itemize}
-\item Generische Schnittstelle
-\item Parser-Bibliothek
-\item Generator-Bibliothek
-\item Test-Framework
-\end{itemize}
-
+Konstrukte zur einfachen Makro-Definition und integriert mit der
+Haskell-DSL eine komplette funktionale Programmiersprache, die eine
+\sexp{}-Version von Haskell darstellt. Dieser Abschnitt stellt zunächst
+die Haskell-DSL und anschließend die Compiler-DSL genauer vor.
 
 \lsubsection[arch:lang:hask-dsl]{Haskell-DSL}
 
+Da die Compiler-DSL von MagicL letztlich nach Haskell übersetzt werden
+soll, ist es wie im Latex-Beispiel sinnvoll, eine eigene Haskell-DSL als
+Zwischenstufe anzubieten, so dass Nutzer weitere DSLs direkt mit
+Lisp-Makros und Quasiquote nach Haskell übersetzen können. Die
+Haskell-DSL ist im Wesentlichen eine auf \sexp{}-Syntax angepasste
+Version von Haskell. Beispielsweise würde die
+Haskell-Funktionsdefinition
+\begin{DIFnomarkup}
+\begin{code}
+sumOfSquares x y = (x2 + y2)
+  where
+    x2 = (x * x)            
+    y2 = (y * y)
+\end{code}
+\end{DIFnomarkup}
+in der Haskell-DSL als
+\begin{DIFnomarkup}
+\begin{code}
+(= (sumOfSquares x y)
+   (+ x2 y2)
+  (where
+    (= x2 (* x x))
+    (= y2 (* y y))))
+\end{code}
+\end{DIFnomarkup}
+geschrieben werden. Intern wird die Haskell-DSL zunächst in ein getyptes
+Modell und anschließend nach Haskell übersetzt, wie
+\abb{magicl_hask_compiler} zeigt. In \cref{sexphs} werden Spezifikation und Umsetzung
+der Haskell-DSL genauer vorgestellt und die Vor- und Nachteile des
+Zwischenschritts über ein getyptes Modell diskutiert.
+
 \fig{magicl_hask_compiler}{Übersetzung der Haskell-DSL}
-\todo{sexphs-spezifikation hierher verschieben}
 
 \lsubsection[arch:lang:comp-dsl]{Compiler-DSL}
 
+Obwohl es im Prinzip möglich ist, eigene Compiler direkt in Haskell zu
+implementieren, ist für Anwendungscode die Compiler-DSL angedacht. Diese
+beinhaltet zunächst die Haskell-DSL als Subsprache, so dass dem
+Meta-Programmierer die volle Haskell-Funktionalität zur Verfügung steht.
+Darüber hinaus enthält die Compiler-DSL einen Quasiquote-Operator und
+Operatoren für die gegenüber Haskell leicht vereinfachte Definition von
+Makros und zusammengesetzten Compilern.
+
+Die Syntax von Quasiquote und Unquote unterscheidet sich etwas von Lisp:
+Statt \icode{`(1 2 ,x 3)} wird beispielsweise \icode{(' (1 2 (, x) 3))}
+verwendet. Auf diese Art kann die normale \sexp{}-Syntax verwendet
+werden, während Lisp-Parser dies als Sonderfall berücksichtigen
+müssen. Zudem passt diese Syntax gut zur Anforderung einer beliebigen
+Anzahl von zurückgegebenen Ausdrücken -- beispielsweise können mit
+\icode{(')} kein Ausdruck oder mit \icode{(' a b c d)} vier Ausdrücke
+erzeugt werden. Die Compiler-DSL von von einem Compiler-Compiler in die
+Haskell-DSL übersetzt und anschließend vom Haskell-Backend
+weiterverarbeitet, wie in \abb{magicl_comp_compiler} dargestellt. Die
+genaue Definition und Implementation der Compiler-DSL findet sich in
+\cref{sexpcomp}.
+
 \fig{magicl_comp_compiler}{Übersetzung der Compiler-DSL}
 
-\todo{sexpcomp-spec teilweise hierher}
+\lsection[arch:comps]{Komponenten des Frameworks}
 
+Intern besteht MagicL aus einer Reihe von Komponenten, die alle in
+Haskell implementiert sind.
+
+\lsubsection[arch:comps:interface]{Arrow-Bibliothek}
+
+Compiler  
+
+\lsubsection[arch:comps:parser]{Parser-Bibliothek}
+\lsubsection[arch:comps:generator]{Generator-Bibliothek}
+\lsubsection[arch:comps:test]{Test-Framework}
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
