@@ -193,8 +193,8 @@
 \newcommand{\mprog}{Meta"=Programmierung}
 \newcommand{\cpp}{C\texttt{++}}
 
-\title{Prototyp eines \sexp{}-basierten Rahmenwerks für
-  \mbox{sprachübergreifende} \mprog{}} 
+\title{Prototyp eines \sexp{}-basierten\\Rahmenwerks für
+  sprachübergreifende \\\mprog{}} 
 \author{Benjamin Teuber\\aus Hamburg} 
 \date{\today}
 
@@ -2393,15 +2393,23 @@ definiert werden:
 addFiveToList :: [Int] -> [Int]
 addFiveToList = map (add 5)
 \end{code}\end{DIFnomarkup}
+Anonyme Funktionen können mit \icode{\\} erzeugt werden -- das Zeichen
+soll an ein Lambda erinnern. Ohne Currying und \icode{add}-Funktion
+könnte beispielsweise
+\begin{code}
+addFiveToList = \list -> map (\x -> x + 5) list
+\end{code}
+als äquivalente Funktionsdefinition benutzt werden.
 
 Infixoperatoren wie \icode{+} können ebenfalls vom Programmierer selbst
-definiert werden -- auch die Operatorpräzedenz kann angepasst werden,
-wobei Infixoperatoren grundsätzlich eine niedrigere Präzedenz als
-Präfixfunktionen haben. Mittels Klammerung kann ein Infixoperator in
-eine Präfixfunktion umgewandelt werden, so dass z.B. \icode{(+) 2 3}
-geschrieben werden kann. Auch Infixoperatoren unterstützen direkt
-Currying, so dass beispielsweise mit \icode{(-2)} eine Funktion erzeugt
-wird, die vom Argument 2 subtrahiert. Für die obige, sogenannte
+definiert werden -- auch Links- oder Rechtsassoziativität sowie
+Operatorpräzedenz können angepasst werden, wobei Infixoperatoren
+grundsätzlich eine niedrigere Präzedenz als Präfixfunktionen
+haben. Mittels Klammerung kann ein Infixoperator in eine Präfixfunktion
+umgewandelt werden, so dass z.B. \icode{(+) 2 3} geschrieben werden
+kann. Auch Infixoperatoren unterstützen direkt Currying, so dass
+beispielsweise mit \icode{(-2)} eine Funktion erzeugt wird, die vom
+Argument 2 subtrahiert. Für die obige, sogenannte
 punktfreie\footnote{Punktfrei bedeutet, dass für Zwischenergebnisse
   keine benannten Variablen oder Parameter benötigt werden, sondern
   diese -- beispielsweise durch Currying -- implizit bleiben.} Art der
@@ -2422,6 +2430,21 @@ sumSquare x y = square (x + y)
   where
     square x = x * x
 \end{code}\end{DIFnomarkup}
+
+Funktionsaufrufe werden grundsätzlich linksassoziativ interpretiert,
+d.h. \icode{foo a b c d} und \icode{((((foo a) b) c) d)} sind
+äquivalent. Manchmal gibt es aber verschachtelte Funktionsaufrufe, für
+die auf diese Weise sehr viele Klammern benötigt würden, z.B. 
+\begin{code}
+a (b c (d (e f)))
+\end{code}
+In solchen Fällen kann der \icode{$}-Operator benutzt werden, wobei
+\icode{a $ b c d} dasselbe ist wie \icode{a (b c d)}. Das Beispiel wird
+daher zu
+\begin{code}
+a $ b c $ d $ e f
+\end{code}%$
+und damit etwas einfacher zu lesen.
 
 \lsection[haskell:data]{Datentypen}
 
@@ -2901,8 +2924,6 @@ Funktion zu Funktion veranschaulichen.
 MagicL legt den Schwerpunkt auf Arrows und beschreibt so allgemein
 Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 
-\todo{anonyme Fns, \icode{$}} %$
-
 \lchapter[arch]{Architektur von MagicL}
 
 Dieses Kapitel gibt einen grundlegenden Überblick über die Architektur
@@ -3070,11 +3091,53 @@ Haskell implementiert sind.
 
 \lsubsection[arch:comps:interface]{Arrow-Bibliothek}
 
-Compiler  
+Arrows sind die grundlegende Abstraktion, auf der Compiler und Parser in
+MagicL basieren. Eine Arrow-Bibliothek definiert daher abstrakt
+Arrow-Kombinatoren wie z.B. \icode{many}, welches eine Wiederholung
+entsprechend dem Operator \icode{*} in regulären Ausdrücken enthält,
+welche in \sref{arrowparser:lib} gemeinsam mit der Parser-Bibliothek
+detailierter vorgestellt werden.  Darüber hinaus wird mit den Typklassen
+\icode{Executable} und \icode{Compilable} sehr allgemeine
+Compiler-Schnittstellen definiert, die es beispielsweise ermöglichen,
+Standardcompiler fest mit bestimmten Ein- und Ausgabetypen zu
+verdrahten, so dass diese nicht explizit aufgerufen, sondern automatisch
+durch Haskells Typinferenz gefunden werden können. Diese Schnittstelle
+wird in \sref{magicl:compinterface} erläutert.
 
 \lsubsection[arch:comps:parser]{Parser-Bibliothek}
+
+Parser werden in \cref{arrowparser} als Arrows einer speziellen
+Kategorie definiert, die das Weiterreichen eines Eingabestreams sowie
+die Möglichkeit eines Scheiterns beinhaltet. Diese Kategorie realisiert
+der Typ \icode{ParseFunctor} \sees{arrowparser:parse}. Zudem bietet
+die Parser-Bibliothek einige Funktionen, mit denen elementare Parser
+definiert werden können. Beispielsweise erzeugt \icode{member "aeiou"}
+einen Parser, der genau einen Vokal einliest. 
+
 \lsubsection[arch:comps:generator]{Generator-Bibliothek}
+
+Die Generatorbibliothek definiert Funktionen, die die Erzeugung von
+formatiertem Quelltext vereinfachen sollen.
+
+\begin{code}
+layout 80 (braces 
+           (indent2 
+            (lines [text "foo",
+                    words [text "hello", text "world"],
+                    commaSep [text "1", text "2", text "3"]])))
+
+ergibt:
+
+{foo
+  hello world
+  1, 2, 3}
+\end{code}
+
+\lsubsection[arch:comps:sexp]{\sexp{}-Bibliothek}
+
 \lsubsection[arch:comps:test]{Test-Framework}
+
+\lsubsection[arch:comps:build]{Build-Tool}
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
