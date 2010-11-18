@@ -2927,9 +2927,13 @@ Compiler. Parser werden hier als Spezialform eines Compilers gesehen.
 \lchapter[arch]{Architektur von MagicL}
 
 Dieses Kapitel gibt einen grundlegenden Überblick über die Architektur
-und Verwendung von MagicL.
-
-\todo{statt Code-Modell von Generator-Bibliothek sprechen}
+und Verwendung von MagicL. Zunächst wird der prinzipielle Aufbau von
+Compilern diskutiert und eine Übersicht über Hilfsmittel zur
+Compilerdefinition in Abhängigkeit von Ein- und Ausgabemodellen
+gegeben. Anschließend wird auf die von MagicL angebotene DSL für
+Compilerdefinitionen eingegangen, die mit der Haskell-DSL eine
+funktionale Programmiersprache enthält. Zuletzt wird eine Übersicht über
+die Programmkomponenten gegeben, aus denen MagicL selbst besteht.
 
 \lsection[arch:comp]{Aufbau von Compilern}
 
@@ -3078,16 +3082,21 @@ Anzahl von zurückgegebenen Ausdrücken -- beispielsweise können mit
 \icode{(')} kein Ausdruck oder mit \icode{(' a b c d)} vier Ausdrücke
 erzeugt werden. Die Compiler-DSL von von einem Compiler-Compiler in die
 Haskell-DSL übersetzt und anschließend vom Haskell-Backend
-weiterverarbeitet, wie in \abb{magicl_comp_compiler} dargestellt. Die
-genaue Definition und Implementation der Compiler-DSL findet sich in
-\cref{sexpcomp}.
+weiterverarbeitet, wie in \abb{magicl_comp_compiler}
+dargestellt. Definition und Implementation der Compiler-DSL finden sich
+in \cref{sexpcomp}.
 
 \fig{magicl_comp_compiler}{Übersetzung der Compiler-DSL}
 
 \lsection[arch:comps]{Komponenten des Frameworks}
 
 Intern besteht MagicL aus einer Reihe von Komponenten, die alle in
-Haskell implementiert sind.
+Haskell implementiert sind. Grundlegend ist eine Arrow-Bibliothek, auf
+der die Parser-Bibliothek aufbaut. Für Erzeugen von Quelltext steht eine
+Generator-Bibliothek bereit. Darauf aufbauend stellt eine
+\sexp{}-Bibliothek spezielle Parser und Hilfsfunktionen für den Umgang
+mit \sexps{} zur Verfügung. Zudem enthält MagicL ein minimales
+Test-Framework für Compiler sowie ein eigenes Build-Tool.
 
 \lsubsection[arch:comps:interface]{Arrow-Bibliothek}
 
@@ -3116,28 +3125,115 @@ einen Parser, der genau einen Vokal einliest.
 
 \lsubsection[arch:comps:generator]{Generator-Bibliothek}
 
-Die Generatorbibliothek definiert Funktionen, die die Erzeugung von
-formatiertem Quelltext vereinfachen sollen.
-
+Die Generatorbibliothek definiert eine Reihe von Funktionen, um die
+Erzeugung von formatiertem Quelltext zu vereinfachen. Hierfür wird
+zunächst durch verschachtelte Aufrufe von Konstruktor-Funktionen wie
+\icode{lines}, welche eine Liste von Texten mit Zeilenumbrüchen
+verbindet, ein Qellcode-Modell aufgebaut, das anschließend mit
+\icode{layout} für eine bestimmte Zeilenlänge\footnote{Die Zeilenlänge
+  ist für Gruppierungen relevant, welche in diesem Beispiel nicht
+  verwendet werden.} formatiert wird. Beispielsweise lässt sich mittels
 \begin{code}
 layout 80 (braces 
            (indent2 
             (lines [text "foo",
                     words [text "hello", text "world"],
                     commaSep [text "1", text "2", text "3"]])))
-
-ergibt:
-
+\end{code}
+der Quelltext
+\begin{code}
 {foo
   hello world
   1, 2, 3}
 \end{code}
+erzeugen. Dies erscheint auf den ersten Blick deutlich aufwändiger als
+eine direkte Erzeugung mit einer Templating-Bibliothek wie
+StringTemplate. Der funktionale Ansatz bietet allerdings mehrere Vorteile:
+Zum einen können die Quellcode-Erzeugung auf diese Weise auf viele
+Komponenten aufgeteilt und so beispielsweise direkt in (Sub-)Parsern
+benutzt werden. Zum anderen ist es möglich, eigene sprachspezifische
+Layout-Funktionen wie beispielsweise für \icode{for}-Schleifen in Java
+zu definieren. Zudem passieren Syntaxfehler im generierten Code auf
+diese Weise nicht so schnell -- beispielsweise können mit Funktionen wie
+\icode{braces} niemals unbalancierte Klammern erzeugt werden. Die
+Generator-Bibliothek wird in \sref{magicl:code} besprochen.
 
 \lsubsection[arch:comps:sexp]{\sexp{}-Bibliothek}
 
+\sexps{} sind in MagicL wie folgt definiert:
+\begin{DIFnomarkup}\begin{code}
+data Sexp = Symbol String
+          | Node [Sexp]
+\end{code}\end{DIFnomarkup}
+Eine Bibliothek enthält eine Reihe von Hilfsmitteln für die Verarbeitung
+von \sexps{}. Hierzu gehören ein String-Parser
+(\sref{arrowparser:sexp}) und ein Pretty-Printer
+(\sref{magicl:code:prettysexp} für \sexp{}-Syntax. Darüber hinaus werden
+einige spezielle Kombinatoren für das Verarbeiten von \sexps{} durch
+Parser bereitgestellt. Beispielsweise kann mit \icode{macro} ein
+\sexp{}-Parser definiert werden, der wie ein Lisp-Makro nur aktiv wird,
+wenn das erste Element eines Ausdrucks mit dem Knotennamen
+übereinstimmt. Dies wird in \sref{arrowparser:sexpparser} besprochen.
+
 \lsubsection[arch:comps:test]{Test-Framework}
 
+MagicL enthält ein primitives Unit-Test-Framework für die Überprüfung
+einzelner Compiler (und damit auch Parser und Makros). Zunächst werden
+dafür die Eingaben und erwarteten Ausgaben als Strings in Listen
+notiert -- zum Beispiel ist die Übersetzung einiger Haskell-DSL-Ausdrücke
+nach Haskell wie folgt spezifiziert:
+\begin{DIFnomarkup}\begin{code}
+exprCases = [ ( "(Str 42)"                    -- Haskell-DSL 
+                , "\"42\"" )                  -- Haskell 
+
+              , ( "(Str a  b c)"              -- Haskell-DSL 
+                , "\"a b c\"" )               -- Haskell 
+
+              , ( "(List a b (Str c))"        -- Haskell-DSL 
+                , "[a, b, \"c\"]" )           -- Haskell 
+
+              , ( "(foo a (bar b c) d)"       -- Haskell-DSL 
+                , "(foo a (bar b c) d)" )     -- Haskell 
+
+              , ( "(map + myList)"            -- Haskell-DSL 
+                , "(map (+) myList)" )        -- Haskell 
+              ]
+\end{code}\end{DIFnomarkup}
+
+Ein Makro, was diese Ausdrücke übersetzt, kann dann mit dem Aufruf
+\begin{DIFnomarkup}\begin{code}
+testMacro "Expressions" exprMacro exprCases  
+\end{code}\end{DIFnomarkup}
+getestet werden. Der erste Parameter dient der Dokumentation und wird
+für die Formatierung etwaiger Fehlermeldungen benutzt. Da es sich
+hierbei um keine essentielle Komponente handelt, wird auf das
+Test-Framework in dieser Arbeit nicht weiter eingegangen.
+
 \lsubsection[arch:comps:build]{Build-Tool}
+
+Das Kompilieren des MagicL-Projektes ist relativ kompliziert, da für die
+Übersetzung des Compiler-Compilers bereits \cgen{} benötigt wird. Aus
+diesem Grund wurde ein kleines Build-Tool in Haskell geschrieben, was
+Standardfunktionen wie bedingten Aufruf eines Compilers, falls die
+Quelldatei neuer ist als die Zieldatei, beinhaltet und damit die
+Übersetzung und das Testen von MagicL per Kommandozeile steuert. Das
+Build-Tool wird ebenfalls in dieser Arbeit nicht weiter behandelt.
+
+\lsection[arch:sum]{Zusammenfassung}
+
+Benutzerdefinierte Compiler werden in einer bereitgestellten DSL
+geschrieben, die unter anderem eine \sexp{}-Version von Haskell
+beinhaltet. Damit können Compiler zwischen beliebigen Modelltypen
+konstruiert werden, wobei je nach Modelltyp verschiedene Hilfsmittel
+verwendet werden. Während typisierte Objekte mit gewöhnlichen
+Haskell-Funktionen verarbeitet werden, stehen für Zeichenketten Parser-
+und Generator-Bibliotheken zur Verfügung. Parser -- die als Arrows
+realisiert sind -- werden auch für die Verarbeitung von \sexps{}
+verwendet und sind MagicL's Umsetzung der Anforderung verallgemeinerter
+Makros. Für das Generieren von \sexps{} steht ein gegenüber Lisp
+syntaktisch leicht veränderter Quasiquote-Operator bereit, mit dem es
+unter anderem möglich ist, eine beliebige Anzahl von Ausdrücken zu
+erzeugen.
 
 \lchapter[arrowparser]{Arrow-basierte Parser}
 
@@ -3506,13 +3602,7 @@ werden kann.
 
 \lsection[arrowparser:sexp]{Beispiel: Ein Parser für \sexps{}}
 
-\sexps{} sind in MagicL wie folgt definiert:
-\begin{DIFnomarkup}\begin{code}
-data Sexp = Symbol String
-          | Node [Sexp]
-\end{code}\end{DIFnomarkup}
-
-Aufgrund der Einfachheit dieser Struktur und der praktischen
+Aufgrund der Einfachheit der \sexp{}-Struktur und der praktischen
 Parser-Library ist es möglich, in vier kurzen Zeilen einen Parser zu
 entwerfen, der als Text repräsentierte \sexps{} in die typisierte
 Repräsentation überführt:
@@ -3553,7 +3643,10 @@ parseSexp   = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
 \abb{sexp_parser} zeigt noch einmal den gesamten Parser. Ein
 Beispielaufruf könnte wie folgt aussehen:
 \begin{code}
-runParser parseSexp "(this is (an s-expr))"  ==> Node [Symbol "this", ...]
+runParser parseSexp "(this is (an s-expr))"  
+
+ergibt: 
+Node [Symbol "this", Symbol "is", Node [Symbol "an", Symbol "s-expr"]]
 \end{code}
 Tritt bei Lesen ein Fehler auf, wird automatisch eine brauchbare
 Fehlermeldung ausgegeben, z.B.
@@ -3689,6 +3782,8 @@ vorgestellt werden.
 \todo{auf Anforderungen beziehen}
 
 \lsection[magicl:code]{Repräsentation von Quelltext}
+
+\todo{statt Code-Modell von Generator-Bibliothek sprechen}
 
 Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
 String-basierten Templates und daher mit
@@ -3954,62 +4049,6 @@ bash$ ghc SexpFormatter.hs
 bash$ ./SexpFormatter <inFile >outFile
 \end{code}\end{DIFnomarkup}
 
-\lsection[magicl:test]{Test-Framework}
-
-MagicL enthält ein primitives Unit-Test-Framework für die Überprüfung
-einzelner Compiler (und damit auch Parser und Makros). Zunächst werden
-dafür die Eingaben und erwarteten Ausgaben als Strings in Listen
-notiert:
-\begin{DIFnomarkup}\begin{code}
-exprCases = [ ( "(Str 42)"                    -- Sexp-Haskell 
-                , "\"42\"" )                  -- Haskell 
-
-              , ( "(Str a  b c)"              -- Sexp-Haskell 
-                , "\"a b c\"" )               -- Haskell 
-
-              , ( "(List a b (Str c))"        -- Sexp-Haskell 
-                , "[a, b, \"c\"]" )           -- Haskell 
-
-              , ( "(foo a (bar b c) d)"       -- Sexp-Haskell 
-                , "(foo a (bar b c) d)" )     -- Haskell 
-
-              , ( "(map + myList)"            -- Sexp-Haskell 
-                , "(map (+) myList)" )        -- Haskell 
-              ]  
-\end{code}\end{DIFnomarkup}
-Dieses Beispiel spezifiziert, wie einige Ausdrücke der im nächsten
-Kapitel vorgestellten Sprache \sexp{}-Haskell nach Haskell übersetzt
-werden sollen. Durchgeführt wird ein Testlauf mit der Funktion
-\icode{testCompiler} (deren Implementierung für die Übersichtlichkeit
-ausgelassen wird):
-\begin{DIFnomarkup}\begin{code} 
-testCompiler :: 
-  (Compiler String a, Executable x a b, Compiler b String) => 
-  String -> x -> [(String, String)] -> IO ()
-\end{code}\end{DIFnomarkup}
-Als Eingaben werden ein Namensstring, der Compiler selbst (als
-Executable-Instanz, damit nicht nur fest verdrahtete Compiler getestet
-werden können) sowie eine Liste von Testfällen erwartet. Das Testen
-von Makros ist ein Spezialfall, da hier meist kein direkter
-Standard-Compiler vom Rückgabetyp nach \icode{String} bereitsteht --
-stattdessen wird gewöhnlich ein Compiler nach \icode{Code}
-angeboten. Die Funktion \icode{testMacro} schaltet deshalb den
-Standard-Compiler nach \icode{Code} hinter ein
-Makro:
-\begin{DIFnomarkup}\begin{code}
-testMacro name mac testCases = 
-  (testCompiler name 
-                ((toIO mac >>> compile) :: IOArrow [Sexp] Code)
-                testCases)
-\end{code}\end{DIFnomarkup}
-Der Aufruf für obige Testfälle sieht beispielsweise wie folgt aus:
-\begin{DIFnomarkup}\begin{code}
-testMacro "expr" (comp :: SexpParser Expr) exprCases  
-\end{code}\end{DIFnomarkup}
-Das zu testende Makro wird hier durch einen typisierten Aufruf von
-\icode{comp} referenziert. Alternativ können auch benannte Makros
-verwendet werden.
-
 \lsection[magicl:sum]{Zusammenfassung}
 
 \todo{Fortschritt für anforderungen}
@@ -4072,7 +4111,7 @@ Funktions- oder Konstruktoraufrufe müssen in der \sexp{}-Version immer
 geklammert werden, können aber unverändert nach Haskell übernommen
 werden:
 \begin{DIFnomarkup}\begin{code}
-(myFun 1 4 52)              Sexp-Haskell
+(myFun 1 4 52)              Haskell-DSL
 =>
 (myFun 1 4 52)              Haskell
 \end{code}\end{DIFnomarkup}
@@ -4080,7 +4119,7 @@ Die Pseudo-Syntax \icode{=>} steht hier für ``soll übersetzt werden
 nach''.  Haskell-Infixoperatoren werden in Präfixnotation überführt und
 können in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
 \begin{DIFnomarkup}\begin{code}
-(+ 1 4 (- 52 10 4))         Sexp-Haskell
+(+ 1 4 (- 52 10 4))         Haskell-DSL
 =>
 (1 + 4 + (52 - 10 - 4))     Haskell
 \end{code}\end{DIFnomarkup}
@@ -4091,7 +4130,7 @@ Ausdrucks, sondern im Inneren vor, ist die (binäre) Funktion selbst
 gemeint, was in Haskell der Präfixformulierung durch Klammerung
 entspricht:
 \begin{DIFnomarkup}\begin{code}
-(foldr1 * xs)               Sexp-Haskell
+(foldr1 * xs)               Haskell-DSL
 =>
 (foldr1 (*) xs)             Haskell
 
@@ -4103,7 +4142,7 @@ eingeführt werden können:
 \begin{DIFnomarkup}\begin{code}
 (= (sumOfSquares x y)
    (+ x2 y2)
- (where                     Sexp-Haskell
+ (where                     Haskell-DSL
   (= x2 (* x x))
   (= y2 (* y y))))
 
@@ -4117,7 +4156,7 @@ sumOfSquares x y = (x2 + y2)
 Anonyme Funktionen werden mit \icode{fun} definiert:
 \begin{DIFnomarkup}\begin{code}
 (map 
-  (fun x (+ x 5))           Sexp-Haskell
+  (fun x (+ x 5))           Haskell-DSL
   xs)
 
 =>
@@ -4135,7 +4174,7 @@ Wie in Haskell können Konstrukturen mittels Pattern Matching zerlegt
 werden:
 \begin{DIFnomarkup}\begin{code}
 (= (countMaybe (Just x)) x)
-(= (countMaybe Nothing)  0)      Sexp-Haskell
+(= (countMaybe Nothing)  0)      Haskell-DSL
 
 =>
 
@@ -4150,7 +4189,7 @@ Matching verwendet werden können:
 (= (listTo3Tuple (List x y z)) 
    (Tuple x y z))
 
-(= (dropTwo (Cons x y xs))             Sexp-Haskell
+(= (dropTwo (Cons x y xs))             Haskell-DSL
   xs)
 
 (= helloWorld (Str Hello World))
@@ -4173,7 +4212,7 @@ parametrisierte Typen geklammert werden. Typdeklarationen erfolgen
 mit \icode{hasType} anstelle des \icode{::}-Operators in Haskell:
 \begin{DIFnomarkup}\begin{code}
 (hasType x Int)
-                                      Sexp-Haskell
+                                      Haskell-DSL
 (hasType m (Maybe a))
 
 =>
@@ -4237,7 +4276,7 @@ Die folgende Moduldefinition zeigt alle diese Möglichkeiten in
 (module MyModule
   (export myFun MyClass MyDataType)
   Prelude
-  (Control.Category (only id))                       Sexp-Haskell
+  (Control.Category (only id))                       Haskell-DSL
   (Control.Monad (hiding liftM forM))
   (Control.Exception (qualified E)))
 
@@ -5052,6 +5091,45 @@ Rückgabeausdrücken anderer Makros.
 
 \todo{vergleich mit anderen frameworks, ebnf}
 
+\lsection[reqs:model]{Modelle}
+
+Wie gefordert ermöglicht MagicL die Verwendung alle drei Modelltypen als
+Ein- und Ausaben von Compilern. Zeichenketten können mit Hilfe der
+Parser-Bibliothek eingelesen werden. Parserdefinitionen sind syntaktisch
+etwas aufwändiger als eine EBNF-Grammatik. Beispielsweise würde die
+EBNF-Definition
+\begin{code}
+Zahl = [ '-' ] ZifferAusserNull { Ziffer }  | '0' 
+\end{code}
+durch den Parser
+\begin{code}
+(= zahl (<+>
+          (>>> (optional (eq '-'))
+               zifferAusserNull
+               (many ziffer))
+          (eq '0')))            
+\end{code}
+abgebildet werden. Andererseits sind Parser deutlich mächtiger als
+Grammatiken, da hier nicht nur zwischen akzeptiert und nicht akzeptiert
+unterschieden wird, sondern gleichzeitig eine Verarbeitung zu einer
+Ausgabe erfolgt. Zudem ermöglichen Parser die Definition eigener
+Kombinatoren wie \icode{commaSep} für Komma-separierte Listen, welche
+komplexe Definition deutlich vereinfachen können.
+
+\lsection[reqs:template]{Templates}
+
+\lsection[reqs:metalang]{Meta-Programmiersprache}
+
+\lsection[reqs:call]{Aufruf von Templates}
+
+\lsection[reqs:sep]{Komponententrennung}
+
+schnittstelle
+
+\lsection[reqs:gentemp]{Generierung von Templates}
+
+Beispiel
+
 \begin{figure}[h]
 \begin{tabular}{|l|l|l|} \hline
 \bf Werkzeug                 & \bf MagicL                    & \bf erfüllt?  \\\hline\hline    
@@ -5418,8 +5496,6 @@ mit der skizzierten Entwicklungsumgebung.
 \medskip{} 
 \todo{Schlusssatz}
 \todo{Literatur: Verlag/Ort bei Büchern, bei Web zuletzt zugegriffen}
-\todo{12Pt, auf Bindungsseite 1cm extra rand}
-
 
 \cleardoublepage
 
@@ -5434,8 +5510,13 @@ mit der skizzierten Entwicklungsumgebung.
 \chapter*{Selbstständigkeitserklärung}
 \addcontentsline{toc}{chapter}{Selbstständigkeitserklärung}
 
-Ich erkläre, dass ich die vorliegende Arbeit selbstständig und nur unter
-Verwendung der angegebenen Quellen und Hilfsmittel angefertigt habe.
+Ich versichere, dass ich die vorstehende Arbeit selbstständig und ohne fremde Hilfe angefertigt
+und mich anderer als der im beigefügten Verzeichnis angegebenen Hilfsmittel nicht bedient
+habe. Alle Stellen, die wörtlich oder sinngemäß aus Veröffentlichungen entnommen wurden,
+sind als solche kenntlich gemacht.
+
+Ich bin mit einer Einstellung in den Bestand der Bibliothek des Departments Informatik einverstanden.
+
 \vskip 2cm
 \begin{flushright}
 Hamburg, \today
