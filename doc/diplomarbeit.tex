@@ -271,6 +271,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
 \acro{GUI}{Graphical User Interface}
+\acro{GHC}{Glasgow Haskell Compiler}
 \acro{HTML}{Hypertext Markup Language}
 \acro{JVM}{Java Virtual Machine}
 \acro{MDA}{Model Driven Architecture}
@@ -3888,7 +3889,7 @@ die Zeilenumbrüche beibehalten.
 
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
 
-\todo{mehr Top-Down argumente}
+\todo{mehr Top-Down argumente, aufzählen aller Standardcompiler}
 
 Um das Parser-Framework herum soll ein wieder möglichst allgemeines
 Interface für die Beschreibung von Compilern entstehen, so dass
@@ -5089,15 +5090,17 @@ Rückgabeausdrücken anderer Makros.
 
 \lchapter[disc]{Diskussion}
 
-\todo{vergleich mit anderen frameworks, ebnf}
+Dieses Kapitel diskutiert MagicL in Hinblick auf die Anforderungen aus
+\cref{reqs} und seine Vor- und Nachteile gegenüber bestehenden
+Werkzeugen. Gegliedert ist die Diskussion nach den drei unterstützten
+Modelltypen, deren Verwendung jeweils erörtert wird. Anschließend wird
+auf die allgemeine Schnittstelle für Compiler eingegangen.
 
-\lsection[reqs:model]{Modelle}
+\lsection[disc:string]{Zeichenketten}
 
-Wie gefordert ermöglicht MagicL die Verwendung alle drei Modelltypen als
-Ein- und Ausaben von Compilern. Zeichenketten können mit Hilfe der
-Parser-Bibliothek eingelesen werden. Parserdefinitionen sind syntaktisch
-etwas aufwändiger als eine EBNF-Grammatik. Beispielsweise würde die
-EBNF-Definition
+Zeichenketten können mit Hilfe der Parser-Bibliothek eingelesen
+werden. Parserdefinitionen sind syntaktisch etwas aufwändiger als eine
+EBNF-Grammatik. Beispielsweise würde die EBNF-Definition
 \begin{code}
 Zahl = [ '-' ] ZifferAusserNull { Ziffer }  | '0' 
 \end{code}
@@ -5114,21 +5117,276 @@ Grammatiken, da hier nicht nur zwischen akzeptiert und nicht akzeptiert
 unterschieden wird, sondern gleichzeitig eine Verarbeitung zu einer
 Ausgabe erfolgt. Zudem ermöglichen Parser die Definition eigener
 Kombinatoren wie \icode{commaSep} für Komma-separierte Listen, welche
-komplexe Definition deutlich vereinfachen können.
+komplexe Definitionen deutlich vereinfachen können. 
 
-\lsection[reqs:template]{Templates}
+Ähnlich verhält es sich mit der Erzeugung von Zeichenketten, die statt
+durch Templates rein funktional geschieht. Auf der einen Seite ist dies
+bei einfachen Beispielen umständlicher und auch weniger lesbarer als
+beispielsweise die Verwendung von StringTemplate
+\sees{template:stringtemplate}. Ein Generator, der aus einem Namen und
+einer Liste von Methoden eine Java-Klasse erzeugt, kann mit StringTemplate
+durch
+\begin{code}
+genClass = new StringTemplate("public class $name$ {
+  $methods; separator=\"\n\n\"$
+}");
+\end{code}
+in einem Java-Programm beschrieben werden. Mit MagicL müsste derselbe
+Generator als
+\begin{code}
+(= (genClass name methods)
+   (words (List (text (Str public class))
+                name
+                (braces (paragraphs methods)))))
+\end{code}
+spezifiziert werden, was deutlich aufwändiger wirkt. Auf der anderen
+Seite sind Generatoren in MagicL gewöhnliche Haskell-Funktionen, wodurch
+der Aufruf mit
+\begin{code}
+layout 80 (genClass className classMethods)  
+\end{code}
+einfacher als in StringTemplate, wo die Befehle
+\begin{code}
+genClass.setAttribute("name", className);
+genClass.setAttribute("methods", classMethods);
+genClass.toString();
+\end{code}
+benötigt werden. So können MagicL-Generatoren einfacher in viele kleine,
+wiederverwendbare Komponenten aufgeteilt werden und entsprechend dem
+funktionalen Paradigma mit Funktionen höherer Ordnung kombiniert
+werden. Eine genauere Bewertung kann erst vorgenommen werden, wenn beide
+Systeme für die Definition von komplexen Code-Generatoren
+vewendet wurden. Auf jeden Fall aber wäre es möglich, Code-Generierung
+in MagicL durch eine Code-DSL noch weiter zu vereinfachen.
 
-\lsection[reqs:metalang]{Meta-Programmiersprache}
+Die Zeichenketten-Ebene muss vom Meta-Programmierer allerdings nur für
+die Unterstützung neuer externer Ein- und Ausgabeformate betreten
+werden. Im Idealfall, d.h. wenn ausschließlich \sexp{}-DSLs verwendet
+werden, alle Backends für zu generierende Zielsprachen bereits vorhanden
+sind und die Verarbeitungsalgorithmen nicht so komplex sind, dass
+getypte Objekte benötigt werden, können Compiler komplett auf der
+einfachen \sexp{}-Ebene spezifiziert werden.
 
-\lsection[reqs:call]{Aufruf von Templates}
+\lsection[disc:sexp]{\sexps{}}
 
-\lsection[reqs:sep]{Komponententrennung}
+\sexps{} werden ebenfalls durch Parser verarbeitet, welche allgemeiner
+und mächstiger sind als gewöhnliche Lisp-Makros, letztere aber dennoch
+als Spezialfall einschließen. Dies ermöglicht beispielsweise lokale
+Makros oder Übersetzer, die nicht auf genau einen Knotennamen
+anspringen, sondern beispielsweise alle binären Operatoren einer
+Sprache. Die größere Allgemeinheit geht allerdings derzeit mit etwas
+erhöhtem Aufwand für die einfachen, in bestehenden Lisps unterstützen
+Fälle einher. Beispielsweise könnte ein Makro, welches eine
+Foliendefinition einer Slide-DSL in eine Latex-DSL übersetzt, die
+Eingabe
+\begin{code}
+(slide MySlideTitle
+  (image image.png)
+  (items one two three))
+\end{code}
+in die Ausgabe
+\begin{code}
+(environment (frame MySlideTitle)
+  (image image.png)
+  (items one two three))
+\end{code}
+überführen. Ein derartiges Makro wäre in Common Lisp durch
+\begin{code}
+(defmacro slide (title &rest contents)
+  `(environment (frame ,title)
+     ,@contents))
+\end{code}
+gegeben. Hier wurden die Variablen \icode{title} und \icode{contents}
+von Lisp an den ersten bzw. alle weiteren Parameter gebunden. Mit der
+Compiler-DSL hingegen würde das Makro als 
+\begin{code}
+(automac compSlide slide
+  (liftA2 genSlide take (many take))
+  (where (= (genSlide title contents)
+            (' (begin (frame (, title))
+                 (,@ contents))))))
+\end{code}
+definiert werden, wo explizite Aufrufe von \icode{take} bzw. \icode{many
+  take} und eine Umleitung über \icode{liftA2} für denselben Effekt
+benötigt werden. Es wäre daher durchaus wünschenswert, die Compiler-DSL
+noch weiter zu vereinfachen, allerdings ist es nicht klar wie genau dies
+aussehen soll. Es könnte beispielsweise ein komplett mit Common Lisp
+übereinstimmendes \icode{defmacro} angeboten werden, welches kurze
+Definitionen ermöglicht, im Gegenzug aber an Allgemeinheit
+verliert. Welche Sprache wirklich den besten Kompromiss zwischen
+Allgemeinheit und Programmkürze ermöglicht bleibt daher eine offene
+Frage, die sich vermutlich erst nach häufiger Verwendung näher
+beantworten lassen wird.
 
-schnittstelle
+Generierung von \sexps{} erfolgt mit dem Quasiquote-Operator, der im
+Gegensatz zu Lisp keine eigene Syntax benutzt, sondern an gewöhnliche
+\sexp{}-Notation angepasst wurde. Dieser Operator enthält zwei
+Verbesserungen gegenüber Lisp. Zum einen ist es damit möglich, aus einem
+Makro mehrere Ausdrücke zu erzeugen, die alle per Splicing an der
+ursprünglichen Stelle eingefügt werden. Beispielsweise wäre es
+praktisch, in der Slide-DSL mehrere gleichbenannte, automatisch nummerierte
+Folien mit dem Befehl \icode{multi-slide} definieren zu können, so dass
+\begin{code}
+(multi-slide Title
+  (s (items one two three))
+  (s (image diagram.png)
+     (text This is a diagram)))    
+\end{code}
+übersetzt würde nach
+\begin{code}
+(slide (text Title 1)
+  (items one two three))
 
-\lsection[reqs:gentemp]{Generierung von Templates}
+(slide (text Title 2)
+  (image diagram.png)
+  (text This is a diagram))      
+\end{code}
+Ein derartiges Makro ist in MagicL möglich, in Lisp hingegen nicht. Dort
+müsste die Slide-DSL wie Lisp selbst einen \icode{progn}-Befehl
+enthalten, der es ermöglicht, mehrerere Ausdrücke zu einem
+zusammenzufassen, so dass die Ausgabe nun von der Form
+\begin{code}
+(progn
+  (slide ...)
+  (slide ...))
+\end{code}
+wäre. Manchmal ist es auch erforderlich, aus einem Makro überhaupt keine
+Ausgabe zu erzeugen. Beispielsweise könnte eine DSL Kommentare der Form
+\icode{(comment ...)} an beliebigen Stellen zulassen, die vom Compiler
+ignoriert werden sollen. Dies kann in MagicL durch ein simples Makro mit
+einem leeren Quasiquote erreicht werden:
+\begin{code}
+(autoMac compComment comment
+  (liftA1 genComment (many take))
+  (where (= (genComment comments)
+            ('))))
+\end{code}
+In Lisp ist derartiges selbst mit \icode{progn} nicht möglich, da ein
+leeres \icode{progn} gleichbedeutend mit \icode{nil} ist, welches von
+Lisp an vielen, aber nicht allen Stellen ignoriert wird, so dass auf
+diese Weise z.B. keine Kommentare in Parameterlisten vorkommen dürften.
 
-Beispiel
+Der andere Vorteil des MagicL-Quasiquotes zeigt sich, falls mittels
+Quasiquote Code generiert werden soll, der selbst Quasiquotes
+enthält. Dies wäre beispielsweise dann der Fall, wenn Benutzer selbst
+Erweiterungen für die Compiler-DSL implementieren wollen. In Common Lisp
+sind verschachtelte Quasiquotes teilweise sehr schwierig zu
+verstehen. Beispielsweise könnte ein Makro, welches ein anderes Makro
+definiert, in Common Lisp durch
+\begin{code}
+(defmacro x ()
+  `(defmacro y (a)
+      `(foo ,a)))
+\end{code}
+gegeben sein. Hier ist \icode{a} ein Parameter des inneren Makros und es
+wird mit \icode{,a} das innere Quasiquote aufgehoben. Soll \icode{a}
+stattdessen ein Parameter des äußeren Makros sein, muss das äußere
+Unquote aufgehoben werden:
+\begin{code}
+(defmacro x (a)
+  `(defmacro y ()
+      `(foo ,',a)))
+\end{code}
+Aufgrund der Lisp-Evaluationsregeln muss der Konstrukt \icode{,',a}
+verwendet werden. Es gibt noch weitere Fälle dieser Art, und nur die
+wenigsten Lisp-Programmierer verstehen all diese Konstrukte sofort. Mit
+dem MagicL-Quasiquote wird das erste Beispiel\footnote{Hier wurde für
+  die bessere Vergleichbarkeit weiterhin \icode{defmacro} verwendet,
+  obwohl dies in MagicL nicht definiert ist.} durch
+\begin{code}
+(defmacro x ()
+  (' (defmacro y (a)
+       ('1 (foo (,1 a))))))
+\end{code}
+und das zweite durch
+\begin{code}
+(defmacro x (a)
+  (' (defmacro y ()
+       ('1 (foo (, a))))))
+\end{code}
+ausgedrückt, was deutlich intuitiver ist.
+
+\lsection[disc:object]{Objekte}
+
+Mit der in die Compiler-DSL integrierte Haskell-DSL bietet MagicL eine
+statisch typisierte Programmiersprache an, mit der komplexere
+Algorithmen elegant im funktionalen Paradigma realisiert werden
+können.
+
+Programme in der Haskell-DSL sind aufgrund der Umsetzung auf reine
+\sexps{} ohne weitere Syntax etwas länger als Haskell-Programme selbst,
+so dass beispielsweise der Haskell-Ausdruck \icode{["a" "b" "c"]} in der
+DSL als \icode{(List (Str a) (Str b) (Str c))} geschrieben wird. Dies
+ist der Nachteil, der mit der leichteren Generierbarkeit von Code sowie
+der reibungslosen Integrierbarkeit mit anderen DSLs einhergeht. Es wäre
+durchaus möglich, die \sexp{}-Syntax um Notationen für Strings und
+Arrays erweitern. Damit die Modellkomplexität dabei nicht zunimmt,
+könnte diese Syntax von einem Präprozessor wieder auf \sexps{}
+abgebildet werden, so dass beispielsweise \icode{[a b]} denselben
+\sexp{} ergibt wie \icode{(List a b)} -- einen derartigen Präprozessow
+können MagicL-Nutzer auch selbst implementieren. Es ist allerdings nicht
+einfach zu entscheiden, welche zusätzliche Syntax für alle DSLs
+gleichzeitig optimal ist. DSL-spezifische Zusatzsyntax hingegen würde
+die Integration verschiedener DSLs erschweren und gewissermaßen die
+Grundidee von MagicL ad absurdum führen. Ein alternativer Ansatz wäre
+die Beibehaltung der puren \sexps{} und die Bereitstellung einer
+Entwicklungsumgebung, die DSL-spezifische Anzeige- und Bearbeitungsmodi
+anbietet, die bestimmte Ausdrücke benutzerfreundlich visualisieren
+können. Auf diesen Gedanken wird in \sref{end:disc:ide} weiter
+eingegangen.
+
+\lsection[disc:compinterface]{Compiler-Schnittstelle}
+
+MagicL's modellspezifische Hilfsmittel sind frei miteinander
+kombinierbar. Beispielsweise können Parser auf \sexps{} oder Strings
+beliebige Haskell-Objekte zurückliefern, oder Haskell-Funktionen
+\sexps{} mittels Quasiquote und Strings mittels Generator-Bibliothek
+erzeugen. Alle mit MagicL definierbaren Compilertypen lassen sich
+hintereinanderschalten, indem sie zunächst mit \icode{toIO} in Arrows
+der Kategorie von Funktionen mit Nebeneffekten umgewandelt und
+anschließend mittels \icode{>>>} verknüpft werden. Dies führt gemeinsam
+mit dem Ansatz vieler, teilweise ineinander übersetzbarer
+\sexp{}-basierter DSLs zu einer starken Komponententrennung, bei der
+Compiler und DSLs häufit wiederverwendet werden können. 
+
+Ein experimentelles Feature von MagicL's generischer
+Compilerschnittstelle ist die Möglichkeit, spezielle Compiler fest als
+Standardcompiler zwischen zwei Typen zu verdrahten.  Damit ist es unter
+anderem möglich, Parser für ein zusammengesetztes Modell mit vielen
+Untertypen auf eine Weise zu konstruieren, bei der Aufrufe von
+Sub-Parsern nicht explizit, sondern implizit durch Typinferenz erfolgen,
+was das Schreiben derartiger Parser erleichtern kann. Außerdem können
+automatisch Standardparser für Listen und optionale Werte aus normalen
+Parsern abgeleitet werden, wobei die abgeleiteten Standardparser durch
+die Parserkombinatoren \icode{many} und \icode{optional} aus den
+Ursprünglichen entstehen. Die Notation für derartige Standardcompiler
+ist allerdings noch etwas umständlich, wie die Umsetzung des
+Haskell-DSL-Compilers in \cref{sexphs} zeigt -- hier könnte eine
+Erweiterung der Compiler-DSL helfen. Ein größeres Problem ist, dass die
+-- recht komplizierte -- Realisierung dieses Features mit der Typklasse
+\icode{Compilable} bereits an die Grenzen von Haskells Typsystem stößt,
+so dass bereits nicht-standardisierte Erweiterungen des
+Haskell-Compilers GHC \cite{Ghc} benötigt werden. Auch ist es aufgrund
+von Einschänkungen im Typsystem nicht möglich, automatisch erzeugte
+Listen-Standardcompiler mit eigenen Listen-Compilern zu
+überschreiben. Eine Nachfolgeimplementierung von MagicL sollte daher
+entweder auf ein derartiges Feature verzichten oder statt Haskell eine
+dynamisch typisierte Programmiersprache verwenden.
+
+\lsection{Zusammenfassung}
+
+MagicL erfüllt alle in \cref{reqs} gestellten Anforderungen, wie
+\abb{disc_reqs} zeigt. Als einziger Kritikpunkt bleibt die Länge von
+Metaprogrammen, die noch nicht ganz mit Lisp konkurrieren kann. Daher
+könnte die Compiler-DSL künftig um Konstrukte erweitert werden, die
+bisher aufwändige Aufgaben vereinfacht. Da aber MagicL deutlich
+allgemeiner ist als Lisp-Makrosysteme, können nicht einfach die dort
+bestehenden Mechanismen eins zu eins übernommen werden - vielmehr kann
+erst die Erfahrung mit mehr Anwendungsbeispielen zeigen, welche genauen
+Ergänzungen sinnvoll sind. Diese Erweiterungen können MagicL-Nutzer auch
+selbst implementieren, denn wie jedes Lisp ist MagicL selbst durch
+Makros erweiterbar. Hierfür müsste lediglich ein Compiler definiert
+werden, der die erweiterte Compiler-DSL in die bestehende übersetzt.
 
 \begin{figure}[h]
 \begin{tabular}{|l|l|l|} \hline
@@ -5138,12 +5396,10 @@ Beispiel
 \bf Ausgabemodell            & \sexp{} / beliebig            &     ja        \\\hline      
 \bf Ausgabevalidierung       & beliebig                      &     ja        \\\hline      
 \bf Zielsprache              & beliebig                      &     ja        \\\hline      
-\bf Quasiquote               & \icode{(' .. )}               &     ja        \\\hline   
-\bf Unquote                  & \icode{(, .. )}               &     ja        \\\hline
 \bf vollständiges Quasiquote & ja                            &     ja        \\\hline      
 \bf Code-Objekt verfügbar    & ja                            &     ja        \\\hline      
 \bf Sprachmächtigkeit        & maximal                       &     ja        \\\hline      
-\bf Metaprogrammlänge        & kurz                          & teilweise     \\\hline
+\bf Metaprogrammlänge        & kurz                          & ja, aber noch nicht optimal \\\hline
 \bf Template-Aufruf          & verallgemeinertes Makro       &     ja        \\\hline      
 \bf Komponententrennung      & unterstützt                   &     ja        \\\hline      
 \bf Template-Generierung     & einfach durch \icode{'1} etc. &     ja        \\\hline      
