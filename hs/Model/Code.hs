@@ -112,6 +112,9 @@ parens = embrace "(" ")"
 brackets :: Code -> Code
 brackets = embrace "[" "]"
 
+angleBrackets :: Code -> Code
+angleBrackets = embrace "<" ">"
+
 braces :: Code -> Code
 braces = embrace "{" "}"
 

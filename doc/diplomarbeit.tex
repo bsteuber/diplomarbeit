@@ -267,6 +267,7 @@ bereitstellt und von einem metarekursiven Compiler nach Haskell
 \chapter*{Abkürzungsverzeichnis}
 \begin{acronym}
 \acro{ASCII}{American Standard Code for Information Interchange}
+\acro{CSV}{Comma Separated Values}
 \acro{DSL}{Domain Specific Language}
 \acro{DSSSL}{Document Style Semantics and Specification Language}
 \acro{EBNF}{Erweiterte Backus-Naur-Form}
@@ -3161,20 +3162,14 @@ Generator-Bibliothek wird in \sref{magicl:code} besprochen.
 
 \lsubsection[arch:comps:sexp]{\sexp{}-Bibliothek}
 
-\sexps{} sind in MagicL wie folgt definiert:
-\begin{DIFnomarkup}\begin{code}
-data Sexp = Symbol String
-          | Node [Sexp]
-\end{code}\end{DIFnomarkup}
 Eine Bibliothek enthält eine Reihe von Hilfsmitteln für die Verarbeitung
-von \sexps{}. Hierzu gehören ein String-Parser
-(\sref{arrowparser:sexp}) und ein Pretty-Printer
-(\sref{magicl:code:prettysexp} für \sexp{}-Syntax. Darüber hinaus werden
-einige spezielle Kombinatoren für das Verarbeiten von \sexps{} durch
-Parser bereitgestellt. Beispielsweise kann mit \icode{macro} ein
-\sexp{}-Parser definiert werden, der wie ein Lisp-Makro nur aktiv wird,
-wenn das erste Element eines Ausdrucks mit dem Knotennamen
-übereinstimmt. Dies wird in \sref{arrowparser:sexpparser} besprochen.
+von \sexps{}. Hierzu gehören ein String-Parser sowie ein Pretty-Printer
+für \sexp{}-Syntax. Darüber hinaus werden einige spezielle Kombinatoren
+für das Verarbeiten von \sexps{} durch Parser
+bereitgestellt. Beispielsweise kann mit \icode{macro} ein \sexp{}-Parser
+definiert werden, der wie ein Lisp-Makro nur aktiv wird, wenn das erste
+Element eines Ausdrucks mit dem Knotennamen übereinstimmt. Die
+\sexp{}-Bibliothek wird in \sref{magicl:sexp} erläutert.
 
 \lsubsection[arch:comps:test]{Test-Framework}
 
@@ -3522,7 +3517,7 @@ Textdateien können mit \icode{Char}, Bit-Streams mit \icode{Bool} oder
 
 \todo{Mehr Top-Down-Argumente}
 
-\lsection[arrowparser:lib]{Parser-Library}
+\lsection[arrowparser:lib]{Parser-Bibliothek}
 
 MagicL beinhaltet eine Parser-Bibliothek, in der u.a. viele simple
 Parser-Konstruktoren definiert sind. Hier ein paar
@@ -3601,12 +3596,192 @@ werden kann. Die Rückgabe wird mittels \icode{unMaybeList} vom durch
 \icode{Nothing} eine leere Liste zurückgegeben wird, wenn nichts gelesen
 werden kann.
 
-\lsection[arrowparser:sexp]{Beispiel: Ein Parser für \sexps{}}
+\lsection[arrowparser:example]{Beispiel: Einlesen von CSV-Dateien}
 
-Aufgrund der Einfachheit der \sexp{}-Struktur und der praktischen
-Parser-Library ist es möglich, in vier kurzen Zeilen einen Parser zu
-entwerfen, der als Text repräsentierte \sexps{} in die typisierte
-Repräsentation überführt:
+Als Beispiel wird ein Parser definiert, der CSV-Dateien (Comma-Separated
+Values) in Listen von Listen einliest. Eine CSV-Datei besteht aus
+vielen, durch \icode{'\n'} getrennten Zeilen:
+\begin{code}
+parseCSV = sepBy (eq '\n') line
+\end{code}
+Jede Zeile besteht aus durch Kommas getrennten Zellen:
+\begin{code}
+line = sepBy (eq ',') cell
+\end{code}
+Eine Zelle beinhaltet eine beliebige Anzahl von Zeichen, die allerdings
+nicht die Trennzeichen sein dürfen:
+\begin{code}
+cell = many (notMember ",\n")
+\end{code}
+Damit ist der Parser vollständig spezifiziert und kann mit einem
+Beispieldatensatz getestet werden:
+\begin{code}
+runParser parseCSV "Erika,Mustermann,Karlsruhe\nSven,Schmidt,Mannheim"
+
+-- ergibt [["Erika", "Mustermann", "Karlsruhe"]
+           ["Sven",  "Schmidt",    "Mannheim"]]
+\end{code}
+
+\lsection[arrowparser:sum]{Zusammenfassung}
+
+Parser werden in MagicL durch die Verschachtelung zweier Funktoren
+implementiert, die bestehende Arrows um bestimmte Möglichkeiten
+erweitern. Der \icode{FailFunctor} realisiert die Möglichkeit, mit einer
+Fehlermeldung zu Scheitern und per Backtracking Alternativen zu
+probieren. Der \icode{StateFunctor} setzt das Durchreichen von Zuständen
+um und wird benutzt, um den noch zu lesenden Stream als Liste zu
+verwalten. Der \icode{ParseFunctor} kombiniert beides, wobei der
+\icode{FailFunctor} doppelt verwendet wird, um auch Fehler zu
+ermöglichen, die nicht durch Backtracking zu beheben sind. Dies ist
+hilfreich, um teilweise sinnvollere Fehlermeldungen zu erhalten.
+
+Eine Parser-Bibliothek stellt neben Konstruktoren wie \icode{member}
+auch Kombinatoren wie \icode{many} bereit, die eine EBNF-artige
+Formulierung ermöglichen. Damit ist die Anforderung einer Bibliothek
+für String-Parser erfüllt. Allerdings sind MagicL-Parser so allgemein
+definiert, dass neben Buchstaben auch andere Token-Typen verwendet
+werden können. Damit bildet die Parser-Bibliothek auch das Fundament für
+MagicL's Makrosystem, denn verallgemeinerte Makros werden in
+\sref{magicl:sexp} als Parser auf \sexps{} definiert.
+
+\lchapter[magicl]{Weitere Komponenten}
+
+In diesem Kapitel werden die weiteren Kernkomponenten von MagicL
+vorgestellt. Zunächst wird die Generator-Bibliothek für Zeichenketten
+erläutert. Anschließend wird auf \sexp{}-spezifische Funktionalität
+mit dem Schwerpunkt verallgemeinerter Makros eingegangen. Zuletzt wird
+die allgemeine Schnittstelle behandelt, mit der sich die verschiedenen
+Compiler-Typen in MagicL zusammenfügen lassen und feste Standardcompiler
+definiert werden können.
+
+\lsection[magicl:code]{Generator-Bibliothek}
+
+Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
+String-basierten Templates und daher mit
+Low-Level-Methoden. Syntaktische Konstrukte werden daher oft wiederholt,
+was zu häufigen Syntaxfehlern und einem relativ hohen Wartungsaufwand
+führt. Es würde beispielsweise viel Arbeit bedeuten, alle in einer
+generierten Java-Klasse definierten Arrays in Collections umzuwandeln,
+wenn die \icode{\{A, B, C\}}-Syntax überall direkt benutzt
+wurde. Hilfreich wäre es, wenn stattdessen überall ein Sub-Template
+\icode{genList} aufgerufen würde -- nun müsste nur noch eine Stelle
+verändert werden um die erwünschte Anpassung durchzuführen. Diese
+Abstraktion ist auch mit einigen String-basierten Templates
+realisierbar. Ein weiteres Problem aber ist die Formatierung -- denn auch
+generierter Quelltext wird eventuell gelesen werden. Ein Template für
+\icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
+da der Einrückungslevel immer relativ zur -- leider im Template
+unbekannten -- äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
+Code daher an einen Formatierer wie Jalopy \cite{Jalopy} übergeben werden --
+für ein sprachunabhängiges Framework ist diese Option aber nicht
+zufriedenstellend.
+
+MagicL verfolgt einen anderen Ansatz und definiert ein typisiertes
+Modell für formatierten Quelltext, welches durch eine Reihe von
+Generatorfunktionen konstruiert und anschließend von einem Compiler in
+eine Zeichenkette überführt wird. Hierbei handelt es sich um einen Nachbau
+des von Philip Wadler in \cite[S.223ff]{FunOfProgramming} vorgestellten
+Pretty-Printers. Die elementaren Konstruktor-Funktionen sind:
+\begin{DIFnomarkup}\begin{code}
+newline :: Code
+text    :: String -> Code
+append  :: Code   -> Code -> Code
+group   :: Code   -> Code
+indent  :: Int    -> Code -> Code
+\end{code}\end{DIFnomarkup}
+
+\icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
+sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
+zu bekommen, indem es alle Zeilenumbrüche durch Leerzeichen
+ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
+Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
+Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
+\icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
+\begin{DIFnomarkup}\begin{code}
+indent 2 (conc [text "hallo", newline, text "welt"])
+\end{code}\end{DIFnomarkup}
+den Text
+\begin{DIFnomarkup}\begin{code}
+hallo
+  welt
+\end{code}\end{DIFnomarkup}
+ergeben -- dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
+mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
+Funktionen wie
+\begin{DIFnomarkup}\begin{code}
+  joinBy :: Code -> [Code]
+\end{code}\end{DIFnomarkup}
+-- welche einen Separator benutzt, um eine Liste zusammenzufügen.
+\begin{DIFnomarkup}\begin{code}
+joinBy "; " [text "foo", text "bar", text "baz"]
+\end{code}\end{DIFnomarkup}
+würde also
+\begin{DIFnomarkup}\begin{code}
+foo; bar; baz
+\end{code}\end{DIFnomarkup}
+ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
+syntaktische Programmiersprachenelemente abgeleitet, wie
+\icode{commaSep} für eine Komma-separierte Liste oder \icode{parens},
+\icode{braces}, \icode{brackets} und \icode{angleBrackets} für die vier
+gängigen Arten der Klammerung.
+
+\lsubsubsection[magicl:code:example]{Beispiel: Generierung von XML}
+
+Als Beispiel soll ein vereinfachter XML-Generator definiert werden. Als
+Eingabe wird dabei ein XML-Modell wie folgt definiert:
+\begin{code}
+data XmlNode = Node String [Attribute] XmlInner
+data Attribute = Attr String String
+type XmlInner = Either [XmlNode] String
+\end{code}
+Ein Knoten besteht aus einem Namen, einer Attributliste und einem
+Inhalt. Jedes Attribut enthält einen Schlüssel und einen Wert. Das
+Innere eines Knotens kann entweder eine Liste von Kindknoten oder ein
+String sein. Ein Knoten soll wie folgt formatiert werden:
+\begin{code}
+<node key1="value1" key2="value2">
+  <inner-node></inner-node>  
+  <inner-node></inner-node>
+</node>
+\end{code}
+Der Inhalt wird um zwei Zeichen eingerückt -- es sei denn der Knoten
+passt komplett auf die aktuelle Zeile. Die Formatierungsfunktion ist
+durch folgendes Programm gegeben:
+\begin{code}
+formatNode (XmlNode tagName attrs inner) =
+  group (lines [indent2 (lines [openTag, innerCode]), closeTag])
+  where openTag  = angleBrackets (words [text tagName, attrCode])
+        closeTag = angleBrackets (append (text "/") (text tagName))
+        attrCode = words (map formatAttr attrs)
+        formatAttr (Attr key value) =
+          conc [text key, text "=", string (text value)]
+        innerCode = case inner of
+                      Left childNodes -> lines (map formatNode childNodes)
+                      Right str       -> text str    
+\end{code}
+Auf eine detailierte Erklärung des Programms wird an dieser Stelle
+verzichtet -- ein einfacheres Beispiel wird mit dem Pretty Printer für
+\sexps{} in \sref{magicl:sexp:pretty} ausführlich erläutert.
+
+\lsection[magicl:sexp]{\sexp{}-Bibliothek}
+
+\sexps{} sind in MagicL wie folgt definiert:
+\begin{DIFnomarkup}\begin{code}
+data Sexp = Symbol String
+          | Node [Sexp]
+\end{code}\end{DIFnomarkup}
+Die \sexp{}-Bibliothek enthält einen Parser und einen Generator, welche
+zwischen \sexp{}-Syntax und dem Typen \icode{Sexp} konvertieren
+können. Außerdem wird die Parser-Bibliothek um Funktionalität für
+Parser, die auf \sexps{} operieren, bereichert, wodurch Makros als
+Parser definiert werden können.
+
+\lsubsection[magicl:sexp:syntax]{Ein- und Ausgabe von \sexp{}-Syntax}
+
+Aufgrund der Einfachheit der \sexp{}-Syntax ist es mit der
+Parser-Bibliothek möglich, in wenigen Zeilen einen Parser zu entwerfen,
+der als Text repräsentierte \sexps{} in die typisierte Repräsentation
+überführt:
 
 \begin{DIFnomarkup}\begin{code}
 whitespace = skip (many (member " \t\n"))
@@ -3629,7 +3804,6 @@ parseSexp = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
 \end{code}\end{DIFnomarkup} % <<
 Ein \sexp{} ist nun entweder ein Symbol oder ein Knoten, wobei davor und
 danach Whitespace auftreten darf.
-
 \begin{figure}[h]
 \begin{DIFnomarkup}\begin{code}
 whitespace  = skip (many (member " \t\n"))
@@ -3640,7 +3814,6 @@ parseSexp   = whitespace >>> (parseSymbol <+> parseNode) >>> whitespace
   \caption{Ein kompletter \sexp{}-Parser in vier Zeilen}
   \label{magicl:fig:sexp_parser}
 \end{figure}
-
 \abb{sexp_parser} zeigt noch einmal den gesamten Parser. Ein
 Beispielaufruf könnte wie folgt aussehen:
 \begin{code}
@@ -3654,16 +3827,52 @@ Fehlermeldung ausgegeben, z.B.
 \begin{DIFnomarkup}\begin{code}
 runParser parseSexp "(test) )"  ==>  Empty stream expected: ")"
 \end{code}\end{DIFnomarkup}
+Dieser Parser -- um \sexp{}-spezifische Fehlermeldungen erweitert --
+wird in MagicL zum Einlesen aller \sexp{}-DSLs verwendet.
 
-\lsection[arrowparser:sexpparser]{Parser auf \sexps}
+Neben dem Parser enthält MagicL einen Generator für \sexp{}-Syntax,
+welcher beispielsweise zum Debuggen neuer Compiler nützlich ist, da als
+Zwischenschritte erzeugte DSLs leserlich ausgegeben werden können.
+\sexps{} werden wie folgt formatiert: Passt der gesamte Ausdruck noch
+auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
+\begin{DIFnomarkup}\begin{code}
+(a b (c d) e)
+\end{code}\end{DIFnomarkup}
+Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
+auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
+Zeichen eingerückt werden:
+\begin{DIFnomarkup}\begin{code}
+(a
+  b
+  (c d)
+  e)
+\end{code}\end{DIFnomarkup}
+Dies lässt sich mit dieser rekursiven Funktion erreichen:
+\begin{DIFnomarkup}\begin{code}
+layoutSexp :: Sexp -> Code
+layoutSexp (Symbol sym)    = text sym
+layoutSexp (Node children) = format (map layoutSexp children)
+  where format = group . parens . indent2 . lines
+\end{code}\end{DIFnomarkup} %<<
 
-Der Begriff \sexp{}-Parser bezeichnet in dieser Arbeit Parser, die
-Listen von \sexps{} als Eingabe und einen beliebigen Typ als Ausgabe
-haben. Der Parser aus dem vorigen Abschnitt ist daher in dieser
-Terminologie ein Char-Parser, der \sexps{} zurückliefert. Entsprechend
-ist der Typ \icode{SexpParser} in MagicL definiert als \icode{IOParser} (für
-Seiteneffekten wie Debug-Ausgaben) vom Token-Typ \icode{Sexp} ohne
-explizite Eingabe und mit beliebigem Rückgabewert:
+Um einen Knoten zu formatieren, werden zunächst die Unterknoten
+formatiert \\ (\icode{map layoutSexp children}) und jeweils auf eine eigene
+Zeile (\icode{lines}) gesetzt, wobei nach Zeilenumbrüchen um zwei
+Zeichen eingerückt werden soll (\icode{indent2}). Anschließend wird
+der Ausdruck geklammert (\icode{parens}) und zuletzt überprüft
+\icode{group}, ob der ganze Ausdruck nach Ersetzen der Zeilenumbrüche
+durch Leerzeichen noch auf die aktuelle Zeile passt - ansonsten werden
+die Zeilenumbrüche beibehalten.
+
+\lsubsection[magicl:sexp:sexpparser]{Parser auf \sexps}
+
+Mit dem Begriff \sexp{}-Parser werden in dieser Arbeit Parser
+bezeichnet, die Listen von \sexps{} als Eingabe und einen beliebigen Typ
+als Ausgabe haben -- und nicht etwa der String-Parser für \sexp{}-Syntax
+wie im vorigen Abschnitt. Entsprechend ist der Typ \icode{SexpParser} in
+MagicL definiert als \icode{IOParser} (für Seiteneffekten wie
+Debug-Ausgaben) vom Token-Typ \icode{Sexp} ohne explizite Eingabe und
+mit beliebigem Rückgabewert:
 \begin{DIFnomarkup}\begin{code}
 type SexpParser a = IOParser Sexp () a  
 \end{code}\end{DIFnomarkup}
@@ -3748,171 +3957,26 @@ eine etwaige Oder-Verknüpfung ins Innere verlegt werden -- hier also:
 macro "foo" (symbolMacro "bar" <+> symbolMacro "baz")
 \end{code}\end{DIFnomarkup}
 
-\lsection[arrowparser:sum]{Zusammenfassung}
-
-Parser werden in MagicL durch die Verschachtelung zweier Funktoren
-implementiert, die bestehende Arrows um bestimmte Möglichkeiten
-erweitern. Der \icode{FailFunctor} realisiert die Möglichkeit, mit einer
-Fehlermeldung zu Scheitern und per Backtracking Alternativen zu
-probieren. Der \icode{StateFunctor} setzt das Durchreichen von Zuständen
-um und wird benutzt, um den noch zu lesenden Stream als Liste zu
-verwalten. Der \icode{ParseFunctor} kombiniert beides, wobei der
-\icode{FailFunctor} doppelt verwendet wird, um auch Fehler zu
-ermöglichen, die nicht durch Backtracking zu beheben sind. Dies ist
-hilfreich, um teilweise sinnvollere Fehlermeldungen zu erhalten.
-
-Eine Parser-Bibliothek stellt neben Konstruktoren wie \icode{member}
-auch Kombinatoren wie \icode{many} bereit, die eine EBNF-artige
-Formulierung ermöglichen. Die Parser sind sehr allgemein, da sowohl
-Rückgabetyp als auch Token-Typ variabel sind, so dass mehr als nur
-Strings eingelesen werden können. Makros werden in MagicL als Parser auf
-\sexps{} definiert, die auch Subausdrücke rekursiv mit Parsern
-verarbeiten können.
-
-\todo{Diskussion: Welche Anforderungen erfüllt, wie nah an kontextfreien
-Grammatiken?}
-
-\lchapter[magicl]{Weitere Komponenten}
-
-Die im letzen Kapitel vorgestellten Arrow-basierten Parser und Makros
-sowie die damit in \cref{sexphs} und \cref{sexpcomp} implementierten
-Sprachen sind das Herzstück von MagicL. Darüber hinaus gibt es
-allerdings noch weitere Komponenten, die in den folgenden Abschnitten
-vorgestellt werden.
-
-\todo{auf Anforderungen beziehen}
-
-\lsection[magicl:code]{Repräsentation von Quelltext}
-
-\todo{statt Code-Modell von Generator-Bibliothek sprechen}
-
-Die meisten Frameworks für \cgen{} erzeugen Quelltext aus
-String-basierten Templates und daher mit
-Low-Level-Methoden. Syntaktische Konstrukte werden daher oft wiederholt,
-was zu häufigen Syntaxfehlern und einem relativ hohen Wartungsaufwand
-führt. Es würde beispielsweise viel Arbeit bedeuten, alle in einer
-generierten Java-Klasse definierten Arrays in Collections umzuwandeln,
-wenn die \icode{\{A, B, C\}}-Syntax überall direkt benutzt
-wurde. Hilfreich wäre es, wenn stattdessen überall ein Sub-Template
-\icode{genList} aufgerufen würde -- nun müsste nur noch eine Stelle
-verändert werden um die erwünschte Anpassung durchzuführen. Diese
-Abstraktion ist auch mit einigen String-basierten Templates
-realisierbar. Ein weiteres Problem aber ist die Formatierung -- denn auch
-generierter Quelltext wird eventuell gelesen werden. Ein Template für
-\icode{for}-Schleifen kann den Schleifenkörper nicht korrekt einrücken,
-da der Einrückungslevel immer relativ zur -- leider im Template
-unbekannten -- äußeren Einrückung ist.  Wenn vorhanden, kann der erzeugte
-Code daher an einen Formatierer wie Jalopy \cite{Jalopy} übergeben werden --
-für ein sprachunabhängiges Framework ist diese Option aber nicht
-zufriedenstellend.
-
-MagicL verfolgt einen anderen Ansatz und definiert ein typisiertes
-Modell für formatierten Code samt Compiler nach String. Hier handelt es
-sich um einen Nachbau des von Philip Wadler in
-\cite[S.223ff]{FunOfProgramming} vorgestellten Pretty-Printers. Die
-elementaren Konstruktor-Funktionen sind:
-\begin{DIFnomarkup}\begin{code}
-newline :: Code
-text    :: String -> Code
-append  :: Code   -> Code -> Code
-group   :: Code   -> Code
-indent  :: Int    -> Code -> Code
-\end{code}\end{DIFnomarkup}
-
-\icode{newline}, \icode{text} und \icode{append} sollten selbsterklärend
-sein. \icode{group} versucht den übergebenen \icode{Code} auf eine Zeile
-zu bekommen, indem es alle Zeilenumbrüche durch Leerzeichen
-ersetzt. Wird dabei allerdings die geforderte Zeilenlänge (im
-Standard-Compiler 70) überschritten, wird die ursprüngliche Version mit
-Zeilenumbrüchen genommen. \icode{indent} rückt den übergebenen
-\icode{Code} bei jedem Zeilenumbruch um $n$ Zeichen ein, z.B. würde
-\begin{DIFnomarkup}\begin{code}
-indent 2 (conc [text "hallo", newline, text "welt"])
-\end{code}\end{DIFnomarkup}
-den Text
-\begin{DIFnomarkup}\begin{code}
-hallo
-  welt
-\end{code}\end{DIFnomarkup}
-ergeben -- dabei verbindet \icode{conc :: [Code] -> Code} eine Liste
-mittels \icode{append}. Darüber hinaus gibt es viele weitere allgemeine
-Funktionen wie
-\begin{DIFnomarkup}\begin{code}
-  joinBy :: Code -> [Code]
-\end{code}\end{DIFnomarkup}
--- welche einen Separator benutzt, um eine Liste zusammenzufügen.
-\begin{DIFnomarkup}\begin{code}
-joinBy "; " [text "foo", text "bar", text "baz"]
-\end{code}\end{DIFnomarkup}
-würde also
-\begin{DIFnomarkup}\begin{code}
-foo; bar; baz
-\end{code}\end{DIFnomarkup}
-ergeben. Aus diesen allgemeinen Funktionen werden dann Abkürzungen für
-syntaktische Programmiersprachenelemente abgeleitet, wie
-\icode{commaSep} für eine Komma-separierte Liste oder \icode{parens},
-\icode{braces} und \icode{brackets} für die drei gängigen Arten der
-Klammerung.
-
-\lsubsection[magicl:code:prettysexp]{Beispiel: Ein Pretty-Printer für \sexps{}}
-
-\sexps{} sollen wie folgt formatiert werden: Passt der gesamte Ausdruck
-noch auf die aktuelle Zeile, werden normal Leerzeichen verwendet:
-\begin{DIFnomarkup}\begin{code}
-(a b (c d) e)
-\end{code}\end{DIFnomarkup}
-Wird die gewünschte Breite aber überschritten, soll jeder Subausdruck
-auf einer eigenen Zeile stehen, wobei alle bis auf den ersten um zwei
-Zeichen eingerückt werden:
-\begin{DIFnomarkup}\begin{code}
-(a
-  b
-  (c d)
-  e)
-\end{code}\end{DIFnomarkup}
-Dies lässt sich mit dieser rekursiven Funktion erreichen:
-\begin{DIFnomarkup}\begin{code}
-layoutSexp :: Sexp -> Code
-layoutSexp (Symbol sym)    = text sym
-layoutSexp (Node children) = format (map layoutSexp children)
-  where format = group . parens . indent2 . lines
-\end{code}\end{DIFnomarkup} %<<
-
-Um einen Knoten zu formatieren, werden zunächst die Unterknoten
-formatiert \\ (\icode{map layoutSexp children}) und jeweils auf eine eigene
-Zeile (\icode{lines}) gesetzt, wobei nach Zeilenumbrüchen um zwei
-Zeichen eingerückt werden soll (\icode{indent2}). Anschließend wird
-der Ausdruck geklammert (\icode{parens}) und zuletzt überprüft
-\icode{group}, ob der ganze Ausdruck nach Ersetzen der Zeilenumbrüche
-durch Leerzeichen noch auf die aktuelle Zeile passt - ansonsten werden
-die Zeilenumbrüche beibehalten.
-
 \lsection[magicl:compinterface]{Generische Compiler-Schnittstelle}
 
-\todo{mehr Top-Down argumente, aufzählen aller Standardcompiler}
-
-Um das Parser-Framework herum soll ein wieder möglichst allgemeines
-Interface für die Beschreibung von Compilern entstehen, so dass
-beispielsweise Parser und gewöhnliche Verarbeitungsfunktionen
-komfortabel kombiniert werden können. Ziel ist die selbstständige Suche
-nach einem passenden Compiler, wenn nur Ein- und Ausgabetyp spezifiziert
-sind. Compiler sollen unter anderem als pure Funktionen oder als Parser
-spezifiziert werden können.
-
-Ein Compiler von \icode{a} nach \icode{b} ist in MagicL etwas, was sich
-in eine Operation mit \icode{a} als Ein- und \icode{b} als Ausgabe
-überführen lässt. Diese Operation kann im allgemeinen Nebeneffekte
-enthalten, weshalb IOArrow verwendet wird. Typen, mit denen sich
-Compiler repräsentieren lassen, implementieren die von MagicL definierte
-Typklasse \icode{Executable}:
+Mit Parsern und Funktionen gibt es derzeit in MagicL zwei Typen, mit
+denen Compiler realisiert werden können -- es könnten auch zukünftig
+noch weitere hinzukommen. Damit verschieden implementierte miteinander
+kombiniert werden können, müssen diese in einen allgemeineren
+Compiler-Typ überführt werden. Der allgemeinste Compilertyp in MagicL
+ist \icode{IOArrow a b} -- die Menge der Funktionen mit möglichen
+Nebeneffekten -- dessen Elemente mit Arrow-Kombinatoren wie \icode{>>>}
+verknüpft werden können. Alle Typen \icode{x}, die sich mit der
+polymorphen Funktion \icode{toIO} in IO-Arrows umwandeln lassen,
+implementieren die Typklasse \icode{Executable x a b}:
 \begin{DIFnomarkup}\begin{code}
 class Executable x a b | x -> a b where
   toIO :: x -> IOArrow a b
 \end{code}\end{DIFnomarkup}
-\icode{x} ist selbst ein parametrisierter Typ, der die Ein- und
-Ausgabetypen \icode{a} und \icode{b} bereits determiniert. Die einfachsten
-Instanzen von \icode{Executable} werden durch IOArrows selbst sowie pure
-Funktionen gebildet:
+Dabei ist \icode{x} selbst ein parametrisierter Typ, der die Ein- und
+Ausgabetypen \icode{a} und \icode{b} vollständig festlegt. Die
+einfachsten Instanzen von \icode{Executable} werden durch IOArrows
+selbst sowie pure Funktionen gebildet:
 \begin{DIFnomarkup}\begin{code}
 instance Executable (IOArrow a b) a b where
   toIO = id
@@ -3938,38 +4002,71 @@ Stream-Parameter wird hier also explizit gemacht -- der vom Parser
 implizit zurückgegebene Stream wird verworfen. Sollte es erforderlich
 sein, einen Parser mit weiteren Parametern aufzurufen oder auch den
 Rest-Stream zu erhalten, muss statt \icode{Executable} direkt mit dem
-Parser-Modul gearbeitet werden.
+Parser-Typ gearbeitet werden.
 
-Nun soll es möglich sein, einen ausführbaren Typen zu benutzen, um einen
-eindeutigen Compiler von \icode{a} nach {b} einzurichten. Dies geschieht
-über die Typklasse \icode{Compilable}:
+Die Ausgabe von einem Parser kann beispielsweise wie folgt an einen als
+Funktion spezifizierten Compiler weitergeleitet werden:
+\begin{code}
+toIO someParser >>> toIO someFunction
+\end{code}
+
+Darüber hinaus bietet die Compilerschnittstelle die Möglichkeit,
+spezielle Compiler fest mit einer Kombination von Ein- und Ausgabetyp zu
+verbinden, so dass für den Aufruf eines Compilers weder Name noch
+Implementationstyp bekannt sein müssen. In MagicL sind Parser und
+Generator für \sexp{}-Syntax fest verdrahtet, daher kann beispielsweise
+der -- in einen IOArrow umgewandelte -- Parser mit \\
+\icode{compile :: IOArrow String Sexp} referenziert werden. Sind Ein-
+und Ausgabetyp durch den Kontext klar, kann die Typanschrift weggelassen
+werden.
+
+Das Festlegen eines Standardcompilers von \icode{a} nach \icode{b} durch
+den Implementationstyp \icode{x} -- welcher \icode{Executable}
+implementieren muss -- erfolgt mit der Typklasse \icode{Compilable}:
 \begin{DIFnomarkup}\begin{code}
 class (Executable x a b) => Compilable x a b | a b -> x where
   comp :: x
 \end{code}\end{DIFnomarkup}
 Da es nur einen ausgezeichneten Compiler von \icode{a} nach \icode{b}
 geben kann, legen \icode{a} und \icode{b} gemeinsam \icode{x} fest --
-gleichzeitig bestimmt \icode{x} auch \icode{a} und \icode{b}, da dies in
-der Oberklasse \icode{Executable} festgelegt ist. Es handelt sich also
-um eine 1:1-Beziehung. Die Spezifikation eines simplen funktionalen
-Compilers würde so aussehen:
+gleichzeitig bestimmt \icode{x} auch \icode{a} und \icode{b}, da dies
+bereits in \icode{Executable} festgelegt ist. Es handelt sich also um
+eine 1:1-Beziehung.
+
+Festverdrahtete Compiler können ebenfalls mittels \icode{toIO} in
+IO-Arrows konvertiert werden. Dies geschieht bereits automatisch beim
+Aufruf mit \icode{compile} aus der Typklasse \icode{Compiler}, die
+automatisch für jede Instanz von \icode{Compilable} instanziiert wird:
 \begin{DIFnomarkup}\begin{code}
-instance Compilable (A -> B) A B where
-  comp x = ...
+class Compiler a b where
+  compile :: IOArrow a b
+
+instance (Compilable x a b) => Compiler a b where
+  compile = toIO comp
 \end{code}\end{DIFnomarkup}
-Der Parser, der einen \sexp{} aus einem String erzeugt, kann auch als
-Compiler spezifiziert werden:
+
+Als Beispiele können der Generator für \sexp{}-Syntax aus
+\sref{magicl:sexp:syntax} mit
+\begin{DIFnomarkup}\begin{code}
+instance Compilable (Sexp -> String) Sexp String where
+  comp x = layout 70 (layoutSexp x)
+\end{code}\end{DIFnomarkup}
+und der entgegengesetzte Parser mit
 \begin{DIFnomarkup}\begin{code}
 instance Compilable (FunParser Char () Sexp) String Sexp where
-  comp = many parseSexp
+  comp = parseSexp
 \end{code}\end{DIFnomarkup}
-Auf diese Weise kann der Parser automatisch durch einen Aufruf von
-\icode{comp} gefunden werden.
+als Standardcompiler festgelegt werden, woraufhin beide mit typisierten
+\icode{compile}-Aufrufen als IO-Arrows angesprochen werden
+können. Manchmal ist es auch nützlich, den noch nicht mit \icode{toIO}
+umgewandelten Compiler durch einen typisierten Aufruf von \icode{comp}
+zu referenzieren.
 
 Da Listen- und Maybe-Datentypen von Parsern fast immer mit \icode{many}
-und \icode{optional} verarbeitet werden, können für \icode{[a]} und
-\icode{Maybe a} Standard-Parser bereitgestellt werden, die den
-bestehenden Parser für \icode{a} mit diesen Funktionen transformieren:
+und \icode{optional} verarbeitet werden, stellt MagicL mit jeden
+Standardcompiler nach \icode{a} automatisch auch Standardparser nach \icode{[a]} und
+\icode{Maybe a} bereit, die auf diese Weise aus dem ursprünglichen
+Parsern erzeugt wurden:
 \begin{DIFnomarkup}\begin{code}
 instance (Compilable (ParseFunctor t ar () a) [t] a, ...) =>
   Compilable (ParseFunctor t ar () [a]) [t] [a] where
@@ -3979,26 +4076,17 @@ instance (Compilable (ParseFunctor t ar () a) [t] a. ...) =>
   Compilable (ParseFunctor t ar () (Maybe a)) [t] (Maybe a) where
     comp = optional comp
 \end{code}\end{DIFnomarkup}
-Nun können beispielsweise auch Streams von \sexps{} durch den Aufruf von
-\\ \icode{comp :: FunParser Char () [Sexp]} geparst werden, ohne dass dieser
-  Parser manuell spezifiziert wurde.
+Die \icode{comp}-Aufrufe auf der rechten Seite beziehen sich auf den
+ursprünglichen Parser, welcher von Haskell aus dem Typkontext zugeordnet
+wird. Damit können beispielsweise auch Streams von \sexps{} durch den
+Aufruf von \icode{compile :: IOArrow String [Sexp]} geparst werden,
+obwohl nur der Parser für einzelne \icode{sexps} spezifiziert wurde.
 
-Zuletzt "`vergisst"' die Typklasse \icode{Compiler} den zur Definition
-verwendeten Typen und bietet eine allgemeine Umwandlung von A nach B an:
-\begin{DIFnomarkup}\begin{code}
-class Compiler a b where
-  compile :: IOArrow a b
-
-instance (Compilable x a b) => Compiler a b where
-  compile = toIO comp
-\end{code}\end{DIFnomarkup}
-Nun kann ein beliebiger Compiler ungeachtet seines Implementationstyps
-einfach über einen explizit typisierten \icode{compile}-Aufruf, wie etwa
-\\\icode{compile :: IOArrow String [Sexp]}, gefunden werden. Leider ist
-es aufgrund des Haskell-Typsystems nicht möglich, dass sogar
-Kombinationen aus Compilern selbstständig gefunden werden. Hierfür
-müsste das Typsystem eine Prolog-artige Tiefensuche unterstützen, was
-zumindest derzeit noch nicht der Fall ist. 
+Leider ist es mit MagicL nicht möglich, sogar Kombinationen aus
+Compilern selbstständig zu finden. Hierfür müsste das Haskell-Typsystem
+eine Prolog-artige Tiefensuche unterstützen, was zumindest derzeit nicht
+der Fall ist. Auf der Compiler-Schnittstelle bauen einige
+Hilfsfunktionen für das konkrete Aufrufen von Compilern auf:
 
 Um die Kompilation von Textdateien zu vereinfachen, wird die Funktion
 \icode{compileStr} definiert, welche ein \icode{Executable} von
@@ -4011,20 +4099,20 @@ compileStr :: (Compiler String a, Executable x a b, Compiler b String) =>
                x -> String -> IO String
 compileStr f = runKleisli $ compile >>> toIO f >>> compile
 \end{code}\end{DIFnomarkup} % $
-Beispielsweise kann \icode{a} für
-\icode{Sexp} und \icode{b} für \icode{Code} stehen, da bereits
-Standard-Compiler von \icode{String} nach \icode{Sexp} (der normale
-\sexp{}-Parser) sowie von \icode{Code} nach \icode{String} (der Layouter
-für eine Zeilenlänge von 70 Zeichen) existieren. Mit \icode{compileStr
-  layoutSexp} könnte daher der Pretty-Printer aus dem vorigen
-Abschnitt in eine (imperative) Funktion umgewandelt werden, die zunächst
-aus einem String einen \sexp{} parst, anschließend \icode{layoutSexp} aufruft
-und das Ergebnis für 70 Zeichen layoutet. Man beachte, dass Parser und
-Generator automatisch durch die Typinferenz gefunden werden und nicht
-beim Aufruf angegeben werden müssen.
+Beispielsweise kann \icode{a} für \icode{Sexp} und \icode{b} für
+\icode{Code} stehen, da bereits Standard-Compiler von \icode{String}
+nach \icode{Sexp} (der normale \sexp{}-Parser) sowie von \icode{Code}
+nach \icode{String} (der Layouter für eine Zeilenlänge von 70 Zeichen)
+existieren. Mit \icode{compileStr layoutSexp} könnte daher der
+\sexp{}-Syntax-Generator in eine (imperative) Funktion umgewandelt
+werden, die zunächst aus einem String einen \sexp{} parst, anschließend
+\icode{layoutSexp} aufruft und das Ergebnis für 70 Zeichen layoutet. Man
+beachte, dass Parser und Generator automatisch durch die Typinferenz
+gefunden werden und nicht beim Aufruf angegeben werden müssen.
 
-Für die Erzeugung selbstständiger Compiler benutzt \icode{compiler}
-stdin als Eingabe- und stdout als Ausgabe-Stream:
+Für die Erzeugung von Compilern, die als eigenständiges Programm laufen
+können, benutzt \icode{compiler} stdin als Eingabe- und stdout als
+Ausgabe-Stream:
 \begin{DIFnomarkup}\begin{code}
 compiler :: (Compiler String a, Executable x a b, Compiler b String) => x -> IO ()
 compiler f = do
@@ -4032,11 +4120,9 @@ compiler f = do
   output <- compileStr f input
   putStr output  
 \end{code}\end{DIFnomarkup}
-Damit kann ein Compiler als Stand-Alone-Programm erzeugt und mit Hilfe
-von Ein- und Ausgabeumleitungen auf Dateien angewendet werden. Um
-beispielsweise aus dem \sexp{}-Pretty-Printer ein Kommandozeilenprogramm
+Um beispielsweise aus dem \sexp{}-Formatierer ein Kommandozeilenprogramm
 zu erstellen, muss lediglich ein Modul mit einem Compiler als
-\icode{main}-Funktion erstellt werden: 
+\icode{main}-Funktion erstellt werden:
 \begin{DIFnomarkup}\begin{code}
 module SexpFormatter where
 -- einige Import-Anweisungen
@@ -4044,7 +4130,8 @@ module SexpFormatter where
 main = compiler layoutSexp
 \end{code}\end{DIFnomarkup}
 Dieses Modul kann dann kompiliert und von der Kommandozeile
-aufgerufen werden:
+aufgerufen werden, wobei Ein- und Ausgabedateien per Umleitung angegeben
+sind:
 \begin{DIFnomarkup}\begin{code}
 bash$ ghc SexpFormatter.hs
 bash$ ./SexpFormatter <inFile >outFile
@@ -4052,29 +4139,37 @@ bash$ ./SexpFormatter <inFile >outFile
 
 \lsection[magicl:sum]{Zusammenfassung}
 
-\todo{Fortschritt für anforderungen}
+Die Erzeugung von Quelltext erfolgt in MagicL mit einer
+Generator-Bibliothek, indem funktional ein typisiertes
+\icode{Code}-Modell erzeugt und anschließend mittels \icode{layout} für
+eine bestimmte Zeilenlänge formatiert wird. Damit wurde unter anderem
+ein Generator für \sexp{}-Syntax implementiert, mit dem generierter
+\sexp{}-Code benutzerfreundlich formatiert werden kann. Darüber hinaus
+enthält die \sexp{}-Bibliothek neben einem Parser für \sexp{}-Syntax --
+der praktisch die Umkehrfunktion zum Generator ist --
+eine Reihe von Funktionen, die die Parser-Bibliothek um Funktionalität
+für das Einlesen von \sexps{} bereichert -- wie beispielsweise
+\icode{macro}, welches einen Parser erzeugt, der wie Lisp-Makros das
+erste Symbol eines Ausdrucks auf Übereinstimmung prüft. Damit ist die
+Anforderung von \sexp{}-Verarbeitung durch verallgemeinerte Makros
+teilweise erfüllt - was noch fehlt sind der Quasiquote-Operator zur
+praktischen \sexp{}-Generierung und die Möglichkeit, automatisch
+rekursiv absteigende Makros wie in Lisp zu definieren. Außerdem ist die
+Meta-Sprache noch Haskell und nicht selbst eine \sexp{}-DSL, so dass es
+nicht möglich ist, Compiler selbst zu generieren und die Metasprache so
+zu erweitern.
 
-Für die Repräsentation von Quelltext benutzt MagicL das typisierte
-Modell \icode{Code}. Dadurch ist es möglich, mit Einrückung, Klammerung
-etc. auf strukturelle Weise umzugehen, was die Anfälligkeit für
-Syntaxfehler gegenüber String-basierten Templates verringert. Dieses
-Modell kann anschließend in Quelltext übersetzt werden.
-
-Für die allgemeine Spezifikation von Verarbeitungsprozessen stellt
-MagicL eine Schnittstelle mit drei Typklassen bereit, mit der einzelne
-Compiler mit beliebigen Arrows oder auch komplett anderen Methoden
-konstruiert und kombiniert werden können. Alles, was in einen
-\icode{IOArrow} von \icode{a} nach \icode{b} überführt werden kann,
-implementiert die Typklasse \icode{Executable}. Instanzen dieser Klasse
-können dann verwendet werden, um mit \icode{Compilable} feste Compiler
-zwischen zwei Typen zu verdrahten, die dann mittels Typinferenz
-automatisch gefunden werden können. Für die leichtere Benutzung können
-diese dann über die Polymorphe Funktion \icode{compile} aus der
-Typklasse \icode{Compiler} angesprochen werden, die den intern
-verwendeten \icode{Executable}-Typ versteckt.
-
-Ein minimales Test-Framework ermöglicht Unit Testing einzelner Compiler
-oder Makros.
+Um die Anforderung der kombinierbarkeit beliebiger Compiler zu
+entsprechen, stellt MagicL die Typklasse \icode{Executable} bereit, mit
+der Parser und funktional spezifizierte Compiler in den Typ
+\icode{IOArrow} überführt und anschließend mit den gewöhnlichen
+Arrow-Kombinatoren miteinander verknüpft werden können. Darüber hinaus
+kann jeder Kombination von Ein- und Ausgabetyp mit Hilfe der Typklasse
+\icode{Compilable} ein Standardcompiler fest zugeordnert werden, so dass
+dieser anschließend durch einen typisierten Aufruf von \icode{compile}
+als IOArrow angesprochen werden kann. Dieses zusätzliche Feature kommt
+in den Anforderungen nicht vor und kann als experimentell betrachtet
+werden.
 
 \lchapter[sexphs]{\sexp{}-Haskell}
 
