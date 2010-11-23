@@ -2142,7 +2142,7 @@ $\mathbf{Set}$ stimmen die neuen Begriffe dann genau mit den alten
   alle $f : X \ato A$ und alle $g : X \ato B$ genau ein Morphismus
   $\langle f,g \rangle : X \ato A \times B$ existiert, für den
   \abb{cat_product} kommutiert, d.h.  $\pi_1 \circ \langle f,g \rangle =
-  f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.  }
+  f$ und $\pi_2 \circ \langle f,g \rangle = g$ gelten.}
 
 \begin{figure}[h]
   \centering
@@ -5029,7 +5029,7 @@ wird \icode{inners} die Ausdrücke
 \begin{DIFnomarkup}\begin{code}
 1 2 (,@ xs) 6  
 \end{code}\end{DIFnomarkup}
-wie folgt nach \sexp{}-Haskell übersetzen:
+wie folgt in die Haskell-DSL übersetzen:
 \begin{DIFnomarkup}\begin{code}
 (++ (List (Symbol (Str 1)))
     (List (Symbol (Str 2)))
@@ -5037,7 +5037,7 @@ wie folgt nach \sexp{}-Haskell übersetzen:
     (List (Symbol (Str 6))))
 \end{code}\end{DIFnomarkup}
 \icode{inner} verarbeitet einen einzelnen Ausdruck und gibt als Ergebnis
-\sexp{}-Haskell-Code für einen \sexp{} zurück:
+Haskell-DSL-Code für einen \sexp{} zurück:
 \begin{DIFnomarkup}\begin{code}
     (hasType inner LispMacro)
     (= inner (<+> unquote    
@@ -5056,7 +5056,7 @@ entsprechen:
     (mac unquote    ,  (>>^ take single))
     (mac unquoteAll ,@ (>>^ take single))
 \end{code}\end{DIFnomarkup}
-Alle vier Funktionen zur Quotierung von \sexp{}-Haskell-Ausdrücken
+Alle vier Funktionen zur Quotierung von Haskell-DSL-Ausdrücken
 können selbst mit einem Quote implementiert werden:
 \begin{DIFnomarkup}\begin{code}
     (= (quoteSymbol sym)
@@ -5069,7 +5069,7 @@ können selbst mit einem Quote implementiert werden:
        (' (++ (,@ sexps))))))
 \end{code}\end{DIFnomarkup}
 \icode{quoteSymbol} erzeugt die Repräsentation eines Symbols, indem es
-Aufrufe von \icode{Symbol} und \icode{Str} auf \sexp{}-Haskell-Ebene
+Aufrufe von \icode{Symbol} und \icode{Str} auf Haskell-DSL-Ebene
 ineinander verschachtelt. Auf der Ebene der Metasprache wird ein
 weiterer Aufruf von \icode{Symbol} benötigt, um den String \icode{sym}
 in einen \sexp{} umzuwandeln. Generell muss jedes Argument eines Unquote
@@ -5078,8 +5078,8 @@ vom Typ \icode{Sexp} und jedes Argument eines Unquote-All vom Typ
 einen benannten Knoten, in den sie alle als Liste übergebenen Ausdrücke
 einfügen, und unterscheiden sich nur im erzeugten Knotennamen.
 
-Damit ist die Implementation vom Quote-Operarator abgeschlossen. Die
-Definitionen der benannten Quote-Varianten wie \icode{'1} sind bis auf
+Damit ist die Implementation vom Quasiquote abgeschlossen. Die
+Definitionen der benannten Varianten wie \icode{'1} sind bis auf
 die benutzten Makro-Matcher \icode{'1 ,1 ,@1} etc. statt \icode{' , ,@}
 identisch. Um Code-Duplikation zu vermeiden, benutzt MagicL hier
 ebenfalls ein Makro, welches alle Operatoren \icode{'}
@@ -5108,14 +5108,16 @@ nach
 \end{code}\end{DIFnomarkup}
 übersetzt. Die Implementation von \icode{autoMac} ist
 schwieriger. Zunächst muss dafür die Makroexpansion-Funktionsweise von
-Common Lisp nachgebildet werden, welche versucht, eine (in Lisp
-globale) Liste von Makros verodert auf den Eingabe-Stream anzuwenden. Ist
-die Anwendung eines der Makros erfolgreich, wird dessen Rückgabe erneut
-als Eingabe der Makro-Liste verarbeitet. Kann keines der Makros auf einen
+Common Lisp nachgebildet werden, welche versucht, eine (in Lisp globale)
+Liste von Makros verodert auf den Eingabe-Stream anzuwenden. Ist die
+Anwendung eines der Makros erfolgreich, wird dessen Rückgabe erneut als
+Eingabe der Makro-Liste verarbeitet. Kann keines der Makros auf einen
 Knoten angewendet werden, wird versucht, dessen Kinder zu
 expandieren. Symbole werden in diesem Fall unverändert
 zurückgegeben. Dieses Verhalten wurde in MagicL in der Haskell-Funktion
-\icode{lispTraverse} implementiert:
+\icode{lispTraverse}\footnote{\icode{lispTraverse} ist eigentlich Teil
+  der \sexp{}-Bibliothek, wird allerdings erst hier vorgestellt da dies
+  thematisch besser passt.} implementiert:
 \begin{DIFnomarkup}\begin{code}
 lispTraverse :: [LispMacro] -> LispMacro
 lispTraverse macs = combinedMacs
@@ -5148,29 +5150,88 @@ Auf die konkrete Implementation des Toplevel-Compiler-Compilers wird an
 dieser Stelle nicht weiter eingegangen -- sie kann dem MagicL-Code
 für das Modul \icode{Comp2Haskell} entnommen werden.
 
-\lsection[sexpcomp:example]{Beispiel: Ignorieren von Kommentaren}
+\lsection[sexpcomp:example]{Beispiel: Ein Slide-Compiler}
 
-\todo{Lieber Slide-Beispiel}
+Als Beispiel wird ein primitiver, aber vollständiger Compiler angegeben,
+der eine Slide-DSL in eine Latex-DSL übersetzt. Beispielsweise
+soll der Slide-Code
+\begin{code}
+(slides
+  (slide First
+     (list one two three))
+  (slide (text Second Slide)
+     (list foo
+           bar
+           (text Hello World))))
+\end{code}
+in den DSL-Code
+\begin{code}
+(cmd documentclass beamer)
+(env document
+  (env (frame First)
+    (env itemize
+       (cmd item) one
+       (cmd item) two
+       (cmd item) three))
+  (env (frame (text Second Slide))
+    (env itemize
+       (cmd item) foo
+       (cmd item) bar
+       (cmd item) (text Hello World))))
+\end{code}
+übersetzt werden, woraus ein -- derzeit fiktiver -- Latex-DSL-Compiler den Latex-Ausgabecode
+\begin{code}
+\documentclass{beamer}
+\begin{document}
+  \begin{frame}{First}
+    \begin{itemize}
+    \item one
+    \item two
+    \item three
+    \end{itemize}
+  \end{frame}
+  \begin{frame}{Second Slide}
+    \begin{itemize}
+    \item foo
+    \item bar
+    \item Hello World
+    \end{itemize}
+  \end{frame}
+\end{document}
+\end{code}
+generiert.
 
-Praktisch alle Programmiersprachen bieten eine Syntax für Kommentare,
-welche bei der Verarbeitung ignoriert werden. Meistens gibt es eine
-besondere Kommentar-Syntax -- Lisp-Dialekte verwenden beispielsweise
-Semikolons. Da MagicL allerdings auf jede weitere Syntax verzichtet,
-sollen Kommentare hier ebenfalls in \sexps{} codiert werden. Dafür
-sollen Ausdrücke der Form \icode{(comment ...)}  einfach ignoriert
-werden. Diese Funktionalität ist in MagicL durch einen kleinen
-{Präprocessor} gegeben, welcher vor beliebige andere Compiler geschaltet
-werden kann.
-
-Das Modul \icode{Preprocessor} besteht aus vier Zeilen Code:
+Der Slide-Compiler kann mit MagicL wie folgt implementiert werden:
 \begin{DIFnomarkup}\begin{code}
-(compiler Preprocessor)
+(compiler SlideCompiler)
 
-(autoMac compComment comment
-         (>>> (many take) nilArrow))
+(mac compSlides slides
+  (>>^ compAuto
+    (fun contents 
+      (' (cmd documentclass beamer)
+         (env document
+           (,@ contents))))))
 
-(= preprocess compAuto)  
+(autoMac compSlide slide
+  (liftA2 genSlide compSymbol (many compAuto))
+  (where (= (genSlide title contents)
+            (' (env (frame (, title))
+                 (,@ contents))))))
+
+(autoMac compList list
+  (>>^ (many compSymbol) genList)
+  (where 
+    (= (genList items)
+       (' (env itemize
+            (,@ (map genItem Items)))))
+    (= (genItem text)
+       (' (cmd item)
+          (, text)))))
+
+(= slideCompiler compSlides)  
 \end{code}\end{DIFnomarkup}
+
+\todo{}
 Da \icode{compComment} als Auto-Makro definiert ist, können Kommentare
 an jeder beliebigen Stelle im Quellcode auftreten. \icode{nilArrow} ist
 ein Arrow, der unabhängig von seiner Eingabe immer die leere Liste
