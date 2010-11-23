@@ -4159,7 +4159,7 @@ Meta-Sprache noch Haskell und nicht selbst eine \sexp{}-DSL, so dass es
 nicht möglich ist, Compiler selbst zu generieren und die Metasprache so
 zu erweitern.
 
-Um die Anforderung der kombinierbarkeit beliebiger Compiler zu
+Um die Anforderung der Kombinierbarkeit beliebiger Compiler zu
 entsprechen, stellt MagicL die Typklasse \icode{Executable} bereit, mit
 der Parser und funktional spezifizierte Compiler in den Typ
 \icode{IOArrow} überführt und anschließend mit den gewöhnlichen
@@ -4171,31 +4171,35 @@ als IOArrow angesprochen werden kann. Dieses zusätzliche Feature kommt
 in den Anforderungen nicht vor und kann als experimentell betrachtet
 werden.
 
-\lchapter[sexphs]{\sexp{}-Haskell}
+\lchapter[sexphs]{Haskell-DSL}
 
-Die Implementation einiger Komponenten von MagicL erfordert selbst
-\cgen{} -- beispielsweise muss eine etwaige DSL für Template-basierte
-\sexp{}-Erzeugung nach Haskell kompiliert werden. Da diese Generierung
-ebenfalls auf \sexp{}-Basis erfolgen soll, wird in diesem Abschnitt
-eine minimale, funktionale \sexp{}-Sprache vorgestellt, die in legalen
-Haskell-Quellcode kompiliert wird.
-
-Bei dem Entwurf eines neuen Compilers muss zunächst entschieden
-werden, ob die Verarbeitung mittels typisierter Modelle oder direkt
-untypisiert auf den \sexps{} erfolgen soll. Typisierte Modelle erhöhen
+Die meisten Anforderungen sind mit den vorhergehenden Kapiteln bereits
+erfüllt worden. Was noch fehlt ist eine \sexp{}-basierte DSL für die
+Definition von Compilern, die Konstrukte wie den Quasiquote-Operator,
+aber auch eine komplette Meta-Programmiersprache enthält. Damit in der
+DSL die in Haskell geschriebenen MagicL-Bibltiotheken verwendet werden
+können, muss diese selbst nach Haskell übersetzt werden. Aus diesem
+Grund wird zunächst eine Haskell-DSL definiert, die Haskell möglichst
+eins zu ein abbildet. Diese kann dann direkt als Metasprache verwendet
+werden, eignet sich aber auch für die \sexp{}-gestützte Generierung von
+Haskell-Code, wodurch in \cref{sexpcomp} unter anderem der
+Quasiquote-Operator realisiert wird. Dieses Kapitel spezifiziert
+zunächst die Haskell-DSL genauer und stellt anschließend den Compiler
+vor, der ein typisiertes Haskell-Modell als Zwischenschritt benutzt und
+daher in zwei Kompenenten aufgeteilt wurde. Typisierte Modelle erhöhen
 den Entwicklungsaufwand\footnote{Die zukünftige Entwicklung einer
   geeigneten DSL zur Modellbeschreibung, aus der sowohl das typisierte
   Modell als auch Compiler generiert werden, könnte den
   Entwicklungsaufwand wieder reduzieren.}, führen aber zu früherer
-Fehlererkennung in Compilern und ermöglichen eine automatische
-Compiler-Auswahl. Der Haskell-Generator beschreitet diesen Weg und
-dient damit gleichzeitig als Anschauungsbeispiel für die Benutzung
-typisierter Modelle. Rein \sexp{}-gestützte Kompilation hingegen wird
-in \cref{sexpcomp} behandelt.
+Fehlererkennung in Compilern und ermöglichen feste Standardcompiler. Der
+Haskell-DSL-Compiler beschreitet diesen Weg und dient damit gleichzeitig
+als Anschauungsbeispiel für die Benutzung typisierter Modelle. Rein
+\sexp{}-gestützte Kompilation hingegen wird in \cref{sexpcomp}
+behandelt.
 
 \lsection[sexphs:spec]{Spezifikation}
 
-\sexp{}-Haskell soll im Wesentlichen eine in \sexp{} gegossene Version
+Die Haskell-DSL soll im Wesentlichen eine in \sexp{} gegossene Version
 von Haskell sein -- mit nur wenigen Anpassungen, wo diese sinnvoll
 erscheinen. Eine vollständige Abdeckung aller Haskell-Konzepte muss im
 Prototyp nicht gegeben sein, da diese bei Bedarf nachgepflegt werden
@@ -4203,7 +4207,7 @@ können. Zudem sind einige Konzepte wie \icode{let} und \icode{where}
 redundant, so dass nur eines von beiden benötigt wird. 
 
 \lsubsection[sexphs:spec:funs]{Funktionen}
-Funktions- oder Konstruktoraufrufe müssen in der \sexp{}-Version immer
+Funktions- oder Konstruktoraufrufe müssen in der DSL immer
 geklammert werden, können aber unverändert nach Haskell übernommen
 werden:
 \begin{DIFnomarkup}\begin{code}
@@ -4211,8 +4215,8 @@ werden:
 =>
 (myFun 1 4 52)              Haskell
 \end{code}\end{DIFnomarkup}
-Die Pseudo-Syntax \icode{=>} steht hier für ``soll übersetzt werden
-nach''.  Haskell-Infixoperatoren werden in Präfixnotation überführt und
+Die Pseudo-Syntax \icode{=>} steht für ``soll übersetzt werden
+nach''. Haskell-Infixoperatoren werden in Präfixnotation überführt und
 können in dieser beliebig viele Argumente annehmen wie in Lisp üblich:
 \begin{DIFnomarkup}\begin{code}
 (+ 1 4 (- 52 10 4))         Haskell-DSL
@@ -4299,13 +4303,13 @@ dropTwo (x : y : xs) = xs              Haskell
 helloWorld = "Hello World"
 \end{code}\end{DIFnomarkup}
 Im Gegensatz zu richtigen Konstruktoren können diese Operatoren eine
-beliebige Anzahl Parameter verarbeiten.
+beliebige Anzahl von Parametern verarbeiten.
 
 \lsubsection[sexphs:spec:types]{Typen}
 
-Typen werden eins zu eins nach \sexp{}-Haskell übernommen, wobei
-parametrisierte Typen geklammert werden. Typdeklarationen erfolgen
-mit \icode{hasType} anstelle des \icode{::}-Operators in Haskell:
+Typen werden eins zu eins in die Haskell-DSL übernommen, dabei werden
+parametrisierte Typen geklammert. Typdeklarationen erfolgen mit
+\icode{hasType} anstelle des \icode{::}-Operators in Haskell:
 \begin{DIFnomarkup}\begin{code}
 (hasType x Int)
                                       Haskell-DSL
@@ -4341,12 +4345,24 @@ in anderen Sprachen. Typklassen und --instanzen sind ebenfalls direkt
   (where
     (hasType printIt (Fun a (IO Unit)))
     (hasType isEqual (Fun a a Bool))))
-
+                                                     Haskell-DSL
 (instance (dep (Show a) (Eq a))
   (MyClass (List a))
   (where
     (= (printIt x)   ...)
     (= (isEqual x y) ...)))
+
+=>
+
+class MyClass a
+  where
+    printIt :: a -> IO Unit
+    isEqual :: a -> a -> Bool
+                                                     Haskell
+instance (Show a, Eq a) => MyClass [a]
+  where
+    printIt x   = ...
+    isEqual x y = ...
 \end{code}\end{DIFnomarkup}
 
 \lsubsection[sexphs:spec:modules]{Module}
@@ -4366,8 +4382,8 @@ mögliche Arten, ein Modul zu importieren:
   Symbole daraus über einen vorangestellten Modul-Kurznamen
   referenziert werden können.
 \end{itemize}
-Die folgende Moduldefinition zeigt alle diese Möglichkeiten in
-\sexp{}-Haskell und Haskell:
+Die folgende Moduldefinition zeigt alle diese Möglichkeiten in der
+Haskell-DSL und die erforderliche Übersetzung nach Haskell:
 \begin{DIFnomarkup}\begin{code}
 (module MyModule
   (export myFun MyClass MyDataType)
@@ -4446,7 +4462,7 @@ data Pattern = ListPattern [Pattern]
 \end{code}\end{DIFnomarkup}
 Ein Ausdruck kann eine Lambda-Funktion definieren, ein
 \icode{do}-Ausdruck für Monaden\footnote{Die Umsetzung der
-  \icode{do}-Notation in \sexp{}-Haskell wird in diesem Kapitel nicht
+  \icode{do}-Notation in der DSL wird in diesem Kapitel nicht
   näher erläutert -- auch diese ist allerdings sehr nah am
   Original.}, eine Typdeklaration oder ein Pattern sein. Die
 Parameterliste anonymer Funktionen benutzt ebenfalls Patterns.
@@ -4457,17 +4473,17 @@ data Expr = LambdaExpr  [Pattern] Expr
           | PatternExpr Pattern
 \end{code}\end{DIFnomarkup}
 
-Als nächstes wird ein Parser benötigt, der die \sexp{}-Sprache in das
-Modell überführt.
+Als nächstes wird ein Parser benötigt, der die DSL in das
+Haskell-Modell überführt.
 
-\lsection[sexphs:parser]{Modell-Parser}
+\lsection[sexphs:parser]{DSL-Parser}
 
-Compiler und Parser für größere, aus vielen Datentypen zusammengesetzte Modelle
-sollten möglichst immer in kleine Kompilationseinheiten (in Form von
-Arrows) aufgeteilt werden, die jeweils nur für einen Datentyp zuständig
-sind. Diese können auf zwei Arten definiert werden: Zum einen können
-benannte Arrows verwendet und von Hand verknüpft werden, was für den
-Haskell-Parser wie folgt aussehen könnte:
+Compiler und Parser für größere, aus vielen Datentypen zusammengesetzte
+Modelle sollten möglichst immer in kleine Kompilationseinheiten (in Form
+von Arrows) aufgeteilt werden, die jeweils nur für einen Datentyp
+zuständig sind. Diese können auf zwei Arten definiert werden: Zum einen
+können benannte Arrows verwendet und von Hand verknüpft werden, was für
+den Haskell-DSL-Parser wie folgt aussehen könnte:
 \begin{DIFnomarkup}\begin{code}
 compHaskell = liftA2 Haskell (optional compModule) (many compToplevel)
 
@@ -4487,7 +4503,7 @@ Um optionale Ausdrücke und Listen einzulesen, werden die benutzten Parser
 mittels \icode{many} und \icode{optional} transformiert.
 
 Alternativ ist es auch möglich, die Typklasse \icode{Compilable} aus
-\sref{magicl:compinterface} zu verwenden und den polymorphe
+\sref{magicl:compinterface} zu verwenden und den polymorphen
 Arrow \icode{comp} zu überladen. Dadurch erfolgt die Auswahl des
 passenden Parsers zur Kompilationszeit mittels Typinferenz anhand der
 Modelldefinitionen. Dies hat unter anderem den Vorteil, dass Aufrufe von
@@ -4496,7 +4512,7 @@ bedeuten die vielen Instanzdeklarationen einen erhöhten Schreibaufwand
 \footnote{Auch hier wäre also eine DSL wünschenswert, die diese Arbeit
   sowie ein automatisches Funktionsliften erledigt.}. Der Haskell-Parser
 ist auf diese Art implementiert worden. Wie das Modell selbst wird
-dieser hier nur Ausschnittsweise vorgestellt -- konkret wird
+dieser hier nur ausschnittsweise vorgestellt -- konkret wird
 hauptsächlich das Parsen der Moduldefinition erläutert:
 \begin{DIFnomarkup}\begin{code}
 instance Compilable (SexpParser Haskell) [Sexp] Haskell where
@@ -4561,10 +4577,12 @@ Der Parser erzeugt daraus nun ein typisiertes Haskell-Objekt:
 Dieses Objekt kann nun von weiterverarbeitet werden und schließlich in
 Haskell-Quelltext überführt werden.
 
-\lsection[sexphs:code]{Quellcode-Erzeugung}
+\lsection[sexphs:code]{Haskell-Generator}
 
-Für die eigentliche Quelltext-Erzeugung wird das Haskell-Modell in den
-Datentyp \icode{Code} aus \sref{magicl:code} umgewandelt. Dieser
+Für die eigentliche Quelltext-Erzeugung wird die Generator-Bibliothek
+verwendet, so dass das Haskell-Modell in den
+Datentyp \icode{Code} aus \sref{magicl:code} umgewandelt wird, woraufhin
+es je nach erforderlicher Zeilenlänge formatiert wird. Dieser
 Kompilationsschritt kann ebenfalls auf verschiedene Arten durchgeführt
 werden. Am simpelsten und pragmatischsten wäre wohl eine direkte
 Verwendung in Haskell-Funktionen, die sich gegenseitig
@@ -4657,17 +4675,21 @@ compiler ((compile :: IOArrow [Sexp] Haskell) >>>
 
 \lsection[sexphs:sum]{Zusammenfassung}
 
-Für die \sexp{}-basierte Erzeugung von Haskell-Code stellt MagicL die
-Sprache \sexp{}-Haskell bereit, welche im Wesentlichen eine geklammerte
-Haskell-Teilmenge darstellt und nur wenige Umbenennungen und andere
-Anpassungen beinhaltet, wie beispielsweise die Erweiterung aller binärer
-Operatoren auf beliebig viele Argumente\footnote{Als Operator werden
-  Symbole interpretiert, die keine Buchstaben oder Zahlen
-  enthalten. Beispielsweise würde \icode{(<+> a b c)} nach \icode{(a <+> b <+>
-    c)} übersetzt werden. Die Entscheidung über Links- oder
-  Rechtsassoziativität eines Operators trifft anschließend Haskell.}.
+Mit der Haskell-DSL stellt MagicL eine funktionale Programmiersprache
+bereit, welche im Wesentlichen eine geklammerte Haskell-Teilmenge
+darstellt und nach Haskell übersetzt wird. Diese DSL dient einerseits
+als \sexp{}-basierte Meta-Programmiersprache für MagicL-Benutzer,
+erleichtert andererseits aber auch die Generierung von Haskell-Code, was
+in \cref{sexpcomp} für die Compiler-DSL genutzt wird. Gegenüber Haskell
+beinhaltet die DSL nur wenige Umbenennungen und andere Anpassungen wie
+beispielsweise die Erweiterung aller binärer Operatoren auf beliebig
+viele Argumente\footnote{Als Operator werden Symbole interpretiert, die
+  keine Buchstaben oder Zahlen enthalten. Beispielsweise würde
+  \icode{(<+> a b c)} nach \icode{(a <+> b <+> c)} übersetzt werden. Die
+  Entscheidung über Links- oder Rechtsassoziativität eines Operators
+  trifft anschließend Haskell.}.
 
-\fig{flow_sexphs}{Kompilationsprozess von \sexp{}-Haskell}
+\fig{flow_sexphs}{Kompilationsprozess der Haskell-DSL}
 
 Implementiert wurde die Sprache durch ein typisiertes
 \icode{Haskell}-Modell sowie zwei Compiler zur Verarbeitung: Der erste
@@ -4676,7 +4698,7 @@ nach \icode{Code}, woraus das MagicL-Framework letztlich den Quellcode
 generiert. \abb{flow_sexphs} zeigt den Vorgang als Kategoriendiagramm,
 wobei die Framework-interne Vor- bzw. Weiterverarbeitung auf
 String-Ebene grau eingezeichnet ist. Der gesamte
-\sexp{}-Haskell-Compiler ist die Komposition all dieser Compiler und
+Haskell-DSL-Compiler ist die Komposition all dieser Compiler und
 damit ein Arrow von \icode{String} nach \icode{String}.
 
 Sowohl Parser als auch Generator sind mittels
@@ -4699,98 +4721,94 @@ Modelldefinitionen und der Aufteilung in mehrere Compiler verbundene
 Aufwand, der insbesondere für kleine Sprachen oder Spracherweiterungen
 nicht sinnvoll erscheint. Deswegen stellt MagicL alternativ die
 Möglichkeit der direkten, untypisierten Verarbeitung von \sexps{}
-bereit, welche im folgenden Kapitel präsentiert wird. Auch
-\sexp{}-Haskell hätte auf diese Weise vermutlich einfacher verarbeitet
-werden können, wurde aber als Proof of Concept für typisierte
+bereit, welche im folgenden Kapitel präsentiert wird. Auch die
+Haskell-DSL hätte auf diese Weise vermutlich einfacher verarbeitet
+werden können, wurde aber als Verwendungsbeispiel für typisierte
 Verarbeitung in dieser Form beibehalten.
 
-\lchapter[sexpcomp]{\sexp{}-Compiler}
+\lchapter[sexpcomp]{Compiler-DSL}
 
-Wie in \sref{template:lisp} beschrieben wurde, unterstützen
-Lisp-Dialekte die \sexp{}-basierte Kompilation vor allem durch zwei
-Konzepte: 
-\begin{itemize}
-\item Einen Quasiquote-Operator für \sexp{}-Templates
-\item Lisp-Makros, die automatisch in beliebiger Verschachtelung
-  expandiert werden können
-\end{itemize}
-Diese beiden Konzepte sollen nun in ähnlicher Form für MagicL
-bereitgestellt werden. Dafür wird zunächst eine geeignete DSL -- genannt
-\sexp{}-Compiler -- spezifiziert. Anschließend wird ein Compiler von
-\sexp{}-Compiler nach \sexp{}-Haskell entwickelt. Dieser Compiler lässt
-sich selbst am besten in \sexp{}-Compiler formulieren, so dass die
-Implementation metarekursiv erfolgt.
+MagicL-Benutzer sollen neue Compiler für weitere DSLs ausschließlich in
+einer Compiler-DSL\footnote{Es ist durchaus möglich, wie im
+  Haskell-DSL-Compiler direkt Haskell als Implementationssprache zu
+  verwenden - im Normalfall sollte aber die Compiler-DSL praktischer
+  sein.} schreiben. Diese DSL ist eine echte Erweiterung der
+Haskell-DSL, so dass letztere an beliebigen Stellen vorkommen
+und so als Meta-Programmiersprache verwendet werden kann.
+
+Zunächst werden die Bestandteile der Compiler-DSL im nächsten Abschnitt
+spezifiziert. Anschließend wird ein Compiler-Compiler entwickelt, der
+die Compiler-DSL in die Haskell-DSL übersetzt. Der Compiler-Compiler lässt sich
+selbst am besten in der Compiler-DSL formulieren, so dass die
+Implementation meta-rekursiv erfolgt.
 
 \lsection[sexpcomp:spec]{Spezifikation}
 
-\todo{text}
+Die wesentlichen Bestandteile der Compiler-DSL sind das Quasiquote sowie
+die Möglichkeit, automatisch rekursiv absteigende Makros wie in Lisp zu
+spezifizieren. Darüber hinaus sind einige Operatoren enthalten, mit
+denen sich Makros und zusammengesetzte Compiler kürzer als mit den
+bisherigen Konstrukten definieren lassen.
 
-\lsubsection[sexpcomp:spec:gen]{Templates für \sexps}
+\lsubsection[sexpcomp:spec:gen]{Quasiquote}
 
 Während das Einlesen von \sexps{} dank der in
-\sref{arrowparser:sexpparser} vorgestellten Funktionen bereits recht
+\sref{magicl:sexp:sexpparser} vorgestellten Funktionen bereits recht
 komfortabel geht, ist die Erzeugung von Instanzen des
-\icode{Sexp}-Datentyp zunächst umständlich. Soll beispielsweise eine
-Funktion \icode{genUser userName userEmail} mit den Parametern
-\icode{\"Harald\"} und \icode{\"Harry@baz.com\"} aufgerufen den Ausdruck
+\icode{Sexp}-Datentyp bisher noch sehr umständlich. Soll beispielsweise eine
+Funktion \icode{genSlide title content}, mit den Parametern
+\icode{\"Hello\"} und \icode{(list one two)} (als bereits fertig
+konstruierter \sexp{}) aufgerufen, den Ausdruck
 \begin{DIFnomarkup}\begin{code}
-(user (name Harald) (email Harry@baz.com))
+(slide (title Hello) (list one two))
 \end{code}\end{DIFnomarkup}
-zurückliefern, wäre
-in \sexp{}-Haskell \seec{sexphs} folgende Funktionsdefinition
-nötig:
+zurückliefern, wäre mit der Haskell-DSL folgende Funktionsdefinition
+erforderlich:
 \begin{DIFnomarkup}\begin{code}
-(= (genUser userName userEmail)
-   (Node (List (Symbol (Str user))
-               (Node (List (Symbol (Str  name)) (Symbol userName)))
-               (Node (List (Symbol (Str email)) (Symbol userEmail))))))
+(= (genSlide title content)
+   (Node (List (Symbol (Str slide))
+               (Node (List (Symbol (Str title)) (Symbol title)))
+               content)))
 \end{code}\end{DIFnomarkup}
 Der entsprechende Haskell-Code liest sich aufgrund der syntaktischen
 Konstrukte \icode{\"\"} und \icode{[]} statt \icode{(Str)} und
 \icode{(List)} etwas leichter, ist aber davon abgesehen genauso komplex:
 \begin{DIFnomarkup}\begin{code}
-genUser userName userEmail =
-   Node [Symbol "user",
-         Node [Symbol "name" , Symbol userName],
-         Node [Symbol "email", Symbol userEmail]]
+genSlide title content =
+   Node [Symbol "slide",
+         Node [Symbol "title" , Symbol title],
+         content]
 \end{code}\end{DIFnomarkup}
 Um die Konstruktion von \sexp{}-Objekten zu vereinfachen, bieten
 Lisp-Dialekte die Quasiquote-Syntax mit \icode{`} und \icode{,} an
 \sees{template:lisp}. In Common Lisp beispielsweise ließe sich diese
 Funktion sehr elegant formulieren:
 \begin{DIFnomarkup}\begin{code}
-(defun gen-user (user-name user-email)
-  `(user (name ,user-name) (email ,user-email)))
+(defun gen-slide (title content)
+  `(slide (title ,title) content))
 \end{code}\end{DIFnomarkup}
-Ein derartiger Operator soll nun konstruiert werden. Dieser sollte
-allerdings keine bloße Kopie bestehender Lisp-Quasiquotes, sondern
-vielmehr eine genau auf MagicL zugeschnittene Lösung sein. Im Folgenden
-werden daher zunächst die speziellen Anforderungen diskutiert.
-
-Da in MagicL bisher keine syntaktischen Erweiterungen vorgesehen sind,
-sondern eine rein \sexp{}-basierte Repräsentation von Quelltext benutzt
-wird, müssen die Operatoren wie andere Ausdrücke geklammert
-werden. Zudem wird nicht zwischen Quote und Quasiquote unterschieden, so
-dass einheitlich der Quote-Operator \icode{'} benutzt wird. Die Funktion
-\icode{genUser} sollte sich letztlich wie folgt formulieren lassen:
+Ein derartiger Operator soll nun konstruiert werden. Da MagicL die
+einfachstmögliche \sexp{}-Syntax und damit keine syntaktischen
+Erweiterungen wie \icode{`} benutzt, muss die Notation allerdings im
+Rahmen der gewöhnlichen \sexp{}-Syntax erfolgen. Zudem wird nicht
+zwischen Quote und Quasiquote unterschieden\footnote{Ein statisches
+  Quote, das nicht auf innere Unquotes reagiert, wird in Lisp nur für
+  verschachtelte Quasiquotes wirklich benötigt -- diese Problematik wird
+  in MagicL allerdings auf anderem Weg behoben, wie in Kürze erläutert
+  wird.}, so dass einheitlich der Quote-Operator \icode{'} benutzt
+wird. Die Funktion \icode{genSlide} schreibt sich in der Compiler-DSL wie
+folgt:
 \begin{DIFnomarkup}\begin{code}
-(= (genUser userName userEmail)
-   (' (user (name (, userName)) (email (, userEmail)))))
+(= (genSlide title content)
+   (' (slide (title (, title)) ,content)))
 \end{code}\end{DIFnomarkup}
-Dies muss von einem geeigneten Compiler in obige, umständlichere
-Repräsentation in \sexp{}-Haskell übersetzt werden, woraus anschließend
-Haskell-Code erzeugt werden kann. Splicing einer Liste erfolgt
-entsprechend mit \icode{(,@)}:
+Splicing einer Liste erfolgt entsprechend mit \icode{(,@)}:
 \begin{DIFnomarkup}\begin{code}
-(' (1 2 (,@ xs) 5))
+(' (list 1 2 (,@ xs) 5))
 
-ergibt (1 2 3 4 5) bei xs = (List (Symbol (Str 3))
-                                  (Symbol (Str 4)))
+ergibt (list 1 2 3 4 5) bei xs = (List (Symbol (Str 3))
+                                       (Symbol (Str 4)))
 \end{code}\end{DIFnomarkup}
-
-
-\todo{Glätten, Bezug auf reqs}
-
 Wie \sref{reqs:template} erläutert, sollen MagicL-Makros beliebig viele
 \sexps{} zurückgeben können, die per Splicing an die Stelle des
 Makro-Aufrufs gesetzt werden. Dies passt auch gut zu einer Definition
@@ -4852,11 +4870,11 @@ Für den Vergleich mit Common Lisp wurde in diesem Beispiel ebenfalls
 allerdings derzeit nicht\footnote{Es ist allerdings vorstellbar,
   zukünftig zur Vereinfachung wieder ein \icode{defmacro}
   bereitzustellen, was in den entsprechenden MagicL-Code übersetzt
-  werden kann.}. Stattdessen wird der Befehl \icode{mac} angeboten. Der
-folgende Abschnitt stellt das zu erstellende Makrosystem vor, bevor es
-gemeinsam mit dem Quasiquote-Operator implementiert wird.
+  werden kann.}. Stattdessen werden die Operatoren \icode{mac} und
+\icode{automac} angeboten, welche im nächsten Abschnitt erläutert
+werden.
 
-\lsubsection[sexpcomp:spec:comp]{Lisp-artige Makroexpansion}
+\lsubsection[sexpcomp:spec:comp]{Makro-Definition}
 
 Die Definition von Lisp-Makros (vom Typ \icode{LispMacro = SexpParser [Sexp]}) ist mit
 den bisherigen Mitteln bereits möglich:
