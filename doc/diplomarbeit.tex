@@ -4665,7 +4665,7 @@ Schlüsselwort \icode{hiding} nötig ist.
 
 Da MagicL bereits einen Standard-Compiler von \icode{Code} nach
 \icode{String} bereitstellt, kann ein vollständiger Datei-Compiler von
-\sexp{}-Haskell nach Haskell durch Verkettung von Parser
+der Haskell-DSL nach Haskell durch Verkettung von Parser
 und Generator sowie Einbettung in einen Aufruf von \icode{compiler}
 bereitgestellt werden:
 \begin{DIFnomarkup}\begin{code}
@@ -4832,42 +4832,49 @@ werden:
 (' 1 2 3)     =>   [Symbol "1", Symbol "2", Symbol "3"]
 (' (1 2 3))   =>   [Node [Symbol "1", Symbol "2", Symbol "3"]]
 \end{code}\end{DIFnomarkup}
+
 Ein weiteres Problem aller Lisp-Dialekte ist der Umgang mit
-verschachtelten Quasiquotes, welche typischerweise entstehen, wenn
-Makros Makros generieren. Im Ausdruck
-\begin{DIFnomarkup}\begin{code}
+verschachtelten Quasiquotes, welche typischerweise entstehen, wenn aus
+Makros wieder Makros generiert werden. Beispielsweise könnten zwei
+verschachtelte Makros in Common Lisp durch
+\begin{code}
 (defmacro x ()
+  `(defmacro y (a)
+      `(foo ,a)))
+\end{code}
+gegeben sein. Hier ist \icode{a} ein Parameter des inneren Makros und es
+wird mit \icode{,a} das innere Quasiquote aufgehoben. Soll \icode{a}
+stattdessen ein Parameter des äußeren Makros sein, muss das äußere
+Unquote aufgehoben werden:
+\begin{code}
+(defmacro x (a)
   `(defmacro y ()
-     `(print ,a)))
-\end{code}\end{DIFnomarkup}
-ist zunächst nicht klar, auf welches der beiden Quasiquotes sich das Unquote
-bezieht und damit, ob \icode{a} im Kontext des äußeren oder des inneren
-Makros evaluiert werden soll. Common Lisp bezieht ein Unquote immer auf
-das innere Quasiquote -- soll es sich auf das äußere beziehen, müssen
-umständliche Konstrukte wie \icode{,',a} benutzt werden -- dies ist auch
-der einzige Fall, für den Common Lisp den (Nicht-Quasi-)Quote-Operator
-benötigt. MagicL geht hier einen einfacheren Weg: Es werden neben den
-normalen Quote-Operatoren \icode{' , ,@} benannte
-Operatoren \icode{'1 ,1 ,@1} etc. angeboten,
-so dass der Bezug immer klar ist. Beide Interpretationen des obigen
-Ausdrucks sind also darstellbar:
-\begin{DIFnomarkup}\begin{code}
-Auswertung aussen:
+      `(foo ,',a)))
+\end{code}
+Aufgrund der Lisp-Evaluationsregeln muss \icode{,',a} verwendet werden
+-- dies ist auch die einzige Verwendung, für die Common Lisp den
+(Nicht-Quasi-)Quote-Operator wirklich benötigt. Es gibt noch weitere
+Fälle dieser Art, und nur die wenigsten Lisp-Programmierer beherrschen
+all diese Konstrukte vollständig.
 
+MagicL geht hier einen einfacheren Weg: Es werden neben den normalen
+Quote-Operatoren \icode{' , ,@} anders benannte Operatoren \icode{'1 ,1
+  ,@1} etc. angeboten, so dass die Quote-Unquote-Zuordnung immer
+eindeutig ist. Damit wird das erste Beispiel durch
+\begin{code}
 (defmacro x ()
+  (' (defmacro y (a)
+       ('1 (foo (,1 a))))))
+\end{code}
+und das zweite durch
+\begin{code}
+(defmacro x (a)
   (' (defmacro y ()
-       ('1 (print (, a))))))
-
-
-Auswertung innen:
-
-(defmacro x ()
-  (' (defmacro y ()
-       ('1 (print (,1 a))))))
-\end{code}\end{DIFnomarkup}
-Für den Vergleich mit Common Lisp wurde in diesem Beispiel ebenfalls
-\icode{defmacro} geschrieben -- in MagicL gibt es diesen Operator
-allerdings derzeit nicht\footnote{Es ist allerdings vorstellbar,
+       ('1 (foo (, a))))))
+\end{code}
+ausgedrückt, was deutlich intuitiver ist. Für den Vergleich mit Common
+Lisp wurde hier ebenfalls \icode{defmacro} verwendet, obwohl es 
+diesen Operator in MagicL nicht gibt\footnote{Es ist allerdings vorstellbar,
   zukünftig zur Vereinfachung wieder ein \icode{defmacro}
   bereitzustellen, was in den entsprechenden MagicL-Code übersetzt
   werden kann.}. Stattdessen werden die Operatoren \icode{mac} und
@@ -4895,11 +4902,10 @@ beinhaltet bereits die Typdefinition:
      (liftA1 ...)
    (where ...))
 \end{code}\end{DIFnomarkup}
-Dies soll in obigen Code übersetzt werden. Hier muss zwischen dem
-Compiler-Namen \icode{compPredefine} und dem Symbolnamen
-\icode{predefine} für den Makroaufruf unterschieden werden, da ersterer
-eine Haskell-Variable erzeugt und damit Sonderzeichen wie \icode{-}
-ausschließt.
+Hier muss zwischen dem Compiler-Namen \icode{compPredefine} und dem
+Symbolnamen \icode{predefine} für den Makroaufruf unterschieden werden,
+da ersterer eine Haskell-Variable erzeugt und damit Sonderzeichen wie
+\icode{-} ausschließt.
 
 Diese Makros müssen immer explizit aufgerufen werden und unterscheiden
 sich damit von Lisp-Makros, die in einer globalen Liste verwaltet und
@@ -4918,10 +4924,10 @@ werden können:
   (where ...))
 \end{code}\end{DIFnomarkup}
 \icode{autoMac} erwartet an erster Stelle weiterhin einen Haskell-Namen
-erwartet, obwohl dieser im Normalfall aufgrund der automatischen
-Anwendung nicht benötigt wird. Es gibt allerdings besondere Situationen,
-in denen ein direkter Aufruf dennoch erforderlich ist. Allgemein ist die
-Definition mittels \icode{mac} sowie \icode{autoMac}, verglichen mit
+, obwohl dieser im Normalfall aufgrund der automatischen Anwendung nicht
+benötigt wird. Es gibt allerdings besondere Situationen, in denen ein
+direkter Aufruf dennoch erforderlich ist. Allgemein ist die Definition
+mittels \icode{mac} sowie \icode{autoMac}, verglichen mit
 \icode{defmacro} in Common Lisp, etwas umständlicher, da neben dem
 Haskell-Namen der Parser explizit aufgeschrieben werden muss, selbst
 wenn nur eine feste Anzahl von Ausdrücken mittels \icode{take}
@@ -4947,16 +4953,16 @@ Bisher wird \icode{defmacro} nicht bereitgestellt, da noch nicht klar
 ist, welches die beste Art für MagicL ist, kurz und prägnant Makros zu
 definieren. Es ist beispielsweise vorstellbar, dass sich ein Konstrukt
 finden lässt, der die Eleganz und Knappheit von \icode{defmacro} mit der
-Ausdrucksmächtigkeit von \icode{autoMac} kombiniert. Diese Idee wird in
-\sref{end:disc} weiter diskutiert.
+Ausdrucksmächtigkeit von \icode{autoMac} kombiniert -- dies wird in
+\sref{disc:sexp} weiter diskutiert.
 
-Zuletzt sollte die Moduldefinition für Compiler vereinfacht werden:
+Für die einfachere Moduldefinition von Compilern steht der Operator
+\icode{compiler} bereit, welches alle benötigten MagicL-Imports
+automatisch einbindet. Beispielsweise wird
 \begin{DIFnomarkup}\begin{code}
 (compiler Comp2Haskell (imports Data.Maybe Data.List)  
 \end{code}\end{DIFnomarkup}
-Diese muss in eine Haskell-Moduldefinition übersetzt werden, welche alle
-benötigten MagicL-Module sowie zusätzlich die angegebenen Imports
-einbindet:
+in folgenden Haskell-DSL-Code übersetzt:
 \begin{DIFnomarkup}\begin{code}
 (module
   Comp2Haskell
@@ -4974,15 +4980,15 @@ einbindet:
   Data.List)
 \end{code}\end{DIFnomarkup}
 
-\lsection[sexpcomp:impl]{Compiler-Implementation}
+\lsection[sexpcomp:impl]{Implementation des Compiler-Compilers}
 
 Der Compiler für die Compiler-DSL sollte selbst möglichst einfach
 formuliert werden. Da \sexps{} verarbeitet werden, macht eine
 Implementation als \icode{SexpParser} Sinn. Darüber hinaus werden aber
 auch \sexps{} erzeugt, so dass hier auch Quasiquote-Notation und
-Lisp-Makros selbst bereits benutzt werden sollten. Es wird sich daher um
-einen metarekursiven Compiler handeln, d.h. einen Compiler, der sich
-selbst übersetzt. Um hier das Henne-Ei-Problem zu lösen, wird wie im
+Lisp-Makros bereits nützlich wären. Es wird sich daher um einen
+metarekursiven Compiler handeln, d.h. einen Compiler, der sich selbst
+übersetzt. Um hier das Henne-Ei-Problem zu lösen, wird wie im
 Compilerbau üblich später ein Bootstrapping\footnote{Der Begriff
   Bootstrapping ist eine Anspielung auf Baron Münchhausen, der sich an
   seinen Schnürsenkeln aus dem Sumpf gezogen haben will.} erforderlich
@@ -4997,7 +5003,7 @@ objektorientiert mit CLOS implementiert ist und über Makros in ein
 
 Gehen wir also zunächst davon aus, solch ein Compiler wäre bereits
 vorhanden und könnte für die Implementation genutzt werden. Die
-Verarbeitung des Quote-Operators lässt sich dann durch ein komplexes
+Verarbeitung des Quasiquote-Operators lässt sich dann durch ein komplexes
 Auto-Makro realisieren:
 \begin{DIFnomarkup}\begin{code}
 (autoMac compQuote ' inners
@@ -5383,41 +5389,9 @@ Der andere Vorteil des MagicL-Quasiquotes zeigt sich, falls mittels
 Quasiquote Code generiert werden soll, der selbst Quasiquotes
 enthält. Dies wäre beispielsweise dann der Fall, wenn Benutzer selbst
 Erweiterungen für die Compiler-DSL implementieren wollen. In Common Lisp
-sind verschachtelte Quasiquotes teilweise sehr schwierig zu
-verstehen. Beispielsweise könnte ein Makro, welches ein anderes Makro
-definiert, in Common Lisp durch
-\begin{code}
-(defmacro x ()
-  `(defmacro y (a)
-      `(foo ,a)))
-\end{code}
-gegeben sein. Hier ist \icode{a} ein Parameter des inneren Makros und es
-wird mit \icode{,a} das innere Quasiquote aufgehoben. Soll \icode{a}
-stattdessen ein Parameter des äußeren Makros sein, muss das äußere
-Unquote aufgehoben werden:
-\begin{code}
-(defmacro x (a)
-  `(defmacro y ()
-      `(foo ,',a)))
-\end{code}
-Aufgrund der Lisp-Evaluationsregeln muss der Konstrukt \icode{,',a}
-verwendet werden. Es gibt noch weitere Fälle dieser Art, und nur die
-wenigsten Lisp-Programmierer verstehen all diese Konstrukte sofort. Mit
-dem MagicL-Quasiquote wird das erste Beispiel\footnote{Hier wurde für
-  die bessere Vergleichbarkeit weiterhin \icode{defmacro} verwendet,
-  obwohl dies in MagicL nicht definiert ist.} durch
-\begin{code}
-(defmacro x ()
-  (' (defmacro y (a)
-       ('1 (foo (,1 a))))))
-\end{code}
-und das zweite durch
-\begin{code}
-(defmacro x (a)
-  (' (defmacro y ()
-       ('1 (foo (, a))))))
-\end{code}
-ausgedrückt, was deutlich intuitiver ist.
+sind verschachtelte Quasiquotes teilweise sehr schwierig zu verstehen
+\sees{sexpcomp:spec:comp}. MagicL löst dieses Problem hingegen einfach
+durch die Bereitstellung verschieden benannter Quote/Unquote-Paare.
 
 \lsection[disc:object]{Objekte}
 
