@@ -333,8 +333,6 @@ fällt auch im World Wide Web eine immer größer werdende Rolle zu: Ob
 Web Frameworks generieren zumindest ihre HTML-Dateien oder SQL-Abfragen
 für den Datenbankzugriff.
 
-\todo{mehr umschreiben?}
-
 \cgen{} aus Modellen\footnote{Auch Programmcode wird hier als Modell
   angesehen -- mit anderen Worten: "`Code is data and data is code."'}
 bietet viele Vorteile: Zunächst gibt es dadurch einen höheren
@@ -342,11 +340,11 @@ Abstraktionsgrad, so dass Modellarchitekten mit Domain Specific
 Languages (DSLs) arbeiten können und so die Ziel-Programmiersprache
 nicht kennen müssen. Auch ist es möglich, durch Austauschen des
 Generator-Backends die Zielsprache zu wechseln, ohne Modelle anpassen zu
-müssen. Alternativ sind durch \cgen{} integrierte DSLs oder
+müssen. Alternativ sind durch \mprog{} integrierte DSLs oder
 Spracherweiterungen möglich, die dann beliebig mit der Backendsprache
 vermischt werden können -- die Möglichkeit, eine Programmiersprache zu
 modifizieren, liegt somit nicht mehr ausschließlich beim
-Hersteller. \cgen{} erhöht die Produktivität, da sich Algorithmen in
+Hersteller. \mprog{} erhöht die Produktivität, da sich Algorithmen in
 einer speziell auf die Problemdomäne zugeschnittenen Sprache mit weniger
 Aufwand formulieren lassen. Sie kann ebenfalls die Qualität verbessern, da ein
 korrekter Generator auch aus neuen Modellen -- sofern diese verifiziert
@@ -355,7 +353,7 @@ höhere Konsistenz auf, da generierte Strukturen, Funktionsnamen
 etc. immer einheitlich sind. Dies erleichtert die Benutzung von
 generierten Schnittstellen enorm.
 
-Mit \cgen{} sind allerdings auch Nachteile verbunden: Die Komplexität des
+Mit \mprog{} sind allerdings auch Nachteile verbunden: Die Komplexität des
 Software-Systems wird durch die zusätzliche Ebene erhöht und es
 entstehen neue mögliche Fehlerquellen. Auch die Suche nach Fehlern in
 den Modellen kann erschwert werden, wenn die Probleme sich erst im
@@ -376,7 +374,7 @@ und nicht jeder Programmierer "`das Rad neu erfindet"'.
 Trotz dieser möglichen Probleme überwiegen in vielen Fällen die
 Vorteile, so dass die Bedeutung von generativer Programmierung sowie die
 Vielfalt an Werkzeugen immer weiter zunehmen. Diese Arbeit beschäftigt
-sich ganz allgemein mit der Frage, wie \cgen{} besser, einfacher und
+sich ganz allgemein mit der Frage, wie \mprog{} besser, einfacher und
 einheitlicher gestaltet werden kann als bisher.
 
 \lsection[intro:motiv]{Motivation}
@@ -390,7 +388,7 @@ werden musste und eventuell eine eingeschränkte Mächtigkeit besitzt, so
 dass eine programmatische Nachbearbeitung der Modelle nötig werden
 kann. Im Zuge der Verarbeitung, die in einer allgemeinen
 Programmiersprache geschieht, werden eventuell noch weitere Modelle
-benötigt. Die Code-Erzeugung selbst erfolgt dann meist mittels
+benötigt. Die Quelltexterzeugung selbst erfolgt dann meist mittels
 String-basierter Templates, welche aufgrund der fehlenden
 Ausgabetypisierung oft zu Syntaxfehlern führen und so aufwändiges
 Debugging benötigen. Auch die Template-Sprache ist einzeln zu erlernen
@@ -398,7 +396,7 @@ und eventuell ebenfalls in ihren Möglichkeiten eingeschränkt, so dass in
 einigen Fällen nochmals eine Vorverarbeitung der Daten erfolgen muss.
 
 Andererseits verfolgen Lisp-Programmierer bereits seit ca. 40
-Jahren \cite{EvolutionOfLisp} einen strukturellen Ansatz der \cgen{}, der den
+Jahren \cite{EvolutionOfLisp} einen strukturellen Ansatz zur \mprog{}, der den
 mit Spracherweiterungen verbundenen Aufwand minimiert und Lisp
 Bezeichnungen wie "`The programmable programming
 language"' \cite{Federano} beschert hat. Hier werden Ein- und Ausgabecode
@@ -430,7 +428,7 @@ verfügbarer Bibliotheken im Vergleich zu Mainstream-Sprachen
 liegt. Während viele andere Lisp-Konzepte wie Garbage Collection oder
 Konstrukte wie der REPL, eine Lisp-Kommandozeile zum interaktiven
 Programmieren und Testen, bereits von modernen Sprachen nachgeahmt
-wurden, ist der Ansatz einer \sexp-basierten \cgen{} mittels
+wurden, ist der Ansatz einer \sexp-basierten \mprog{} mittels
 Makros\footnote{Der C-Präprozessor bietet ebenfalls Makros an
   \sees{template:cprep}, welche allerdings weit weniger mächtig sind.}
 nach wie vor einzigartig. Es wäre also wünschenswert, diesen
@@ -439,7 +437,7 @@ verallgemeinern und auf beliebige Backendsprachen übertragen zu können.
 \lsection[intro:goal]{Fragestellung und Zielsetzung}
 
 Die grundlegende Fragestellung lautet: Ist es möglich, den Lisp-Ansatz
-inkrementeller \cgen{} auf \sexp{}-Basis derart zu verallgemeinern, dass
+inkrementeller \mprog{} auf \sexp{}-Basis derart zu verallgemeinern, dass
 komfortabel in beliebige Zielsprachen generiert werden kann? Der Rahmen
 dieser Arbeit soll allerdings deutlich weiter gefasst sein als die bloße
 Anwendung von Lisp-Makros auf die Erzeugung verschiedener Sprachen --
@@ -450,18 +448,16 @@ anschließend eine eigene Architektur entworfen werden, die eine
 möglichst hohe Flexibilität sowie maximal viele Vorteile bestehender
 Werkzeuge in sich vereinen soll. Diese soll dann in einer geeigneten
 Programmiersprache umgesetzt und so ein prototypisches Framework
-bereitgestellt werden. Anschließend soll eine möglichst praktische DSL
-für die Beschreibung von \sexp{}-Compilern kreiert werden. Da diese
-selbst mittels \cgen{} komfortabel in die benutzte Programmiersprache
-übersetzt werden sollte, wird ein metazirkulärer "`Compiler, der sich
-selbst kompiliert"' benötigt, welcher durch ein geeignetes Bootstrapping
-zu implementieren ist.
+bereitgestellt werden. Anschließend soll eine möglichst praktische,
+selbst in \sexps{} notierte DSL
+für die Beschreibung von \sexp{}-Compilern kreiert werden.
 
 \lsection[intro:outline]{Aufbau dieser Arbeit}
 
-Zunächst stellt \sref{intro:example} ein einführendes Beispiel für die
-Verwendung von \cgen{} vor, das im weiteren Verlauf dieser Arbeit immer
-wieder aufgegriffen werden kann.
+Zunächst stellt \sref{intro:example} mit einer DSL für
+Bildschirmpräsentationen ein Anwendungsbeispiel für generative
+Programmierung vor, das im weiteren Verlauf dieser Arbeit immer wieder
+aufgegriffen wird.
 
 \cref{model} erläutert verschiedene Möglichkeiten der Repräsentation von
 Quellcode und anderen Modellen und die damit verbundenen Vor- und
@@ -3535,8 +3531,8 @@ dem Zustand 5 war) sowie ein Erhöhen des Zustandes um 2.
 \lsection[arrowparser:parse]{Der Parse-Funktor}
 
 Parser benötigen sowohl einen Zustand, der die Position im Eingabestream
-beinhaltet, als auch die Möglichkeit zu Scheitern und die Verwendung von
-Alternativen. Daher werden obige Kategorie-Erweiterungen zu einer
+beinhaltet, als auch die Möglichkeit zu Scheitern sowie die Verwendung
+von Alternativen. Daher werden obige Kategorie-Erweiterungen zu einer
 Parser-Kategorie $\mathbf{C}_p = \mathbf{C}_{fs}$ zusammengesetzt,
 d.h. die ursprüngliche Kategorie wird zunächst um Fehler zu
 $\mathbf{C}_f$, danach um Zustände zu $\mathbf{C}_p$ erweitert. Die
@@ -3545,11 +3541,11 @@ $\mathbf{C}_p$ auf $A \times S \ato \mathrm{String} + B \times S$ in
 $\mathbf{C}$ abgebildet wird und nicht auf $A \times S \ato
 (\mathrm{String} + B) \times S$, wie es andersherum wäre. Denn das
 Coprodukt muss "`außen"' stehen, um im Kontrollfluss zuerst bearbeitet
-zu werden und somit ein Backtracking im Fehlerfall -- welches durch den
-Fail-Funktor ermöglicht wird -- zu ermöglichen.
+zu werden und somit ein Backtracking im Fehlerfall -- welches allein
+durch den Fail-Funktor ermöglicht wird -- zu ermöglichen.
 
-Backtracking wird allerdings zu einem Problem, wenn man sinnvolle
-Fehlermeldungen produzieren will. Man stelle sich einen Parser für die
+Backtracking wird allerdings zu einem Problem, wenn sinnvolle
+Fehlermeldungen produziert werden sollen. Man stelle sich einen Parser für die
 (als regulärer Ausdruck beschriebene\footnote{Hierbei sollen eckige und
   geschweifte Klammern keine besondere Bedeutung besitzen, der Punkt für
   ein beliebiges Zeichen und der Stern für beliebige Wiederholungen
@@ -3563,7 +3559,7 @@ probiert wird. Das Wort beginnt aber nicht mit \texttt{[}, so dass der
     stattdessen möchte man nach dem Lesen von \texttt{\{} das
     Backtracking deaktivieren, denn bereits hier ist klar, dass die
     andere Alternative nicht mehr in Betracht kommt. Dies führt zu einer
-    sinnvolleren Fehlermeldung wie \texttt{"'Expected \}, got end of
+    besseren Fehlermeldung wie \texttt{"'Expected \}, got end of
       stream"'}.
 
 Ein derartiger "`nicht-auffangbarer"' Fehler lässt sich durch das
@@ -3573,7 +3569,7 @@ Funktion \icode{forceParser} an, die einen (Sub-)Parser derart
 modifiziert, dass, falls dieser scheitert, der Fehler in die "`innere"'
 und damit nicht-recover-fähige Fail-Kategorie übernommen wird. Hiervon
 wird beispielsweise bei der Funktion \icode{macro}
-\sees{arrowparser:sexpparser} Gebrauch gemacht.
+\sees{magicl:sexp:sexpparser} Gebrauch gemacht.
 
 Der \icode{ParseFunctor} ist in MagicL wie folgt definiert::
 \begin{DIFnomarkup}\begin{code}
@@ -3584,10 +3580,12 @@ newtype ParseFunctor t ar a b =
      a
      b)
 \end{code}\end{DIFnomarkup}
-Als Zustandstyp wird ein Stream (als Liste repräsentiert) vom Token-Typ
-\icode{t} benutzt.  Dank der Implementation als Funktor ist die
-Kategorie, in der der Parser ausgeführt wird, frei wählbar. So können
-rein funktionale Parser in $Hask_p$ konstruiert werden. Benötigt man
+Als Zustandstyp wird ein Stream (als Liste repräsentiert) vom frei
+wählbaren Token-Typ \icode{t} benutzt, so dass nicht nur Zeichenketten,
+sondern beliebige Listen durch Parser verarbeitbar sind.  Dank der
+Implementation als Funktor ist die Kategorie, in der der Parser
+ausgeführt wird, frei wählbar. So können rein funktionale Parser in
+$\mathbf{Hask}_p$ konstruiert werden. Benötigt man
 aber Debug Outputs (z.B. bei der Suche einer Endlosschleife) oder andere
 Seiteneffekte, kann $\mathbf{IO}_p$ benutzt werden. In MagicL werden
 diese Kategorien durch die Typaliase \icode{FunParser} sowie
@@ -3601,8 +3599,6 @@ sogar interaktive Debugger, Netzwerktransparenz oder sonstige Features
 anbieten. Auch der variable Token-Typ erzeugt viele Möglichkeiten:
 Textdateien können mit \icode{Char}, Bit-Streams mit \icode{Bool} oder
 \sexp{}-Streams mit \icode{Sexp} verarbeitet werden.
-
-\todo{Mehr Top-Down-Argumente}
 
 \lsection[arrowparser:lib]{Parser-Bibliothek}
 
@@ -5978,9 +5974,9 @@ können so immer abstraktere und einfachere Notationen für Domänen
 anbieten und so das Erstellen von Programmen, Webseiten und beliebigen
 anderen Daten vereinfachen. Auch wenn die Vision einer großen,
 einheitlichen und redundanzfreien Sammlung von \sexp{}-DSLs für jegliche
-Anwendungsdomäne noch sehr weit entfernt liegt, geht diese Arbeit
-durch die Diskussion und prototypische Umsetzung eines Rahmenwerks für
-derartige DSL-Compiler einen ersten Schritt in diese Richtung.
+Anwendungsdomäne noch in weiter Ferne scheint, geht diese Arbeit durch
+die Diskussion und prototypische Umsetzung eines geeigneten Rahmenwerks
+für derartige DSL-Compiler einen ersten Schritt in die Richtung.
 
 \todo{Literatur: Verlag/Ort bei Büchern, bei Web zuletzt zugegriffen}
 
