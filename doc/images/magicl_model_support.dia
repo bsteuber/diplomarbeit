@@ -452,12 +452,12 @@
         <dia:point val="30.375,8.3"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="30.375,7.33569;36.5093,8.59613"/>
+        <dia:rectangle val="30.375,7.33569;36.8868,8.59613"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#Sexp-Parser#</dia:string>
+            <dia:string>#S-Exp-Parser#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
@@ -539,15 +539,15 @@
     </dia:object>
     <dia:object type="Standard - Text" version="1" id="O16">
       <dia:attribute name="obj_pos">
-        <dia:point val="10.725,6.4"/>
+        <dia:point val="10.625,6.4"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="10.725,5.465;25.84,6.6375"/>
+        <dia:rectangle val="10.625,5.465;26.1175,6.6375"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#Sexp-Parser &amp; Generator-Bibl.#</dia:string>
+            <dia:string>#S-Exp-Parser &amp; Generator-Bibl.#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="sans" style="8" name="Helvetica-Oblique"/>
@@ -556,7 +556,7 @@
             <dia:real val="1.258711073435679"/>
           </dia:attribute>
           <dia:attribute name="pos">
-            <dia:point val="10.725,6.4"/>
+            <dia:point val="10.625,6.4"/>
           </dia:attribute>
           <dia:attribute name="color">
             <dia:color val="#000000"/>
@@ -647,7 +647,7 @@
         <dia:point val="-3.6,-4.0175"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="-3.6,-4.98181;12.0568,-3.72137"/>
+        <dia:rectangle val="-3.6,-4.9525;12.0275,-3.78"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
