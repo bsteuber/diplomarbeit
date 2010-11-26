@@ -338,29 +338,29 @@ Laufzeit-\mprog{} spricht. Dies funktioniert nur in Sprachen, die diese
 Möglichkeit explizit vorsehen, wie Ruby \cite{metaprog-ruby} oder auch
 Java \cite{JavaReflection}.
 
-Diese Arbeit beschäftigt sich stattdessen mit statischer
-\mprog{}, in der es um das Erzeugen von Quelltext geht, der anschließend
-an beliebige Compiler oder Interpreter gereicht werden kann, weshalb 
-auch die Bezeichnungen Kompilationszeit-\mprog{} und generative
-(Meta-)Programmierung \cite[S.17]{metaprog-sh} benutzt werden.
+Diese Arbeit beschäftigt sich stattdessen mit statischer \mprog{}, in
+der es um das Erzeugen von Quelltext geht, der anschließend an beliebige
+Compiler oder Interpreter gereicht werden kann, weshalb auch die
+Bezeichnungen Kompilationszeit-\mprog{} und generative
+(Meta-)Programmierung \cite[S.17]{metaprog-sh} benutzt werden. Diese Art
+der \mprog{} ist in der Informatik allgegenwärtig, beispielsweise kann
+jeder Compiler als Metaprogramm gesehen werden.
 
-Diese Art der \mprog{} ist in der Informatik omnipräsent,
-beispielsweise kann jeder Compiler als Metaprogramm gesehen werden. Die
-auf \cgen{} basierende ``modellgetriebene Softwareentwicklung'' erfreut
-sich immer größerer Popularität: Während UML \cite{UML} bald sein
-15-jähriges Bestehen\footnote{Der Standarisierungsprozess von UML begann
- bereits 1994, als Gary Booch und Jim Rumbaugh mit der Vereinheitlichung ihrer
-  Modellierungstechniken anfingen \cite[S. 17]{UML}.} feiert, vermarktet
-IBM seit Jahren das Produkt \textit{Rational Application Developer}
-\cite{RAD}, das, wie auch das freie \textit{Eclipse Modelling
-  Framework} sowie \textit{Enterprise Architect}, Eclipse um
-modellbasierte \cgen{} bereichert. Seit neuestem zeigt auch Microsoft
-Interesse und verspricht mit \textit{Oslo}  \cite{Oslo} einen
-``Mainstream"=Ansatz für Modellierung''. Generativer Programmierung
-fällt auch im WWW eine immer größer werdende Rolle zu: Ob
-\textit{Ruby on Rails} oder \textit{Google Web Toolkit} -- praktisch alle
-Web Frameworks generieren zumindest ihre HTML-Dateien oder SQL-Abfragen
-für den Datenbankzugriff.
+Die auf \cgen{} basierende ``modellgetriebene Softwareentwicklung''
+erfreut sich immer größerer Popularität: Während UML \cite{UML} bald
+sein 15-jähriges Bestehen\footnote{Der Standarisierungsprozess von UML
+  begann bereits 1994, als Gary Booch und Jim Rumbaugh mit der
+  Vereinheitlichung ihrer Modellierungstechniken anfingen
+  \cite[S. 17]{UML}.} feiert, vermarktet IBM seit Jahren das Produkt
+\textit{Rational Application Developer} \cite{RAD}, das, wie auch das
+freie \textit{Eclipse Modelling Framework} sowie \textit{Enterprise
+  Architect}, Eclipse um modellbasierte \cgen{} bereichert. Seit
+neuestem zeigt auch Microsoft Interesse und verspricht mit \textit{Oslo}
+\cite{Oslo} einen ``Mainstream"=Ansatz für Modellierung''. Generativer
+Programmierung fällt auch im WWW eine immer größer werdende Rolle zu: Ob
+\textit{Ruby on Rails} oder \textit{Google Web Toolkit} -- praktisch
+alle Web Frameworks generieren zumindest ihre HTML-Dateien oder
+SQL-Abfragen für den Datenbankzugriff.
 
 \cgen{} aus Modellen\footnote{Auch Programmcode wird hier als Modell
   angesehen -- mit anderen Worten: "`Code is data and data is code."'}
@@ -413,7 +413,7 @@ verbunden. So muss zunächst eine Eingabesprache festgelegt werden, für
 die dann eine typisierte Modellrepräsentation sowie ein Parser zur
 Überführung in diese benötigt werden. Für den Parser wird eine eigene
 Beschreibungssprache verwendet, die vom Programmierer vorher erlernt
-werden musste und eventuell eine eingeschränkte Mächtigkeit besitzt, so
+werden muss und eventuell eine eingeschränkte Mächtigkeit besitzt, so
 dass eine programmatische Nachbearbeitung der Modelle nötig werden
 kann. Im Zuge der Verarbeitung, die in einer allgemeinen
 Programmiersprache geschieht, werden eventuell noch weitere Modelle
@@ -546,7 +546,7 @@ bereitgestellt.
 Neben der Parser-Bibliothek enthält MagicL eine Reihe weiterer
 Basiskomponenten, welche in \cref{magicl} vorgestellt werden. Eine
 Generator-Bibliothek erlaubt die funktionale Erzeugung von Quelltext auf
-eine Weise, die weniger Anfällig für Syntaxfehler ist als ein direktes
+eine Weise, die weniger anfällig für Syntaxfehler ist als ein direktes
 Templating auf String-Ebene. \sexps{} werden in MagicL ebenfalls durch
 Parser verarbeitet, welche als verallgemeinerte Makros gesehen
 werden. Eine \sexp{}-Bibliothek stellt eine Reihe von Hilfsfunktionen
@@ -669,7 +669,7 @@ entspricht. Eine Komposition durch Attribute ist nur dann möglich, wenn
 als Werte wiederum beliebige Modelle zugelassen sind -- was
 beispielsweise nicht für XML-Attribute gilt. Da bereits eine Benennung auf
 oberer Ebene erfolgt, besitzen Unterknoten hier oft keinen Namen
-mehr. Manche Repräsentationen erlauben auch Listenwertige
+mehr. Manche Repräsentationen erlauben auch listenwertige
 Attribute. \abb{model_attr} zeigt die Repräsentation eines betitelten
 Bildes durch Attribute, welche als beschriftete Kanten dargestellt
 werden.
@@ -785,7 +785,7 @@ Dies entspricht dem Baum in \abb{model_slide_sexp}. In konkreten
 Lisp-Dialekten würde man diese Repräsentation selten anfinden: Zum einen
 würde eine String-Notation zur Unterscheidung von Werten und Variablen
 verwendet werden, zum anderen ist es üblich, feste Parameter wie
-Folientitel nicht zu benennen, sondern implizit durch die Reihenfole
+Folientitel nicht zu benennen, sondern implizit durch die Reihenfolge
 zuzuordnen. Dies könnte dann derart aussehen:
 \begin{DIFnomarkup}\begin{code}
 (slide "My Slide"
@@ -803,7 +803,7 @@ indirekt repräsentiert werden können.
 \lsection[model:xml]{XML}
 
 XML ist die wohl derzeit meistverbreitete Markup-Sprache, weshalb hier
-auf eine detailierte Einführung verzichtet wird. Wie bei \sexps{}
+auf eine detaillierte Einführung verzichtet wird. Wie bei \sexps{}
 handelt es sich um eine strukturierte, ungetypte Repräsentation, die
 einem knotenbenannten Baum entspricht. XML unterscheidet sich von
 \sexps{} -- Syntax zunächst ausgenommen -- hauptsächlich durch das
@@ -1038,7 +1038,7 @@ die gewisse statische Bereiche in jedem Dokument identisch sind, während
 sich nur die dynamischen Bereiche ändern. Ein Beispiel könnte eine
 Webseite sein, die Daten aus einer Datenbank anzeigt. Auch bei der
 Erzeugung von Programmen tritt dieser Fall auf, so dass Templates eine
-große Rolle bei \cgen{} spielen. Ein Template legt die statischen
+große Rolle bei der \cgen{} spielen. Ein Template legt die statischen
 Bereiche fest und lässt Platzhalter für die dynamischen. Es handelt sich
 dabei im Grunde um eine mathematische Funktion, deren Eingabe die
 dynamischen Daten und deren Ausgabe ein fertiges Dokument ist.
@@ -1104,7 +1104,7 @@ Funktion ausdrücken lässt. Aus syntaktischen Gründen könnte es
 beispielsweise nicht möglich sein, eine variable Anzahl an Statements zu
 erzeugen.
 
-Auch die Möglichkeit zur Schachtelung weiter Quasiquotes in
+Auch die Möglichkeit weiterer Quasiquotes in
 Unquote-Bereichen ist nicht überall gegeben. Darüber hinaus benutzen
 manche Systeme ein implizites Unquote, welches automatisch
 eingesetzt wird, wenn ein Token mit dem Namen eines Template-Parameters
@@ -1313,8 +1313,8 @@ template<> struct fib<1> {
   \caption{Die Fibonacci-Folge mit \cpp{}-Templates}
   \label{magicl:fig:cpp-fibonacci}
 \end{figure}
-Da aber nur sehr primitive Eingabemodelle zugelassen sind und komplexere
-Berechnungen nicht möglich sind, sind andere in diesem Kapitel
+Da aber nur sehr primitive Eingabemodelle zugelassen und komplexere
+Berechnungen nicht vorgesehen sind, sind andere in diesem Kapitel
 vorgestellte Systeme deutlich universeller als \cpp{}-Templates. Eine
 Model-View-Trennung ist ebenfalls nicht möglich, ohne komplexe Modelle
 aber auch nicht notwendig. Da Aufrufe von Templates über eine spezielle
@@ -1333,10 +1333,10 @@ Haskell-Datentypen sein, die Ausgaben einzelner Templates sind Objekte
 eines speziellen Datentyps, der Haskell-Code beschreibt. Templates sind
 selbst Haskell-Funktionen, so dass Metasprache und generierte Sprache
 identisch sind und Templates somit Turing-vollständig und typsicher
-sind. In Quelldateien kann Meta-Code mit normalen Code gemischt werden
--- zudem bietet Template Haskell Reifikation, d.h. in Templates können
-Metainformationen wie Typen über Code in derselben Datei abgefragt
-werden, was enorme Möglichkeiten eröffnet.
+sind. In Quelldateien kann Meta-Code mit normalem Code gemischt
+werden. Zudem bietet Template Haskell Reifikation, d.h. in Templates
+können Metainformationen wie Typen über Code in derselben Datei
+abgefragt werden, was enorme Möglichkeiten eröffnet.
 
 Da Templates Funktionen sind, können diese komplett programmatisch
 erzeugt werden -- deswegen ist auch eine beliebige Modularisierung
@@ -1435,7 +1435,7 @@ es noch andere Variablen \icode{x} oder \icode{y} gibt, die im Inneren
 verwendet werden.
 
 Zusätzlich bietet der Präprozessor die Möglichkeit, mittels \icode{#if}
-einfache Abfragen auf Compiler-Konstanten wie das Vorhandensein oder
+einfache Abfragen auf Compiler-Konstanten wie das Vorhandensein sowie
 simple, ganzzahlige Berechnungen und Vergleiche durchzuführen und davon
 abhängig Zeilen einzubinden oder wegzulassen. Darüber hinaus sind
 keinerlei Berechnungen im Präprozessor möglich.
@@ -1925,8 +1925,8 @@ wünschenswert.
 Der Kontrollfluss im Lisp-Makrosystem ist relativ unflexibel, da
 lediglich eine globale Zuordnung von Namen zu Makros besteht\footnote{Es
   gibt in Lisp zwar die Möglichkeit, Makros mittels \icode{macrolet} nur
-  für einen bestimmten lexikalischen Skopus verfügbar zu machen,
-  innerhalb dieses Bereichs ist das Makro dann allerdings nur Teil der
+  für einen bestimmten lexikalischen Skope verfügbar zu machen.
+  Innerhalb dieses Bereichs ist das Makro dann allerdings nur Teil der
   globalen Liste, so dass ohne Weiteres keine feinere Steuerung möglich
   ist.}. In konkreten Sprachen hingegen gibt es häufig Konstrukte, die
 nur im Kontext bestimmter Oberkonstrukte verwendet werden
@@ -2023,9 +2023,9 @@ erreicht, welche im folgenden Kapitel zunächst vorgestellt wird.
 
 Die Kategorientheorie ist ein sehr abstrakter Zweig der Mathematik,
 aber auch ein universeller, denn fast alle wichtigen mathematischen
-Strukturen sind Kategorien. Kategorientheorie spielt dank seiner
+Strukturen bilden Kategorien. Kategorientheorie spielt dank ihrer
 Allgemeinheit und Anwendbarkeit für Berechnungen auch in der Informatik
-eine immer größer werdende Rolle -- unter anderem da sie eine generische
+eine immer größer werdende Rolle, da sie unter anderem eine generische
 Schnittstelle für die Verschaltung beliebiger Verarbeitungsprozesse
 liefert. Hierfür wird der Kompositionsoperator von Funktionen auf
 beliebige Datentypen, welche Prozesse beschreiben, verallgemeinert.
@@ -2046,12 +2046,11 @@ weitgehend aus \cite{Grundlagen} übernommen.
 
 \fig{cat_funs}{Ein simples Funktionensystem}
 
-Der Grundansatz der Kategorientheorie ist die Verallgemeinerung der
-Art und Weise, wie mit Funktionstypen gerechnet wird, insbesondere
-hinsichtlich der Komposition von Funktionen. \abb{cat_funs} zeigt ein
-kleines Funktionensystem zwischen den Mengen $\mathbb{R} \times
-\mathbb{R}$, $\mathbb{R}$ und $\mathbb{Z}$. Es kommen folgende
-Funktionen vor:
+Kategorientheorie lässt sich verstehen als Verallgemeinerung der Art und Weise,
+wie mit Funktionstypen insbesondere hinsichtlich der Komposition
+gerechnet wird. \abb{cat_funs} zeigt ein kleines Funktionensystem zwischen
+den Mengen $\mathbb{R} \times \mathbb{R}$, $\mathbb{R}$ und
+$\mathbb{Z}$. Es kommen folgende Funktionen vor:
 \begin{itemize}
 \item $+ : \mathbb{R} \times \mathbb{R} \ato \mathbb{R}$ addiert zwei
   reelle Zahlen.
@@ -2120,7 +2119,7 @@ konkrete Bedeutung einer Kategorie nicht näher betrachtet.
 Beispielkategorie $\mathbf{C}$, die aus den Objekten $A, B$ und den
 Morphismen $f, g, \mathrm{id}_A, \mathrm{id}_B$ besteht. Alle
 Kompositionen davon sind wieder einer dieser vier Morphismen, ansonsten
-wäre die Kategorie nicht unter Komposition geschlossen (und damit keine
+wäre die Kategorie nicht bezüglich Komposition abgeschlossen (und damit keine
 Kategorie).
 
 Wie in diesen Beispielen lassen sich Kategorien in Diagrammen
@@ -2469,7 +2468,7 @@ und damit etwas einfacher zu lesen.
 
 Es gibt in Haskell vier Arten von Typen: Zunächst gibt es primitive
 Typen wie \icode{Char}, \icode{Int} oder \icode{Float} sowie
-zusammengesetzte Typen wie Listen (Schweibweise \icode{[a, b, c]}) und Tupel (Schreibweise \icode{(a,
+zusammengesetzte Typen wie Listen (Schreibweise \icode{[a, b, c]}) und Tupel (Schreibweise \icode{(a,
   b)}). Eine Sonderrolle hat hier das leere Tupel \icode{()} (genannt
 "`Unit"'), welches dem Typ \icode{void} in C entspricht und in
 eine der beiden obigen Kategorien einzuordnen ist.
@@ -3125,7 +3124,7 @@ MagicL basieren. Eine Arrow-Bibliothek definiert daher abstrakt
 Arrow-Kombinatoren wie z.B. \icode{many}, welches eine Wiederholung
 entsprechend dem Operator \icode{*} in regulären Ausdrücken enthält,
 welche in \sref{arrowparser:lib} gemeinsam mit der Parser-Bibliothek
-detailierter vorgestellt werden.  Darüber hinaus wird mit den Typklassen
+detaillierter vorgestellt werden.  Darüber hinaus wird mit den Typklassen
 \icode{Executable} und \icode{Compilable} sehr allgemeine
 Compiler-Schnittstellen definiert, die es beispielsweise ermöglichen,
 Standardcompiler fest mit bestimmten Ein- und Ausgabetypen zu
@@ -3700,7 +3699,7 @@ werden kann.
 
 Als Beispiel wird ein Parser definiert, der CSV-Dateien (Comma-Separated
 Values) in Listen von Listen einliest. Eine CSV-Datei besteht aus
-vielen, durch \icode{'\n'} getrennten Zeilen:
+vielen, durch \icode{'\\n'} getrennten Zeilen:
 \begin{code}
 parseCSV = sepBy (eq '\n') line
 \end{code}
@@ -3859,7 +3858,7 @@ formatNode (XmlNode tagName attrs inner) =
                       Left childNodes -> lines (map formatNode childNodes)
                       Right str       -> text str    
 \end{code}
-Auf eine detailierte Erklärung des Programms wird an dieser Stelle
+Auf eine detaillierte Erklärung des Programms wird an dieser Stelle
 verzichtet. Ein einfacheres Beispiel wird mit dem Pretty Printer für
 \sexps{} in \sref{magicl:sexp:syntax} ausführlich erläutert.
 
@@ -5592,7 +5591,7 @@ der Kategorie von Funktionen mit Nebeneffekten umgewandelt und
 anschließend mittels \icode{>>>} verknüpft werden. Dies führt gemeinsam
 mit dem Ansatz vieler, teilweise ineinander übersetzbarer
 \sexp{}-basierter DSLs zu einer starken Komponententrennung, bei der
-Compiler und DSLs häufit wiederverwendet werden können. 
+Compiler und DSLs häufig wiederverwendet werden können. 
 
 Ein experimentelles Feature von MagicL's generischer
 Compilerschnittstelle ist die Möglichkeit, spezielle Compiler fest als
@@ -5604,7 +5603,7 @@ was das Schreiben derartiger Parser erleichtern kann. Außerdem können
 automatisch Standardparser für Listen und optionale Werte aus normalen
 Parsern abgeleitet werden, wobei die abgeleiteten Standardparser durch
 die Parserkombinatoren \icode{many} und \icode{optional} aus den
-Ursprünglichen entstehen. Die Notation für derartige Standardcompiler
+ursprünglichen entstehen. Die Notation für derartige Standardcompiler
 ist allerdings noch etwas umständlich, wie die Umsetzung des
 Haskell-DSL-Compilers in \cref{sexphs} zeigt -- hier könnte eine
 Erweiterung der Compiler-DSL helfen. Ein größeres Problem ist, dass die
@@ -5837,11 +5836,11 @@ MagicL-Compilern beantwortet werden kann.
 
 \lsection[end:disc]{Ausblick}
 
-Dieser Abschnitt soll einen Überblick geben über weitere Möglichkeiten
-um MagicL zukünftig zu verbessern. Dabei wird diskutiert, welche
-Entwurfsentscheidungen in einem möglichen Nachfolger anders getroffen
-werden könnten und an welchen Stellen noch Nachbesserungen oder
-Erweiterungen möglich sind. Darüber hinaus sollen Ideen für
+Dieser Abschnitt soll einen Überblick über weitere Möglichkeiten geben,
+wie MagicL zukünftig noch verbessert werden kann. Dabei wird diskutiert,
+welche Entwurfsentscheidungen in einem möglichen Nachfolger anders
+getroffen werden könnten und an welchen Stellen noch Nachbesserungen
+oder Erweiterungen möglich sind. Darüber hinaus sollen Ideen für
 \sexp{}-gestützte Modellierung und Verarbeitung aufgezählt werden, die
 hier nicht weiter verfolgt wurden, aber interessante
 Forschungsrichtungen für die Zukunft darstellen könnten.
