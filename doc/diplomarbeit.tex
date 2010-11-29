@@ -14,6 +14,22 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{acronym}
+\usepackage[outer=75pt, width=448.13095pt, height=635.5pt]{geometry}
+%635.5pt
+
+%neu 407.50787pt
+% % 448.13095
+
+%% \usepackage{scrpage2}
+%% \ifoot[]{}
+%% \cfoot[]{}
+%% \ofoot[\pagemark]{\pagemark}
+%% \pagestyle{scrplain}
+
+%% \usepackage{scrpage2}
+%% \pagestyle{scrheadings}
+%% \clearscrheadings %Kopf- und Fußzeilen werden gelöscht
+%% \ofoot{\pagemark} %in der Fußzeile wird außen rechts die Seitenzahl angezeigt
 
 \newenvironment{DIFnomarkup}{}{}
 
@@ -232,6 +248,8 @@
  \end{titlepage}
 \thispagestyle{empty}
 
+\cleardoublepage
+
 \pagenumbering{roman}
 
 \section*{\centering Zusammenfassung}
@@ -268,9 +286,9 @@ science.  It is used in many different forms, for example the C
 preprocessor, PHP or XSL Transformations -- just to mention a
 few. However, most existing tools are quite cumbersome to use and error
 prone due to employed syntax and data structures. An alternative, yet
-almost forgotten approach is taken by the Lisp language family. There,
+almost forgotten approach is taken by the Lisp family of languages. There,
 \sexps{} are used as a simple and universal data structure for code
-representation, being processed by macros that can be regarded as
+representation and are being processed by macros that can be regarded as
 ``lightweight compilers''.
 
 This thesis deals with the idea of generalizing the Lisp approach in
@@ -885,7 +903,7 @@ für die Trennung von optionalen und erforderlichen Eigenschaften könnte
 solch ein zweiter Kantentyp nützlich sein.
 
 Das Problem bei all diesen Beispielen ist jedoch die Einschränkung auf
-String-Attribute. Sobald ein Attribut einen strukturierten Wert erhalten
+String"=Attribute. Sobald ein Attribut einen strukturierten Wert erhalten
 soll, bricht jede systematische Trennung zusammen, und es muss auf
 Unterknoten zugegriffen werden. In diesem Fall ist es aber vermutlich
 besser, von Anfang an auf Attribute zu verzichten.
@@ -1432,7 +1450,7 @@ Repräsentationen überführt werden können. XSL besteht aus drei
 XML-basierten Sprachen:
 \begin{itemize}
 \item XSL - Formatting Objects (XSL-FO) zur Beschreibung des graphischen Layouts von Seiten
-\item XML Path Language (XPath) zum Adressieren von Elementen in XML-Dokumenten
+\item XML Path Language (XPath) zum Adressieren von Elementen in XML"=Dokumenten
 \item XSL Transformation (XSLT) als Transformationssprache für XML-Dokumente
 \end{itemize}
 XSL-FO spielt für die abstrakte Betrachtung von \cgen{} keine Rolle und
@@ -1457,7 +1475,7 @@ Zur Unterscheidung von Metasprache und generiertem Code wird der
 Namespace \icode{xsl} benutzt, der somit als Unquote fungiert. Templates
 können sowohl direkt als Funktionen aufgerufen werden als auch als Makros,
 die über Pfad-Matching dem aktuell zu verarbeitenden Knoten zugeteilt
-werden. Ein funktionaler Aufruf erfolgt mit \icode{<xsl:call-template>},
+werden. Ein direkter Aufruf erfolgt mit \icode{<xsl:call-template>},
 die alternative Kontrollübergabe an den Makro-Prozessor mit
 \icode{<xsl:apply-templates/>}. Beides kann allerdings nicht derart
 kombiniert werden, dass ein funktional aufgerufenes Template dennoch
@@ -1606,8 +1624,8 @@ auch das Quasiquote nur einen \sexp{} erzeugen kann. Sind mehrere
 Rückgaben erforderlich, müssen diese in ein \icode{progn} geschachtelt
 werden, welches den Lisp-Interpreter\footnote{Es kann sich
   selbstverständlich auch um einen Compiler handeln.} anweist, mehrere
-Befehle nacheinander auszuführen. Beispielsweise definiert \\
-\icode{define-arithmetic-functions} zwei Funktionen auf einmal:
+Befehle nacheinander auszuführen. Beispielsweise definiert
+\icode{define-arithmetic-}\discretionary{}{}{}\icode{functions} zwei Funktionen auf einmal:
 \begin{DIFnomarkup}\begin{code}
 (defmacro define-arithmetic-functions ()
   `(progn (defun add (x y) (+ x y))
@@ -2220,7 +2238,7 @@ besteht darin, diese als Objekte zu benutzen. Alle Funktoren $\mathbf{C}
 $\mathbf{C}$ und $\mathbf{D}$, deren Morphismen natürliche
 Transformationen heißen.
 
-\defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha:F \nto
+\defi{Natürliche Transformation}{Eine natürliche Transformation $\alpha\colon{}F \nto
 G$ ordnet jedem Objekt $A$ aus $\mathbf{C}$ einen Morphismus
 $\alpha_A:F(A) \ato G(A)$ aus $\mathbf{D}$ zu, wobei für alle Objekte
 $A,B$ und alle Morphismen $f:A \ato B$ aus $\mathbf{C}$ die
@@ -2256,15 +2274,15 @@ wobei für jedes Objekt $A$ folgende Axiome erfüllt sein müssen:
 den Identitätsfunktor, $\mathrm{id}_{T(A)}:T(A) \ato T(A)$ dagegen den
 Identitätsmorphismus. 
 
-Das erste Axiom beschreibt zwei verschiedene Arten einen Morphismus von
-$T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A))) \ato T(T(A))$
-auf der linken Seite behält das äußere $T$ bei und verwendet $\mu$, um
-das innen stehende $T(T(A))$ in $T(A)$ zu überführen. Rechts reduziert
-$\mu_{T(x)}:T(T(T(A))) \ato T(T(A))$ dagegen von außen und lässt das
-innere $T(A)$ unangerührt. Wird das Ergebnis dann in ein $\mu$
-geschachtelt, sind innere und äußere Reduktion ununterscheidbar. Die
-Gleichung lässt sich auch kurz als $\mu \circ T \mu = \mu \circ \mu T$
-schreiben.
+Das erste Axiom beschreibt zwei verschiedene Möglichkeiten, einen
+Morphismus von $T(T(T(A)))$ nach $T(A)$ zu bilden: $T(\mu_A):T(T(T(A)))
+\ato T(T(A))$ auf der linken Seite behält das äußere $T$ bei und
+verwendet $\mu$, um das innen stehende $T(T(A))$ in $T(A)$ zu
+überführen. Rechts reduziert $\mu_{T(x)}:T(T(T(A))) \ato T(T(A))$
+dagegen von außen und lässt das innere $T(A)$ unangerührt. Wird das
+Ergebnis dann in ein $\mu$ geschachtelt, sind innere und äußere
+Reduktion ununterscheidbar. Die Gleichung lässt sich auch kurz als $\mu
+\circ T \mu = \mu \circ \mu T$ schreiben.
 
 Das zweite Axiom funktioniert ähnlich, nur beschreiben diesmal beide
 Seiten eine Art den Identitätsmorphismus für das Objekt $T(A)$ zu
@@ -3012,7 +3030,7 @@ einer Haskell-DSL verwendet.
 \lsection[arch:lang]{Bereitgestellte DSLs}
 
 MagicL-Nutzer definieren neue Compiler ausschließlich in einer
-bereitgestellten Compiler-DSL. Diese enthält den Quasiquote-Operator und
+bereitgestellten Compiler"=DSL. Diese enthält den Quasiquote-Operator und
 Konstrukte zur einfachen Makro-Definition und integriert mit der
 Haskell-DSL eine komplette funktionale Programmiersprache, die eine
 \sexp{}-Version von Haskell darstellt. Dieser Abschnitt stellt zunächst
@@ -4126,7 +4144,7 @@ instance Compilable (FunParser Char () Sexp) String Sexp where
   comp = parseSexp
 \end{code}\end{DIFnomarkup}
 als Standardcompiler festgelegt werden, woraufhin beide mit typisierten
-\icode{compile}-Aufrufen als IO-Arrows angesprochen werden
+\icode{compile}"=Aufrufen als IO-Arrows angesprochen werden
 können. Manchmal ist es auch nützlich, den noch nicht mit \icode{toIO}
 umgewandelten Compiler durch einen typisierten Aufruf von \icode{comp}
 zu referenzieren.
@@ -4738,7 +4756,7 @@ Beim einfachen Import sind beide Listen leer. Qualifizierte Imports
 beinhalten das Schlüsselwort \icode{qualified} sowie am Ende
 \icode{as} und die Modul-Abkürzung. Sollen nur bestimmte Symbole
 importiert oder nicht importiert werden, werden diese in
-Tupel-Notation angefügt, wobei in letzterem Fall noch das
+Tupel"=Notation angefügt, wobei in letzterem Fall noch das
 Schlüsselwort \icode{hiding} nötig ist.
 
 Da MagicL bereits einen Standard-Compiler von \icode{Code} nach
