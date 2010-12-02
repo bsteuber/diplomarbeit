@@ -9,7 +9,7 @@ preprocessor, PHP or XSL Transformations - just to mention a
 few. However, most existing tools are quite cumbersome to use and error
 prone due to employed syntax and data structures. An alternative, yet
 almost forgotten approach is taken by the Lisp family of languages. There,
-S-Expressions} are used as a simple and universal data structure for code
+S-Expressions are used as a simple and universal data structure for code
 representation and are being processed by macros that can be regarded as
 "lightweight compilers".
 
