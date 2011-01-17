@@ -25,3 +25,9 @@ doc/auto
 test/gen
 doc/quellen
 cb/
+example/Latex2Code.hs
+example/Latex2Code.hs.sep
+example/Slide2Latex.hs
+example/Slide2Latex.hs.sep
+example/pres.tex
+example/pres.tex.sep
