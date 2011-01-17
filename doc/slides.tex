@@ -22,11 +22,13 @@
 \newcommand{\sexps}{S"=Expressions}
 \newcommand{\cgen}{Code"=Generierung}
 \newcommand{\cpp}{C\texttt{++}}
+\newcommand{\mprog}{Metaprogrammierung}
 
-\title[\cgen{}]{Prototyp eines universellen Frameworks für \\
-  \sexp{}-basierte \cgen{}}
+\title[\mprog{}]{Prototyp eines \sexp{}-basierten Rahmenwerks für
+  sprachübergreifende \mprog{}}
 \subtitle{Diplomarbeit}
-\author[Benjamin Teuber]{Benjamin Teuber\\ Erstbetreuer: Daniel Moldt}
+\author[Benjamin Teuber]{Benjamin Teuber\\ Erstbetreuer: Daniel
+  Moldt\\ Zweitbetreuer: Leonie Dreschler-Fischer}
 \date{\today}
 \institute{TGI-Oberseminar\\
   Universität Hamburg\\ 
@@ -48,79 +50,149 @@
 \end{frame}
 }
 
-%% TODO:
-%% CarXML gerade
-%% R Zeichen      
-
-\begin{frame}{Themengebiet: \cgen}
+\begin{frame}{Themengebiet}
   \begin{itemize}
-  \item \cgen{} immer stärker genutzt
+  \item Thema: \mprog{}
+    \begin{itemize}
+    \item Hier: \cgen{}
+    \item Generative \mprog{}
+    \item Statische \mprog
+    \end{itemize}
+  \item Starke Verbreitung
     \begin{itemize}
     \item Model-Driven Architecture
     \item Domain-Specific Languages
+    \item Auch im AOSE-Projekt
     \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation}
+  \begin{itemize}
   \item Problem: Generator bauen ist aufwändig
-  \item Viele Komponenten nötig 
+  \item Viele Komponenten nötig
     \begin{itemize}
     \item Parser für Quellsprache
     \item Compiler in normaler Programmiersprache
     \item Templates für Zielsprache
+    \end{itemize}  
+  \item Wie können wir dies vereinfachen?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Zielsetzung}
+  \begin{itemize}
+  \item Entwurf eines eigenen Frameworks
+  \item Davor:
+    \begin{itemize}
+    \item Vergleich bestehender Systeme
+    \item Festlegen der Anforderungen
+    \item Planung der Architektur
     \end{itemize}
-  \item Ziel: Framework aus einem Guss
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Inhalt}
   \begin{itemize}
-  \item Vergleich bestehender Technologien
-  \item Ableiten von Anforderungen
-  \item Entwurf eines prototypischen Frameworks
+  \item Vorarbeit
+    \begin{itemize}
+    \item Vorhandene Technologien
+    \item Anforderungen
+    \end{itemize}
+  \item MagicL
     \begin{itemize}
     \item Architektur
-    \item Komponenten
+    \item Implementierung
     \end{itemize}
+  \item Demo
+  \item Schluss
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Anwendungsbeispiel}
+  \begin{itemize}
+  \item Slide, eine DSL für Vortragsfolien
+  \item Wird nach Latex kompiliert
+  \end{itemize}
+  \begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{images/flow_example_simple}
+    \caption{Der Slide-Compiler}
+  \end{figure}
 \end{frame}
 
 \section{Vorhandene Technologien}
 \subsection{Vorhandene Technologien}
 
-\begin{frame}{Übersicht: Vergleich bestehender Technologien}
+\begin{frame}{Unterschiede bestehender Werkzeuge}
   \begin{itemize}
-  \item Verschiedene Typisierungsgrade von Modellen
+  \item Modellrepräsentation
     \begin{itemize}
-    \item Zeichenketten - low level
-    \item Objekte - typisiert, aber unflexibel
-    \item Bäumrepräsentationen wie XML oder \sexps{}
+    \item Zeichenketten
+    \item Objekte
+    \item Bäume
     \end{itemize}
-  \item Code-Erzeugung
+  \item Art der Code-Erzeugung
     \begin{itemize}
-    \item Templates - verschiedene Mächtigkeiten
-    \item Programmatisch - z.B. Stringmanipulationen
+    \item Templates
     \end{itemize}
-  \item Kontrollfluss
+  \item Meta-Programmiersprache
     \begin{itemize}
-    \item Direkter Aufruf von Templates
-    \item Impliziter Aufruf über Struktur
+    \item Mächtigkeit
+    \item Ausdrucksstärke
     \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Exkursion: Lisp}
+\begin{frame}{Modellrepräsentation (1)}
   \begin{itemize}
-  \item Eine der ältesten Programmiersprachfamilien (LISP: 1958)
-  \item Minimale, uniforme Syntax (S-Expressions $\simeq$ XML-Subset)
-  \item Sprache selbst kann durch Makros erweitert werden 
-  \item[]  ``The programmable programming language''
-  \end{itemize}
+  \item Zeichenketten
+  \item Pro:
+    \begin{itemize}
+    \item Nötig für Serialisierung/Ausgabeformat
+    \item Einfache Manipulation
+    \item Universell
+    \end{itemize}
+  \item Contra:
+    \begin{itemize}
+    \item Low-Level
+    \item Anfällig für Syntaxfehler
+    \item Unstrukturiert
+    \end{itemize}
+  \end{itemize} 
+\end{frame}
 
-  \begin{block}{Zitat}
-    ``Any sufficiently complicated C or Fortran program contains an ad hoc
-    informally-specified bug-ridden slow implementation of half of
-    Common Lisp.''
+\begin{frame}{Modellrepräsentation (2)}
+  \begin{itemize}
+  \item Typisierte Objekte
+  \item Pro:
+    \begin{itemize}
+    \item Typsicherheit
+    \item Effizienz
+    \end{itemize}
+  \item Contra:
+    \begin{itemize}
+    \item Typdeklarationen nötig
+    \item Manipulation komplizierter
+    \end{itemize}
+  \end{itemize} 
+\end{frame}
 
-    - Philip Greenspun 
-  \end{block}
+\begin{frame}{Modellrepräsentation (3)}
+  \begin{itemize}
+  \item Ungetypte Bäume (XML, \sexps{}, JSON)
+  \item Pro:
+    \begin{itemize}
+    \item Einfach
+    \item Strukturiert
+    \item Universell
+    \item Sicherer als Strings
+    \end{itemize}
+  \item Contra:
+    \begin{itemize}
+    \item Nicht so sicher/effizient wie Objekte
+    \end{itemize}
+  \end{itemize} 
 \end{frame}
 
 \begin{frame}[fragile]{S-Expressions}
@@ -133,81 +205,24 @@
     \end{itemize}
   \item Konvention: Knotenname an erster Stelle
   \item \textit{Strukturelle} Verarbeitung
+  \item Minimale Komplexität (vgl. XML)
   \end{itemize}
-  \begin{block}{Beispiel: Funktionsdefinition in Common Lisp}
-\begin{verbatim}
-    (defun my-add (a b)
-      (+ a b))
-\end{verbatim}
-  \end{block}
 \end{frame}
-
 
 \begin{frame}[fragile]{S-Expressions (2)}
-  \begin{columns}
-    \begin{column}{5.5cm}
-      \begin{itemize}
-      \item Modell: Bäume mit benannten Knoten und Zeichenketten als Blättern
-      \item Kompromiss zwischen Flexibilität und Strukturierung
-      \end{itemize}
-      \begin{block}{Auto-Modell in \sexps{}}
+  \begin{block}{Beispiel: Folie in \sexps{}}
 \begin{verbatim}
-(car
-  (color red)
-  (specials AC Navigation)) 
+(slide
+  (title My Slide)
+  (image
+    (source diagram.png)
+    (caption This is a diagram))
+  (list one two three))
 \end{verbatim}
-      \end{block}
-    \end{column}
-    \begin{column}{5cm}
-      \begin{figure}
-        \centering
-        \includegraphics[scale=0.3]{images/car_sexp}
-        \caption{Sexp-Auto-Modell als Baum}
-      \end{figure}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
-\begin{frame}[fragile]{Kritik an XML}
-  \begin{columns}
-    \begin{column}{6.5cm}
-      \begin{itemize}
-      \item These: Attribute sind unnötig
-      \item Problem: Keine Listen von Blättern
-      \end{itemize}
-      \begin{block}{Auto-Modell in XML}
-\begin{verbatim}
-<car color="red">
-  <specials>
-    <special>AC</special>
-    <special>Navigation</special>
-  </specials>
-</car>        
-\end{verbatim}
-      \end{block}
-    \end{column}
-    \begin{column}{4cm}
-      \begin{figure}
-        \centering
-        \includegraphics[scale=0.3]{images/car_xml}
-        \caption{XML-Auto-Modell als Baum}
-      \end{figure}    
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Vorteile von \sexps{}}
-  \begin{itemize}
-  \item Simple Struktur - vereinfachen:
-    \begin{itemize}
-     \item Parsing (vgl. XML)
-    \item Verarbeitung
-    \item Erzeugung
-    \end{itemize}
-  \item Dennoch ausdrucksstark
-    \pfeil Basis für Lisp-Makros
-  \end{itemize}
+  \end{block}
+  \begin{figure}
+    \includegraphics[scale=0.2]{images/model_slide_sexp}
+  \end{figure}
 \end{frame}
 
 \begin{frame}[fragile]{Templates}
@@ -215,32 +230,23 @@
   \item Für Dokumenterzeugung genutzt
   \item ``Schablone mit Platzhaltern''
   \item Funktion: $\mathrm{input} \ato \mathrm{doc}$
-  \item Unterschiede:
-    \begin{itemize}
-    \item Typen $\mathrm{input}$ und $\mathrm{doc}$
-    \item Syntax der Metasprache
-    \item Mächtigkeit
-    \end{itemize}
+  \item Typen $\mathrm{input}$ und $\mathrm{doc}$ variieren
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{PHP}
   \begin{itemize}
   \item $\mathrm{Object}\ato\mathrm{String}$
-  \item Zeichenketten problematisch
-    \begin{itemize}
-    \item Syntaxfehler
-    \item Einrückung für lesbaren Code?
-    \end{itemize}
+  \item Zeichenketten problematisch da Fehleranfällig
   \item Komplette Programmiersprache
   \end{itemize}
 \begin{verbatim}
-<html>
-  <head><title>Current Date</title></head>
-  <body>
-    <? print($current_date); ?>
-  </body>
-</html>
+<ul>
+  <? foreach ($items as $item) {
+       echo("<li>" . $item . "</li>");
+     }
+  ?>
+</ul>
 \end{verbatim}
 \end{frame}
 
@@ -261,37 +267,32 @@
 
   \begin{block}{Eingabe}
 \begin{verbatim}
-<addresses>
-  <person firstname="Heinz" name="Schulz" />
-  <person firstname="Walter" name="Meier" />
-</addresses>
+<list>
+  <item>foo</item>
+  <item>bar</item>
+  <item>baz</item>
+</list>
 \end{verbatim}
   \end{block}
   \begin{block}{Erwünschte Ausgabe}
 \begin{verbatim}
-<table>
-  <tr><td>Walter</td><td>Meier</td></tr>
-  <tr><td>Heinz</td><td>Schulz</td></tr>
-</table>    
+<ul>
+  <li>foo</li>
+  <li>bar</li>
+  <li>baz</li>
+</ul>
 \end{verbatim}
 \end{block}
 \end{frame}
 
 \begin{frame}[fragile]{XSLT (3)}
 \begin{verbatim}
-<xsl:template match="/addresses">
-  <table>
-    <xsl:for-each select="person">
-      <xsl:sort select="@name" 
-                order="ascending" 
-                data-type="text" />
-        <tr>
-          <td><xsl:value-of select="@firstname" /></td>
-          <td><xsl:value-of select="@name" /></td>
-        <tr>
-      </xsl:sort>
+<xsl:template match="/list">
+  <ul>
+    <xsl:for-each select="item">
+      <li><xsl:value-of select="." /></li>
     </xsl:for-each>
-  </table>
+  </ul>
 </xsl:template>
 \end{verbatim}
 \end{frame}
@@ -301,32 +302,34 @@
   \item $\mathrm{Sexp} \ato \mathrm{Sexp}$
   \item Metasprache $=$ Zielsprache $=$ Quellsprache $=$ Lisp
   \item ``Compiler-Plugins'' in kurzer, eleganter Notation
+  \item Ermöglichen inkrementelle Erweiterung des Lisp-Compilers
     \begin{itemize}
-    \item Ermöglichen inkrementelle Erweiterung des Lisp-Compilers
-    \item ``Embedded DSLs'' - in die ursprüngliche Sprache integriert
+    \item ``Embedded DSLs'' - in die ursprüngliche Sprache
+      integriert
     \end{itemize}
-  \item Einschränkungen:
+  \item Template-Syntax:
     \begin{itemize}
-    \item Typen
-    \item Kontrollfluss
-    \item Kein ``SPath''
+    \item Quasiquote mit \texttt{`}  
+    \item Unquote mit \texttt{,}  
     \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Lisp-Makros (2)}
-  \begin{block}{Makro-Aufruf}
+  \begin{block}{Eingabe}
 \begin{verbatim}
-(addresses
-  (person "Heinz" "Schulz")
-  (person "Walter" "Meier"))
+(list
+  (item foo)
+  (item bar)
+  (item baz))
 \end{verbatim}
   \end{block}
-  \begin{block}{Zu erzeugender Code}
+  \begin{block}{Erwünschte Ausgabe}
 \begin{verbatim}
-(table
-  (tr (td "Walter") (td "Meier"))
-  (tr (td "Heinz")  (td "Schulz")))
+(ul
+  (li foo)
+  (li bar)
+  (li baz))
 \end{verbatim}
   \end{block}
 \end{frame}
@@ -334,30 +337,17 @@
 \begin{frame}[fragile]{Lisp-Makros (3)}
   \begin{block}{Makro-Umsetzung in Common Lisp}
 \begin{verbatim}
-(defun sort-by-name (persons) ...)
+(defmacro item (text)
+  `(li ,text))
 
-(defmacro addresses (&rest persons)
-  `(table ,@(sort-by-name persons)))
-
-(defmacro person (first-name name)
-  `(tr (td ,first-name) (td ,name)))
+(defmacro list (&rest items)
+  `(ul ,@items))
 \end{verbatim}
   \end{block}
 \end{frame}
 
 \section{Anforderungen}
 \subsection{Anforderungen}
-
-\begin{frame}{MagicL}
-  \begin{itemize}
-  \item M: Models
-  \item A: Architecture
-  \item G: Generation
-  \item I: Interface
-  \item C: Control Flow
-  \item L: Lisp
-  \end{itemize}
-\end{frame}
 
 \begin{frame}{Anforderungen}
   \begin{itemize}
