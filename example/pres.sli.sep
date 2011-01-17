@@ -1,0 +1,7 @@
+(presentation (text My Presentation)
+  (slide First
+     (list one two three))
+  (slide (text Second Slide)
+     (list foo
+           bar
+           (text Hello World))))

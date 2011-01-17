@@ -1,0 +1,41 @@
+(compiler Latex2Code (imports Code))
+
+(= compText
+   (macro "text"
+          (liftA1 gen (many takeSymbol)))
+   (where (= gen (. words (map text)))))
+
+(= compCmd
+   (macro "cmd"
+          (liftA2 gen takeSymbol (many compToken)))
+   (where (= (gen cmdName args)
+             (conc (: (text "\\")
+                      (text cmdName)
+                      (map braces args))))))
+
+(= compEnv
+   (macro "env"
+          (liftA2 gen compFirstParam (many compToken)))
+   (where (hasType compFirstParam (ParseFunctor Sexp IOArrow Unit (List Code)))
+          (= compFirstParam
+             (<+> (>>^ takeSymbol text single)
+                  (compNode (many compToken))))
+          (= (gen args contents)
+             (lines (List (indent2 (lines (: beginLine
+                                             contents)))
+                          endLine))             
+             (where (= beginLine (conc (: (text "\\begin")
+                                          (map braces args))))
+                    
+                    (= endLine (append (text "\\end")
+                                       (braces (head args))))))))
+
+(= compToken (<+> (>>^ takeSymbol text)
+                  compText
+                  compCmd
+                  compEnv))
+
+(= compLatex (>>^ (many compToken)
+                  lines))
+
+(= main (compiler compLatex))

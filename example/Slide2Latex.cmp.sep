@@ -1,0 +1,30 @@
+(compiler Slide2Latex (imports Code))
+
+(mac compPres presentation
+  (liftA2 genPres take (>>^ (many compSlide) concat))
+  (where (= (genPres title slides)       
+            (' (cmd documentclass beamer)
+               (cmd title (, title))
+               (env document
+                 (cmd maketitle)
+                 (,@ slides))))))
+
+(mac compSlide slide
+  (liftA2 genSlide take compAuto)
+  (where (= (genSlide title contents)
+            (' (env (frame (, title))
+                 (,@ contents))))))
+
+(autoMac compList list
+  (>>^ compAuto genList)
+  (where 
+    (= (genList items)
+       (' (env itemize
+            (,@ (concat (map genItem items))))))
+    (= (genItem text)
+       (' (cmd item)
+          (, text)))))
+
+(= main (compiler (>>> (toIO compPres)
+                       (hasType compile (IOArrow (List Sexp)
+                                                 Code)))))  

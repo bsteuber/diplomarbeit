@@ -83,7 +83,7 @@ mkDirs = mapM $ createDirectoryIfMissing True
 compLatex filename = (whenNewer 
                       (filename ++ ".tex")
                       (filename ++ ".pdf") 
-                      (sysList ["comp-latex", filename]))
+                      (sysList ["pdflatex", filename]))
 
 genDoc = do
   setCurrentDirectory "doc/images"
@@ -115,12 +115,36 @@ build = do
   ghc $  "hs" </> "Prog" </> "Format"
   ghc    "hs/Prog/HS2C"
   ghc    "hs/Prog/CMP2HS"
-  cmp2hs "sep/Comp/Preprocessor.sep"         "gen/sep/Hask/Preprocessor.sep"
-  hs2c   "gen/sep/Hask/Preprocessor.sep"     "gen/hs/Compiler/Preprocessor.hs"
-  ghc    "hs/Prog/Prep"
-  prep   "sep/Comp/Comp2Haskell.sep"         "gen/sep/Comp/Comp2Haskell.sep"
-  cmp2hs "gen/sep/Comp/Comp2Haskell.sep"     "gen/sep/Hask/Comp2Haskell.sep"
-  hs2c   "gen/sep/Hask/Comp2Haskell.sep"     "gen/hs/Compiler/Comp2Haskell.hs"
+  cmp2hs "sep/Comp/Preprocessor.sep"            "gen/sep/Hask/Preprocessor.sep"
+  hs2c   "gen/sep/Hask/Preprocessor.sep"        "gen/hs/Compiler/Preprocessor.hs"
+  ghc    "hs/Prog/Prep"                          
+  prep   "sep/Comp/Comp2Haskell.sep"            "gen/sep/Comp/Comp2Haskell.sep"
+  cmp2hs "gen/sep/Comp/Comp2Haskell.sep"        "gen/sep/Hask/Comp2Haskell.sep"
+  hs2c   "gen/sep/Hask/Comp2Haskell.sep"        "gen/hs/Compiler/Comp2Haskell.hs"
+
+-------------
+-- Example --
+-------------
+                                                 
+example = do                                       
+  cmp2hs "example/Slide2Latex.cmp.sep"        "example/Slide2Latex.hs.sep"
+  hs2c   "example/Slide2Latex.hs.sep"         "example/Slide2Latex.hs"
+  ghc    "example/Slide2Latex"
+
+  cmp2hs "example/Latex2Code.cmp.sep"        "example/Latex2Code.hs.sep"
+  hs2c   "example/Latex2Code.hs.sep"         "example/Latex2Code.hs"
+  ghc    "example/Latex2Code"
+
+  runCompiler "slide2latex" "example/pres.sli.sep" "example/pres.tex.sep"
+  runCompiler "latex2code" "example/pres.tex.sep" "example/pres.tex"
+  setCurrentDirectory "example"
+  compLatex "pres"
+  setCurrentDirectory ".."
+  return ExitSuccess
+
+-------------
+---- End ----
+-------------
 
 main = do args  <- getArgs
           case args of
@@ -132,6 +156,7 @@ main = do args  <- getArgs
             ["clean"]               -> clean
             ["doc"]                 -> genDoc
             ["deploy"]              -> deploy
+            ["example"]             -> example
             ["reploy"]              -> reploy
             [] -> do
               clean
