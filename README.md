@@ -16,5 +16,5 @@ representation and are being processed by macros that can be regarded as
 
 ### Building the project and example
 - You need GHC (Glasgow Haskell Compiler) installed, for the example also a latex processor.
-- To compile and text, run "bin/mage" from the magicl directory.
+- To compile and test, run "bin/mage" from the magicl directory.
 - For the example, run "bin/mage example" - this should build example/pres.pdf among other files.
