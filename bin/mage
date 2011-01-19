@@ -1,3 +1,2 @@
 #!/bin/bash
-cd ~/magicl
 runhaskell hs/Prog/Mage.hs "$@"
