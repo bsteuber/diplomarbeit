@@ -102,10 +102,8 @@
   \item MagicL
     \begin{itemize}
     \item Architektur
-    \item Implementierung
+    \item Demo
     \end{itemize}
-  \item Demo
-  \item Schluss
   \end{itemize}
 \end{frame}
 
@@ -144,7 +142,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Modellrepräsentation (1)}
+\begin{frame}{Modellrepräsentation}
   \begin{itemize}
   \item Zeichenketten
   \item Pro:
@@ -349,280 +347,219 @@
 \section{Anforderungen}
 \subsection{Anforderungen}
 
-\begin{frame}{Anforderungen}
+\begin{frame}{Lisp-inspiriertes Framework}
   \begin{itemize}
-  \item Lisp
+  \item \sexps{}
+  \item Verallgemeinerte Makros
+  \item Quasiquote
+  \item Funktionale Metasprache
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Unterstützte Modelltypen}
+  \begin{itemize}
+  \item \sexps{}
     \begin{itemize}
-    \item Makro-Ansatz
+    \item Hauptfokus
+    \item Standard für User-DSL
+    \pfeil Parser entfällt 
     \end{itemize}
-  \item Modelle
+  \item Strings
     \begin{itemize}
-    \item \sexps{}
-    \item Objekte
-    \item Strings
+    \item Parser
+    \item Generatoren
+    \item möglichst vom Benutzer versteckt
     \end{itemize}
-  \item Generierung von Quelltext
+  \item Objekte
     \begin{itemize}
-    \item Nicht auf Zeichenketten-Ebene
-    \item Modell für Code
-    \item automatische Formatierung
+    \item Für komplexere Berechnungen
+    \item Typsicherheit
+    \item Effizienz
     \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Anforderungen (2)}
+\begin{frame}{Unterstützte Modelltypen (2)}
   \begin{itemize}
-  \item Architektur
+  \item Alle drei Modelltypen verwendbar
     \begin{itemize}
-    \item theoretische Fundierung
-    \item visualisierbar (vgl. Petri-Netze)
-    \item flexible Verarbeitungsprozesse
-    \end{itemize} 
-  \item Compiler-Schnittstelle
-    \begin{itemize}
-    \item universell - Parser, Makros
-    \item automatische Auswahl über Typ
+    \item Als Eingabe
+    \item Als Ausgabe
+    \pfeil Neun Mögliche Compiler-Arten
     \end{itemize}
-  \item Kontrollfluss
-    \begin{itemize}
-    \item direkter Aufruf
-    \item impliziter Aufruf durch Matching
-      \begin{itemize}
-      \item XPath?
-      \item EBNF?
-      \end{itemize}
-    \end{itemize}    
   \end{itemize}
+  \includegraphics[scale=0.25]{images/magicl_model_poss}
+\end{frame}
+
+\begin{frame}[fragile]{\sexps}
+  \begin{itemize}
+  \item Einfachste Baumstruktur
+  \item Hier: \textbf{Keine} weitere Syntax
+  \pfeil Strings etc. müssen eingebettet werden
+  \end{itemize}
+\begin{verbatim}
+(Str Hallo Welt)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Quasiquote}
+  \begin{itemize}
+  \item Syntax angepasst
+  \item beliebig viele Rückgaben möglich
+  \end{itemize}
+  \begin{block}{Quasiquote-Beispiele}
+\begin{verbatim}
+(' a b c d e)
+(' (+ 3 (, x)))
+(' (a b c (,@ list) h i))  
+\end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Verallgemeinerte Makros}
+  \begin{itemize}
+  \item Parser auf \sexps{}
+  \item Aufruf genauer steuerbar
+    \begin{itemize}
+    \item Nicht nur Matching vom Knotennamen
+    \item Lokale Makros möglich
+    \item XPath
+    \item EBNF
+    \end{itemize}
+  \end{itemize}
+  \begin{block}{List-Makro in MagicL}
+\begin{verbatim}
+(macro "item"
+  (>>^ take
+       (fun text 
+            (' (li (, text))))))  
+\end{verbatim}
+  \end{block}
 \end{frame}
 
 \section{Architektur}
 \subsection{Architektur}
 
-\begin{frame}[fragile]{Die Sprache Haskell}
+\begin{frame}{Programmiersprache}
   \begin{itemize}
-  \item Funktional (pur)
+  \item Haskell
+  \item Funktional
   \item statische Typinferenz
-  \item Typklassen entsprechen Java-Interfaces
-  \item Seiteneffekte dank Monaden/Arrows integrierbar
+  \item Kategorientheorie-Bibliotheken
   \end{itemize}
-  \begin{block}{imperatives Beispielprogramm}
-\begin{verbatim}
-getName :: IO String
-getName = do putStrLn  "Getting Name"
-             return "Harald"
-
-main :: IO ()
-main = do name <- getName
-          putStrLn name
-\end{verbatim}
-  \end{block}
 \end{frame}
 
 \begin{frame}{Kategorientheorie}
-  \begin{itemize}
-  \item Sehr abstrakter Bereich der Mathematik
-    \begin{itemize}    
-    \item Praktisch alle mathematischen Strukturen sind Kategorien
-    \item Motivation: ``Rechnen mit Funktionstypen''
-    \end{itemize}
-  \end{itemize}
-  \begin{center}
-    \includegraphics[scale=0.3]{images/cat_funs}
-  \end{center}
+  \begin{columns}
+    \begin{column}{7cm}
+      \begin{itemize}
+      \item Sehr abstrakter Bereich der Mathematik
+        \item Grundidee
+          \begin{itemize}
+          \item ``Rechnen mit Funktionstypen''
+          \item Von Funktionen abstrahieren
+          \pfeil flexible Verarbeitungsprozesse
+          \end{itemize}
+        \item visualisierbar
+          \item Vergleich mit Petri-Netzen
+            \begin{itemize}
+            \item ``Punktfrei''
+            \item Komposition überladbar
+            \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{4.5cm}
+      \begin{center}
+        \includegraphics[scale=0.3]{images/cat_funs}
+      \end{center}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Kategorientheorie (2)}
+\begin{frame}{Kategorien im MagicL}
   \begin{itemize}
-  \item Morphismen zwischen Objekten: $f: \mathrm{A} \ato \mathrm{B}$
+  \item Überall genutzt
     \begin{itemize}
-    \item Interpretation frei
-    \item Komposition: $g \circ f$ analog Funktionen
-    \item Identität: $\mathrm{id}_{A}$
-    \item Produkte ($f \times g$) und Coprodukte ($f + g$)
+    \item Parser
+    \item Compiler
+    \item Diagramme in Doku
     \end{itemize}
-  \item Funktoren: Abbildungen zwischen Kategorien
-  \item Weiteres: Natürliche Transformationen, Monaden etc.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Kategorien in Haskell}
-  \begin{itemize}
-  \item Objekte: Haskell-Datentypen 
-  \item Arrows: Verarbeitungsprozesse
+  \item Umsetzung kategorientheoretischer Konzepte
     \begin{itemize}
-    \item pure Funktionen (Kategorie $\mathbf{Hask}$)
-    \item Funktionen mit Side-Effects ($\mathbf{IOArrow}$)
-    \end{itemize}
-  \item eigene Arrow-Formalismen möglich
-    \begin{itemize}
-    \item müssen Komposition etc. implementieren
-    \item Funktor von $\mathbf{Hask}$ erforderlich
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Funktoren in dieser Arbeit}
-  \begin{itemize}
-  \item Gleicher Arrow in verschiedenen Kategorien
-    \begin{itemize}
-    \item Unterschiedliche Typsignatur möglich
-      \pfeil ``Verstecken'' von Teilen der Signatur
-    \end{itemize}
-  \item ``Domain Specific Categories''
-  \item Beispiel 1: Möglichkeit zum Scheitern ($\mathbf{C}_F$)
-    \begin{itemize}
-    \item in $\mathbf{C}_F: \mathrm{A} \ato \mathrm{B}$
-    \item in $\mathbf{C}: \mathrm{A} \ato \mathrm{B} + \mathrm{String}$
-    \end{itemize}
-  \item Beispiel 2: Zustände ($\mathbf{C}_S$)
-    \begin{itemize}
-    \item in $\mathbf{C}_S: \mathrm{A} \ato \mathrm{B}$
-    \item in $\mathbf{C}: \mathrm{A} \times \mathrm{state} \ato \mathrm{B} \times \mathrm{state}$
+    \item teils bereits in Haskell
+    \item teils in Arrow-Bibliothek
     \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Überblick Architektur}
+\begin{frame}{Unterstützung der Modelltypen}
+  \begin{columns}
+    \begin{column}{3.5cm}
+      \begin{itemize}
+      \item Strings
+        \begin{itemize}
+        \item Parser
+        \item Generatoren
+        \end{itemize}
+      \item \sexps
+        \begin{itemize}
+        \item Parser
+        \item Quasiquote
+        \end{itemize}
+      \item Objekte
+        \begin{itemize}
+        \item Funktionen
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{8cm}
+      \includegraphics[scale=0.18]{images/magicl_model_support}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Bereitgestellte DSLs}
   \begin{itemize}
-  \item Komplett Arrow-basiert
+  \item Haskell-DSL
     \begin{itemize}
-      \pfeil Generische Schnittstelle für alle Arten von Compilern
+    \item Funktionale \sexp{}-Sprache
+    \item ``geklammerte Haskell-Version''
+    \item Als Metasprache verwendet
+    \item Nach Haskell übersetzt
     \end{itemize}
-  \item Compiler: $\mathrm{a} \ato \mathrm{b}$
-  \item Parser: $\mathrm{[token]} \ato \mathrm{b}$ 
-  \item Makros: $\mathrm{[Sexp]} \ato \mathrm{b}$ 
-  \item Lisp-Makros: $\mathrm{[Sexp]} \ato \mathrm{[Sexp]}$
+  \item Compiler-DSL
+    \begin{itemize}
+    \item Für Compiler-Definitionen
+    \item Beinhaltet
+      \begin{itemize}
+      \item Quasiquote
+      \item Lisp-Makros
+      \item Haskell-DSL
+      \end{itemize}
+    \item Nach Haskell-DSL übersetzt
+    \end{itemize}      
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Parser als Arrows}
-  \begin{itemize}
-  \item Eigenschaften von Parsern:
-    \begin{itemize}
-    \item Fehlschlagen / Alternativen ($\Rightarrow \mathbf{C}_F$)
-    \item Zustand: Position im Eingabestream ($\Rightarrow \mathbf{C}_S$)
-    \end{itemize}
-  \item Kombination: $\mathbf{C}_P = \mathbf{C}_{FFS}$
-    \begin{itemize}
-    \item ``innerer Fail'' möglich
-      \pfeil bessere Fehlermeldungen
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Parser als Arrows (2)}
-  \begin{itemize}
-  \item Signaturen eines Parsers
-    \begin{itemize}
-    \item Parser-Kategorie: $\emptyset \ato \mathrm{A}$
-    \item ``Wirklichkeit'': $[\mathrm{token}] \ato (\mathrm{A} \times
-      [\mathrm{token}] + \mathrm{String}) + \mathrm{String}$
-    \item nach Umwandlung in Compiler: $[\mathrm{token}] \ato \mathrm{A}$
-    \end{itemize}  
-  \item Token-Typ Variabel: $\mathrm{Char}$ und $\mathrm{Sexp}$
-    verwendet
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Parser-Bibliothek}
-  \begin{itemize}
-  \item Kombinatoren: \verb+empty, eq, member, many, optional etc.+
-  \item Aufruf innerer Parser: \verb+applyParser+
-    \pfeil Makros:
-\begin{verbatim}
-  macro "addresses" (many (macro "person" 
-                                 compSymbol 
-                                 compSymbol))
-\end{verbatim}
-  \end{itemize}
-\end{frame}
-
-\section{Komponenten}
-\subsection{Komponenten}
-
-\begin{frame}{Komponenten von MagicL}
-  \begin{itemize}
-  \item Modelle
-    \begin{itemize}
-    \item Sexp
-    \item Code
-    \end{itemize}
-  \item Eigene DSLs
-    \begin{itemize}
-    \item \sexp{}-Haskell
-    \item \sexp{}-Compiler
-    \end{itemize}
-  \item Außerdem
-    \begin{itemize}
-    \item minimales Test-Framework
-    \item Build-Tool
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Parser: $\mathrm{String} \ato \mathrm{Sexp}$}
-\begin{verbatim}
-data Sexp = Symbol String
-          | Node   [Sexp]
-
-whitespace = skip (many (member " \t\n"))
-
-parseSymbol = many1 (notMember " \t\n()") >>>
-              symbol
-
-parseNode = skip (eq '(') >>> 
-            (many parseSexp >>> node) >>> 
-            skip (eq')')
-
-parseSexp = whitespace >>> 
-            (parseSymbol <+> parseNode) >>> 
-            whitespace
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]{Quellcode-Modell}
-  \begin{itemize}
-  \item Ansatz von Philip Wadler
-  \item Beschreibung durch Haskell-Funktionen
-    \begin{itemize}
-    \item Elementar: \verb+text, newline, indent, append, group+
-    \item Abgeleitet: \verb+lines, paragraphs, parens etc.+
-    \end{itemize}
-  \end{itemize}
-  \begin{block}{Beispiel: Pretty-Printer für \sexps{}}
-\begin{verbatim}
-layoutSexp :: Sexp -> Code
-layoutSexp (Symbol sym) = text sym
-layoutSexp (Node children) = 
-    format (map layoutSexp children)
-  where format = parens . group . indent2 . lines
-\end{verbatim}
-  \end{block}
-\end{frame}
-
-\begin{frame}[fragile]{Sexp-Haskell}
-  \begin{itemize}
-  \item Ziel: \sexp{}-basierte Erzeugung von Haskell-Code
-  \item Ansatz: Haskell-Variante in \sexp{}-Syntax
-  \end{itemize}
+\begin{frame}[fragile]{Haskell-DSL-Beispiel}
   \begin{columns}
     \begin{column}{5cm}
-      \begin{block}{Sexp-Haskell}
+      \begin{block}{Haskell-DSL-Code}
 \begin{verbatim}
 (= (sumOfSquares x y)
    (+ x2 y2)
- (where                   
-  (= x2 (* x x))
-  (= y2 (* y y))))
+  (where
+    (= x2 (* x x))
+    (= y2 (* y y))))  
 \end{verbatim}
       \end{block}
     \end{column}
     \begin{column}{6cm}
-      \begin{block}{Haskell}
+      \begin{block}{Erzeugter Haskell-Code}
 \begin{verbatim}
 sumOfSquares x y = (x2 + y2)
   where
-    x2 = (x * x)         
+    x2 = (x * x)            
     y2 = (y * y)
 \end{verbatim}
       \end{block}
@@ -630,85 +567,80 @@ sumOfSquares x y = (x2 + y2)
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Implementation von Sexp-Haskell}
+\begin{frame}[fragile]{Übersetzung der Haskell-DSL}
+  \includegraphics[scale=0.26]{images/magicl_hask_compiler}
+\end{frame}
+
+\begin{frame}{Übersetzung der Compiler-DSL}
+  \includegraphics[scale=0.26]{images/magicl_comp_compiler}
+\end{frame}
+
+\begin{frame}[fragile]{Parser-Bibliothek}
   \begin{itemize}
-  \item Zeigt Einbindung typisierter Modelle
-  \item Drei Komponenten
+  \item Konstruktoren
     \begin{itemize}
-    \item Haskell-Modell
-    \item Parser $\mathrm{Sexp} \ato \mathrm{Haskell}$
-    \item Funktionaler Compiler $\mathrm{Haskell} \ato \mathrm{Code}$
+    \item \verb+empty+
+    \item \verb+eq+
+    \item \verb+member+
+    \item ...
     \end{itemize}
-  \item Nutzt automatisches Finden von Compilern
-  \pfeil Formulierung etwas umständlich
+  \item Kombinatoren
+    \begin{itemize}
+    \item \verb+many+
+    \item \verb+optional+
+    \item ...
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Haskell-Modell}
-\begin{verbatim}
-...
-
-data Pattern = ListPattern [Pattern]
-             | TuplePattern [Pattern]
-             | ConsPattern [Pattern]
-             | StringPattern String
-             | CallPattern Call                          
-
-...
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]{$\mathrm{Sexp} \ato \mathrm{Haskell}$}
-\begin{verbatim}
-...
-
-instance Compilable (SexpParser Pattern) [Sexp] Pattern 
- where
-  comp =
-    (liftA1 ListPattern (macro "List" comp)   <+>
-     liftA1 TuplePattern (macro "Tuple" comp) <+>
-     liftA1 ConsPattern (macro "Cons" comp)    <+>
-     liftA1 StringPattern (macro "Str" (many comp >>^ 
-                                        unwords)) <+>
-     liftA1 CallPattern comp)
-
-...
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]{$\mathrm{Haskell} \ato \mathrm{Code}$}
-\begin{verbatim}
-...
-
-instance Compilable (Pattern -> Code) Pattern Code where
-  comp (ListPattern pats)  = list $ map comp pats
-  comp (TuplePattern pats) = tuple $ map comp pats
-  comp (ConsPattern pats)  = parenFoldOp ":" (map comp
-                                                  pats)
-  comp (StringPattern str) = string str
-  comp (CallPattern call)  = comp call
-...
-
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]{Sexp-Compiler}
+\begin{frame}[fragile]{Generator-Bibliothek}
   \begin{itemize}
-  \item DSL für untypisierte \sexp{}-Verarbeitung ähnlich Lisp
-    \begin{itemize}
-    \item Quasiquote-Operator für \sexp{}-Templates
-    \item Makro-Typ: $\mathrm{[Sexp]} \ato \mathrm{[Sexp]}$
-    \item Lisp-Kontrollfluss: Auto-Makros
-    \end{itemize}
-  \item Metarekursiv implementiert
+  \item Funktionale Erzeugung von Code
   \end{itemize}
-  \begin{block}{Beispiel: Mehrere Rückgaben}
+  \begin{block}{Beispiel}
 \begin{verbatim}
-(autoMac compDefArith defArithFuns
-  (' (= (add x y) (+ x y))
-     (= (sub x y) (- x y))))
+  layout 80 (braces 
+  (indent2 
+  (lines [text "foo",
+    words [text "hello", text "world"],
+    commaSep [text "1", text "2", text "3"]])))
 \end{verbatim}
   \end{block}
+  \begin{block}{Erzeugter Code}
+\begin{verbatim}
+  {foo
+    hello world
+    1, 2, 3}
+\end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Weitere Komponenten}
+  \begin{itemize}
+  \item kleines Test-Framework
+  \item Build-Tool
+  \end{itemize}
+\end{frame}
+
+\section{Demo}
+\subsection{Demo}
+
+\begin{frame}{Demo}
+  \begin{columns}
+    \begin{column}{4cm}
+      \begin{itemize}
+      \item Slide-DSL
+      \pfeil Latex-DSL
+      \pfeil Latex-Code
+      \end{itemize}
+    \end{column}
+    \begin{column}{6cm}
+      \begin{figure}
+        \includegraphics[scale=0.2]{images/magicl_latex_compiler}
+        \caption{Übersetzung der Slide-DSL}    
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \section{Schluss}
@@ -717,9 +649,13 @@ instance Compilable (Pattern -> Code) Pattern Code where
 \begin{frame}{Zusammenfassung}
   \begin{itemize}
   \item Prototyp eines universellen Compiler-Frameworks
-  \item Sauber fundiert: Haskell, Kategorientheorie
   \item Lisp-inspiriert: \sexps{}, Makros
-  \item Allgemeiner
+  \item Architektur
+    \begin{itemize}
+    \item Haskell
+    \item Kategorientheorie
+    \end{itemize}
+  \item Verallgemeinerungen gegenüber Lisp
     \begin{itemize}
     \item Modelltypen
     \item Verarbeitungsprozesse
@@ -728,18 +664,28 @@ instance Compilable (Pattern -> Code) Pattern Code where
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Fazit}
+  \begin{itemize}
+  \item Themengebiet sehr interessant
+  \item Framework funktioniert
+  \item Manches noch etwas umständlich
+    \begin{itemize}
+    \item Preis für Verallgemeinerung
+    \item Kann durch \cgen{} vereinfacht werden
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Ausblick}
   \begin{itemize}
-  \item Compiler-Definitionen sind etwas redundant
-    \pfeil Plan: DSL für Modelldefinitionen
-  \item Code-Modell in \sexps{}
-  \item Unterstützung verschiedener Zielsprachen
-  \item \sexp{}-basierte Softwareentwicklung
+  \item Implementierung sehr komplex
     \begin{itemize}
-    \item Datenbank
-    \item Strukturelle IDE
-    \item Anpassbare Visualisierung
-    \pfeil Model-View-Trennung von Code
+    \pfeil nächstes Mal KISS-Prinzip!
+    \end{itemize}
+  \item Einfacher: selbst ein Lisp verwenden
+    \begin{itemize}
+    \item Bekannte Lisps wirkten veraltet und unsauber
+    \item Inzwischen gibt es Clojure!
     \end{itemize}
   \end{itemize}
 \end{frame}
